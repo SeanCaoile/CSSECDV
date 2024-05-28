@@ -1,6 +1,6 @@
 <template>
   <div class="about">
-    <!-- <h1>Registration</h1> -->
+    <!-- <h1>Login</h1> -->
     <div>
       <form @submit.prevent="submitForm">
         <div>
@@ -16,6 +16,28 @@
     </div>
   </div>
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      email: '',
+      password: '',
+    };
+  },
+  methods: {
+    submitForm() {
+      const formData = {
+        email: this.email,
+        password: this.password,
+      };
+      console.log(formData);
+      
+      this.$router.push('/home');
+    },
+  }
+};
+</script>
 
 <style>
 @media (min-width: 1024px) {
@@ -41,24 +63,3 @@
   }
 }
 </style>
-
-
-<script>
-export default {
-  data() {
-    return {
-      email: '',
-      password: '',
-    };
-  },
-  methods: {
-    submitForm() {
-      const formData = {
-        email: this.email,
-        password: this.password,
-      };
-      console.log(formData);
-    },
-  }
-};
-</script>

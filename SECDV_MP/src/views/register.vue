@@ -35,10 +35,10 @@
     min-height: 100vh;
     display: flex;
     align-items: center;
-    justify-content: center; /* Center the form horizontally */
+    justify-content: center;
   }
   form {
-    width: 300px; /* Adjust the width as needed */
+    width: 300px;
   }
   label {
     display: block; /* Display labels on new lines */
@@ -74,7 +74,7 @@ export default {
         email: this.email,
         password: this.password,
         phoneNumber: this.phoneNumber,
-        profilePicture: this.profilePicture // You may need to handle file uploads differently based on your backend
+        profilePicture: this.profilePicture
       };
       console.log(formData);
     },
