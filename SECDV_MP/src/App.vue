@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { RouterLink, RouterView, useRoute  } from 'vue-router'
+import { RouterLink, RouterView, useRoute , useRouter  } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 const route = useRoute()
+
+// const router = useRouter()
+// const refreshPageOnce = () => {
+//   // Check if the page is being loaded for the first time or from the browser's history
+//   if (router.history.state?.forwarded) {
+//     // Reload the page if it's a direct access or rendered from the browser's history
+//     window.location.reload()
+//   }
+// }
+// import { onMounted } from 'vue'
+// onMounted(refreshPageOnce)
 </script>
+
 
 <template>
   <header v-if="route.name === 'login' || route.name === 'register'">
-    <!-- <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" /> -->
-
     <div class="wrapper" >
       <HelloWorld msg="Welcome" />
       <nav>
@@ -17,6 +27,10 @@ const route = useRoute()
       </nav>
     </div>
   </header>
+
+  <!-- <header v-if="route.name === 'home'"> -->
+    <!-- <h1>TEST</h1> -->
+  <!-- </header> -->
 
   <RouterView />
 
@@ -74,5 +88,6 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
+  
 }
 </style>

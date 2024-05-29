@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/login.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeLayout from '../HomeLayout.vue'; 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,7 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'login',
-      component: HomeView
+      component: () => import('../views/login.vue')
     },
     {
       path: '/register',
@@ -16,10 +16,16 @@ const router = createRouter({
     },
     {
       path: '/home',
-      name: 'home',
-      component: () => import('../views/home.vue')
+      component: HomeLayout, // Use HomeLayout.vue as the layout
+      children: [
+        {
+          path: '',
+          name: 'home',
+          component: () => import('../views/home.vue')
+        }
+      ]
     }
   ]
-})
+});
 
-export default router
+export default router;

@@ -34,6 +34,7 @@ export default {
       console.log(formData);
       
       this.$router.push('/home');
+      
     },
   }
 };
