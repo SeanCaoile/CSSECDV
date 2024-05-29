@@ -2,6 +2,7 @@
   <div class="about">
     <!-- <h1>Registration</h1> -->
     <div>
+      <HelloWorld msg="Welcome" />
       <form @submit.prevent="submitForm">
         <div>
           <label for="fullName">Full Name: </label>
