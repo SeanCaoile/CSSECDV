@@ -15,11 +15,13 @@
         </div>
         <div>
           <label for="password">Password: </label>
-          <input type="password" id="password" v-model="password" required>
+          <input type="password" id="password" v-model="password" @blur="validatePassword" required>
+          <span v-if="passwordError" style="color: red; font-family: Arial, Helvetica, sans-serif; font-weight: bold;">{{ passwordError }}</span>
         </div>
         <div>
           <label for="phoneNumber">Phone Number: </label>
-          <input type="tel" id="phoneNumber" v-model="phoneNumber" required>
+          <input type="tel" id="phoneNumber" v-model="phoneNumber" @blur="validatePhone" required>
+          <span v-if="phoneError" style="color: red; font-family: Arial, Helvetica, sans-serif; font-weight: bold;">{{ phoneError }}</span>
         </div>
         <div>
           <label for="profilePicture">Profile Picture: </label>
@@ -67,12 +69,14 @@ export default {
       password: '',
       phoneNumber: '',
       profilePicture: null,
-      emailError: ''
+      emailError: '',
+      passwordError: '',
+      phoneError: ''
     };
   },
   methods: {
     submitForm() {
-      if (this.validateEmail()) {
+      if (this.validateEmail() && this.validatePassword() && this.validatePhone()) {
         const formData = {
           fullName: this.fullName,
           email: this.email,
@@ -92,12 +96,28 @@ export default {
     validateEmail() {
       const emailPattern = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
       if (!emailPattern.test(this.email)) {
-        console.log("BADD EMAIL")
         this.emailError = 'Invalid email address';
         return false;
       }
-      console.log("GOOD EMAIL")
       this.emailError = '';
+      return true;
+    },
+    validatePassword() {
+      const passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[`~!@#$%^&*\(\)\-\_\=\+\[\]\{\};:\'\"\,\.\<\>\?\/\\|]).{12,64}$/;
+      if (!passPattern.test(this.password)) {
+        this.passwordError = 'Invalid password';
+        return false;
+      }
+      this.passwordError = '';
+      return true;
+    },
+    validatePhone() {
+      const phonePattern = /^09\d{9}$/;
+      if (!phonePattern.test(this.phoneNumber)) {
+        this.phoneError = 'Invalid phone number';
+        return false;
+      }
+      this.phoneError = '';
       return true;
     }
 
