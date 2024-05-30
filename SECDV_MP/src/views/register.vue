@@ -10,7 +10,8 @@
         </div>
         <div>
           <label for="email">Email: </label>
-          <input type="email" id="email" v-model="email" required>
+          <input type="email" id="email" v-model="email" @blur="validateEmail" required>
+          <span v-if="emailError" style="color: red; font-family: Arial, Helvetica, sans-serif; font-weight: bold;">{{ emailError }}</span>
         </div>
         <div>
           <label for="password">Password: </label>
@@ -65,24 +66,41 @@ export default {
       email: '',
       password: '',
       phoneNumber: '',
-      profilePicture: null
+      profilePicture: null,
+      emailError: ''
     };
   },
   methods: {
     submitForm() {
-      const formData = {
-        fullName: this.fullName,
-        email: this.email,
-        password: this.password,
-        phoneNumber: this.phoneNumber,
-        profilePicture: this.profilePicture
-      };
-      console.log(formData);
+      if (this.validateEmail()) {
+        const formData = {
+          fullName: this.fullName,
+          email: this.email,
+          password: this.password,
+          phoneNumber: this.phoneNumber,
+          profilePicture: this.profilePicture
+        };
+        console.log(formData);
+      }
     },
+
     handleFileUpload(event) {
       const file = event.target.files[0];
       this.profilePicture = file;
+    },
+
+    validateEmail() {
+      const emailPattern = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+      if (!emailPattern.test(this.email)) {
+        console.log("BADD EMAIL")
+        this.emailError = 'Invalid email address';
+        return false;
+      }
+      console.log("GOOD EMAIL")
+      this.emailError = '';
+      return true;
     }
+
   }
 };
 </script>
