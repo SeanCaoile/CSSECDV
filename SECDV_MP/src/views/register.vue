@@ -3,41 +3,57 @@
     <div>
       <HelloWorld msg="Welcome" />
       <form @submit.prevent="submitForm">
+
         <div>
           <label for="fullName">Full Name: </label>
           <input type="text" id="fullName" v-model="fullName" required>
         </div>
+
         <div>
           <label for="email">Email: </label>
           <input type="email" id="email" v-model="email" @blur="validateEmail" required>
-          <span v-if="emailError" class="error-message">{{ emailError }}</span> <!-- Display the error message -->
+          <span v-if="emailError" class="error-message">{{ emailError }}</span>
         </div>
-        <div class="password-container">
-          <label for="password">Password: </label>
-          <input type="password" id="password" v-model="password" @blur="validatePassword" required>
-          <span v-if="passwordError" class="error-message">{{ passwordError }}</span> <!-- Display the error message -->
-          <div class="tooltip-wrapper">
-            <span class="tooltip-icon" @mouseover="showTooltip = true" @mouseout="showTooltip = false">?</span>
-            <div v-if="showTooltip" class="tooltip">
-              Password must be at least 6 characters long.
-              Password must be at least 6 characters long.
+
+        <div>
+          <div class="label-tooltip">
+            <label for="password">Password: </label>
+            <span class="tooltip-icon" @mouseover="showPasswordTooltip = true" @mouseout="showPasswordTooltip = false">?</span>
+            <div v-if="showPasswordTooltip" class="tooltip">
+              Password must be within 12 and 64 characters and 
+              contains at least <br>1 uppercase letter, <br>1 lowercase letter, <br>1 numeric digit, and <br>1 special character.
             </div>
           </div>
+          <div class="password-container">
+            <input type="password" id="password" v-model="password" @blur="validatePassword" required>
+          </div>
+          <span v-if="passwordError" class="error-message">{{ passwordError }}</span>
         </div>
+
         <div>
-          <label for="phoneNumber">Phone Number: </label>
-          <input type="tel" id="phoneNumber" v-model="phoneNumber" required>
+          <div class="label-tooltip">
+            <label for="phoneNumber">Phone Number: </label>
+            <span class="tooltip-icon" @mouseover="showPhoneTooltip = true" @mouseout="showPhoneTooltip = false">?</span>
+            <div v-if="showPhoneTooltip" class="tooltip">
+              Phone number must start with "09" and contain 11 digits or <br>start with "+639" and contain 12 digits.
+            </div>
+          </div>
+          <div class="phone-container">
+            <input type="tel" id="phoneNumber" v-model="phoneNumber" @blur="validatePhone" required>
+          </div>
+          <span v-if="phoneError" class="error-message">{{ phoneError }}</span> <!-- Display the error message -->
         </div>
+
         <div>
           <label for="profilePicture">Profile Picture: </label>
           <input type="file" id="profilePicture" accept="image/*" @change="handleFileUpload">
         </div>
-        <button type="submit">Register</button>
+
+        <button type="submit" class="register-button">Create Account</button> 
       </form>
     </div>
   </div>
 </template>
-
 
 <style>
 @media (min-width: 1024px) {
@@ -54,6 +70,12 @@
     display: block; /* Display labels on new lines */
     margin-bottom: 5px; /* Add some space below labels */
   }
+  .label-tooltip {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px; /* Add some space below the label */
+    position: relative; /* Needed for absolute positioning of tooltip */
+  }
   input {
     width: 100%; /* Make inputs fill their container */
     margin-bottom: 10px; /* Add some space below inputs */
@@ -61,10 +83,28 @@
   button {
     width: 100%; /* Make button fill its container */
   }
-  .password-container {
-    position: relative;
-    display: flex;
-    align-items: center;
+  .register-button {
+    background-color: #419b37; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+  }
+
+  .register-button:hover {
+    background-color: #4fc555; /* Darker green on hover */
+  }
+
+  .password-container,
+  .phone-container {
+    display: block; /* Ensure the input takes its own line */
   }
   .tooltip-wrapper {
     position: relative;
@@ -83,28 +123,30 @@
     background-color: #f1f1f1;
     font-size: 14px;
     font-weight: bold;
+    color: black;
   }
   .tooltip {
     position: absolute;
-    top: 100%;
-    left: 0;
+    top: 100%; /* Position below the icon */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, 5px); /* Adjust horizontal and vertical positioning */
     background-color: #333;
     color: #fff;
     padding: 5px;
     border-radius: 5px;
-    white-space: nowrap;
-    transform: translateY(5px);
+    white-space: normal;
+    max-width: 300px;
     z-index: 10;
     font-size: 12px;
   }
   .error-message {
-    color: red;
+    color: #FF5441;
     display: block;
+    margin-top: 5px; /* Add some space above the error message */
+    font-weight: bold;
   }
 }
 </style>
-
-
 
 <script>
 export default {
@@ -118,7 +160,8 @@ export default {
       emailError: '',
       passwordError: '',
       phoneError: '',
-      showTooltip: false
+      showPasswordTooltip: false,
+      showPhoneTooltip: false
     };
   },
   methods: {
@@ -161,15 +204,15 @@ export default {
     },
 
     validatePhone() {
-      const phonePattern = /^09\d{9}$/;
-      if (!phonePattern.test(this.phoneNumber)) {
+      const phonePattern1 = /^09\d{9}$/;
+      const phonePattern2 = /^\+639\d{9}$/;
+      if (!phonePattern1.test(this.phoneNumber) && !phonePattern2.test(this.phoneNumber)) {
         this.phoneError = 'Invalid phone number';
         return false;
       }
       this.phoneError = '';
       return true;
     }
-
   }
 };
 </script>
