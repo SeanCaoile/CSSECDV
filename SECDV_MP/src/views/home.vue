@@ -58,6 +58,7 @@ export default {
   border-radius: 50px; /* Make button oval-shaped */
   font-size: 1.1rem; /* Adjust font size */
   margin-left: auto; /* Move button to the right */
+  width: 130px;
 }
 
 .logout-btn:hover {
