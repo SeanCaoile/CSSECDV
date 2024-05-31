@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { resetAppStyles, setAppStylesForHome } from '../utils/styleUtils';
+import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
 
 export default {
   beforeRouteEnter(to, from, next) {

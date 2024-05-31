@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { resetAppStyles } from '../utils/styleUtils';
+import { resetAppStyles } from '../utils/stylesUtils';
 
 export default {
   beforeRouteEnter(to, from, next) {
