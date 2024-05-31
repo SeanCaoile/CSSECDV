@@ -1,6 +1,5 @@
 <template>
   <div class="about">
-    <!-- <h1>Login</h1> -->
     <div>
       <form @submit.prevent="submitForm">
         <div>
@@ -18,7 +17,15 @@
 </template>
 
 <script>
+import { resetAppStyles } from '../utils/styleUtils';
+
 export default {
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      resetAppStyles();
+    });
+  },
+
   data() {
     return {
       email: '',
@@ -34,13 +41,12 @@ export default {
       console.log(formData);
       
       this.$router.push('/home');
-      
     },
   }
 };
 </script>
 
-<style>
+<style scoped>
 @media (min-width: 1024px) {
   .about {
     min-height: 100vh;

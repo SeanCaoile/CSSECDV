@@ -10,28 +10,28 @@
 </template>
 
 <script>
-export default {
-  mounted() {
-    // Access the #app element
-    const appElement = document.getElementById('app');
+import { resetAppStyles, setAppStylesForHome } from '../utils/styleUtils';
 
-    if (window.innerWidth > 1024) {
-      appElement.style.display='block'
-    }
+export default {
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      if (window.innerWidth > 1024) {
+        setAppStylesForHome();
+      }
+    });
+  },
+  
+  beforeRouteLeave(to, from, next) {
+    resetAppStyles();
+    next();
   },
   
   methods: {
     logout() {
       this.$router.push('/');
-
-      const appElement = document.getElementById('app');
-      appElement.style.display = 'grid';
-      appElement.style.gridTemplateColumns = '1fr 1fr';
-      appElement.style.padding = '0 2rem';
     }
   }
 }
-
 </script>
 
 <style scoped>
@@ -42,7 +42,7 @@ export default {
   width: 100%;
   height: 6rem; /* Increased height */
   display: flex;
-  justify-content: space-between; /* Align items at the start and end */
+  justify-content: flex-end; /* Align logout button to the end */
   align-items: center;
   padding: 1rem 2rem; /* Adjusted padding */
   background-color: #333;
@@ -58,21 +58,22 @@ export default {
   border-radius: 50px; /* Make button oval-shaped */
   font-size: 1.1rem; /* Adjust font size */
   margin-left: auto; /* Move button to the right */
-  display: inline-block; /* Ensure button doesn't expand to full width */
-
-  background-color: #b23b3b;
-  color: white;
-  border: none;
-  cursor: pointer;
-  padding: 0.8rem 1.5rem; /* Adjusted padding */
-  border-radius: 50px; /* Make button oval-shaped */
-  font-size: 1.1rem; /* Adjust font size */
-  width: 150px;
-  margin-left: auto;
 }
-
 
 .logout-btn:hover {
   text-decoration: underline;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 6rem); /* Full height minus navbar */
+  text-align: center;
+}
+
+h1 {
+  font-size: 2rem; /* Adjusted font size */
+  color: #333;
 }
 </style>
