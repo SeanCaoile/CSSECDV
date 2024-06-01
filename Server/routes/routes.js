@@ -1,8 +1,10 @@
 import express from 'express';
 
-import { showUsers } from '../controllers/user.js';
+import { saveAccount, showUsers, verifyPassword } from '../controllers/user.js';
 
 const router = express.Router();
 
-router.get("/users", showUsers);
+router.get("/user/showUser", showUsers);
+router.post("/user/saveAccount", saveAccount);
+router.post("/user/verifyPassword", verifyPassword);
 export default router;
