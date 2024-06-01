@@ -10,7 +10,7 @@
           <label for="password">Password: </label>
           <input type="password" id="password" v-model="password" required>
         </div>
-        <button type="submit">Login</button>
+        <button type="submit" class="login-btn">Login</button>
       </form>
     </div>
   </div>
@@ -53,7 +53,6 @@ export default {
           return response.text(); // Convert bool to string
         }) 
         .then(result => {
-
           //successful login
           if (result !== 'false') {
             // Redirect to home page with the name
@@ -95,8 +94,18 @@ export default {
     width: 100%; /* Make inputs fill their container */
     margin-bottom: 10px; /* Add some space below inputs */
   }
-  button {
+  .login-btn {
     width: 100%; /* Make button fill its container */
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    padding: 10px 20px; /* Padding */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 1rem; /* Font size */
+  }
+  .login-btn:hover {
+    background-color: #45a049; /* Darker green on hover */
   }
 }
 </style>

@@ -20,6 +20,7 @@ export default {
       name: ''
     };
   },
+
   beforeRouteEnter(to, from, next) {
     next(vm => {
       if (window.innerWidth > 1024) {
@@ -32,21 +33,23 @@ export default {
     resetAppStyles();
     next();
   },
-  
+
+  mounted() {
+    // Retrieve the name from the query parameters
+    this.name = this.$route.query.name;
+  },
+
   methods: {
     logout() {
       this.$router.push('/');
-    },
-    mounted() {
-      // Retrieve the name from the query parameters
-      this.name = this.$route.query.name;
-    },
+    }
+  }
 };
 
 </script>
 
 
-<style>
+<!-- <style>
 @media (min-width: 1024px) {
   .about {
     min-height: 100vh;
@@ -69,7 +72,7 @@ export default {
     width: 100%; /* Make button fill its container */
   }
 }
-</script>
+</script> -->
 
 <style scoped>
 .navbar {

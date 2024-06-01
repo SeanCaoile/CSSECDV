@@ -5,40 +5,36 @@
       Sign in to continue
     </h3>
   </div>
-  <div>
-    <h1>Users</h1>
-    <ul>
-      <li v-for="user in users" :key="user.id">{{ user.name }}</li>
-    </ul>
-  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+// import { ref, onMounted } from 'vue';
 
 // Define props
 defineProps<{
   msg: string
 }>();
 
-// Define reactive variables
-const users = ref([]);
+//-------------------code no needed here but can use as reference elsewhere------------------------
 
-// Fetch users function
-const fetchUsers = async () => {
-  try {
-    const response = await fetch('http://localhost:3001/api/users/showUsers');
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    users.value = await response.json();
-  } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
-  }
-};
+// Define reactive variables
+// const users = ref([]);
+
+// // Fetch users function
+// const fetchUsers = async () => {
+//   try {
+//     const response = await fetch('http://localhost:3001/api/users/showUsers');
+//     if (!response.ok) {
+//       throw new Error('Network response was not ok');
+//     }
+//     users.value = await response.json();
+//   } catch (error) {
+//     console.error('There was a problem with the fetch operation:', error);
+//   }
+// };
 
 // Fetch users when component is mounted
-onMounted(fetchUsers);
+// onMounted(fetchUsers);
 </script>
 
 <style scoped>
