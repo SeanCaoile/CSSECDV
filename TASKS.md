@@ -3,8 +3,8 @@
 ### Here are the different tasks that need to be done, please mark the accomplished column with ✔ if you finished a certain task
 
 **REMINDERS**
-Make sure to properly set up the 
-
+- Make sure to properly set up the FE and BE before doing anything, ask for help if needed
+- To run both FE and BE, open 2 separate terminals for FE and BE and run both at the same time
 
 
 **IMPORTANT TASKS**:                                                                                     Accomplished:  (use this for marking: ✔ )
