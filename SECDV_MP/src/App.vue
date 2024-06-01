@@ -6,7 +6,6 @@ const route = useRoute()
 
 <template>
   <header v-if="route.name === 'login' || route.name === 'register'">
-    <!-- <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" /> -->
 
     <div class="wrapper" >
       <HelloWorld msg="Welcome" />

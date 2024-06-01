@@ -69,16 +69,37 @@ export default {
     };
   },
   methods: {
-    submitForm() {
-      const formData = {
-        fullName: this.fullName,
-        email: this.email,
-        password: this.password,
-        phoneNumber: this.phoneNumber,
-        profilePicture: this.profilePicture
-      };
-      console.log(formData);
+    // save details as new account
+    createAccount(formData) {
+      return fetch('http://localhost:3001/api/users/saveAccount', {
+        method: 'POST',
+        body: formData
+      });
     },
+
+    submitForm() {
+      const formData = new FormData();
+      formData.append('name', this.fullName);
+      formData.append('email', this.email);
+      formData.append('password', this.password);
+      formData.append('phoneNumber', this.phoneNumber);
+      formData.append('profilePicture', this.profilePicture);
+
+      this.createAccount(formData)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to create account');
+          }
+          return response.json();
+        })
+        .then(result => {
+          console.log(result);
+        })
+        .catch(error => {
+          console.error('Failed to create account', error);
+      });
+    },
+
     handleFileUpload(event) {
       const file = event.target.files[0];
       this.profilePicture = file;

@@ -8,7 +8,7 @@
   <div>
     <h1>Users</h1>
     <ul>
-      <li v-for="user in users" :key="user.user_id">{{ user.user_username }}</li>
+      <li v-for="user in users" :key="user.id">{{ user.name }}</li>
     </ul>
   </div>
 </template>
@@ -27,7 +27,7 @@ const users = ref([]);
 // Fetch users function
 const fetchUsers = async () => {
   try {
-    const response = await fetch('http://localhost:3001/api/users');
+    const response = await fetch('http://localhost:3001/api/users/showUsers');
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }

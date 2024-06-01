@@ -13,16 +13,15 @@ export const showUsers = (req, res) => {
     });
 };
 
-//currently saveAccount only inserts an email and password into the database
+//creates account in db
 export const saveAccount = async (req, res) => {
-    const { email, password } = req.body;
+    const { name, phoneNumber, email, password } = req.body;
     try {
-        const saltRounds = 10; //salt 10 times
+        const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-
         db.query(
-            'INSERT INTO users (email, password) VALUES (?, ?)',
-            [email, hashedPassword],
+            'INSERT INTO `users`(name, email, password, phoneNumber) VALUES (?,?,?,?)',    //--------------------------need to include image files
+            [name, email, hashedPassword, phoneNumber],
             (error, results, fields) => {
                 if (error) {
                     res.send(error);
@@ -32,11 +31,11 @@ export const saveAccount = async (req, res) => {
             }
         );
     } catch (error) {
-        res.status(500).send(error); //server encountered an unexpected condition error
+        res.status(500).send(error);
     }
 };
 
-export const verifyPassword = async (req, res) => {
+export const verifyLogin = async (req, res) => {
     const { email, password } = req.body;
     try {
         db.query(
@@ -49,9 +48,9 @@ export const verifyPassword = async (req, res) => {
                     if (results.length > 0) {
                         const comparison = await bcrypt.compare(password, results[0].password);
                         if (comparison) {
-                            res.send('Success');
+                            res.send(results[0].name);
                         } else {
-                            res.send('Invalid password');
+                            res.send(false);
                         }
                     } else {
                         res.send('User does not exist');

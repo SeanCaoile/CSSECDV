@@ -2,10 +2,27 @@
     <div class="about">
       <!-- <h1>Home</h1> -->
       <div>
-        <h1>Welcome "NAME"</h1>
+        <h1>Welcome: {{ name }}</h1>
       </div>
     </div>
   </template>
+
+
+<script>
+export default {
+  data() {
+    return {
+      name: ''
+    };
+  },
+  mounted() {
+    // Retrieve the name from the query parameters
+    this.name = this.$route.query.name;
+  }
+};
+
+</script>
+
 
 <style>
 @media (min-width: 1024px) {
