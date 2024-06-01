@@ -4,7 +4,9 @@
       <button class="logout-btn" @click="logout">Logout</button>
     </nav>
     <div class="centered">
-      <h1>Welcome "ACCOUNT_NAME"</h1>
+      <h1>Welcome: {{ name }}</h1>
+    <!-- <div class="about"> -->
+      <!-- <h1>Home</h1> -->
     </div>
   </div>
 </template>
@@ -13,6 +15,11 @@
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
 
 export default {
+  data() {
+    return {
+      name: ''
+    };
+  },
   beforeRouteEnter(to, from, next) {
     next(vm => {
       if (window.innerWidth > 1024) {
@@ -29,7 +36,37 @@ export default {
   methods: {
     logout() {
       this.$router.push('/');
-    }
+    },
+    mounted() {
+      // Retrieve the name from the query parameters
+      this.name = this.$route.query.name;
+    },
+};
+
+</script>
+
+
+<style>
+@media (min-width: 1024px) {
+  .about {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the form horizontally */
+  }
+  form {
+    width: 300px; /* Adjust the width as needed */
+  }
+  label {
+    display: block; /* Display labels on new lines */
+    margin-bottom: 5px; /* Add some space below labels */
+  }
+  input {
+    width: 100%; /* Make inputs fill their container */
+    margin-bottom: 10px; /* Add some space below inputs */
+  }
+  button {
+    width: 100%; /* Make button fill its container */
   }
 }
 </script>

@@ -33,14 +33,44 @@ export default {
     };
   },
   methods: {
+    validateAccount(formData) {
+      return fetch('http://localhost:3001/api/users/verifyLogin', {
+        method: 'POST',
+        body: formData
+      });
+    },
+
     submitForm() {
-      const formData = {
-        email: this.email,
-        password: this.password,
-      };
-      console.log(formData);
-      
-      this.$router.push('/home');
+      const formData = new FormData();
+      formData.append('email', this.email);
+      formData.append('password', this.password);
+
+      this.validateAccount(formData)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to Login');
+          }
+          return response.text(); // Convert bool to string
+        }) 
+        .then(result => {
+
+          //successful login
+          if (result !== 'false') {
+            // Redirect to home page with the name
+            this.$router.push({ 
+              path: '/home',
+              query: { name: result } // Pass the name as a query parameter
+            });
+          } 
+          //failed login
+          else {
+            console.error('Login failed:');
+            //--------------------------------------------- add an error message display 
+          }
+        })
+        .catch(error => {
+          console.error('Failed to Login', error);
+      });
     },
   }
 };
