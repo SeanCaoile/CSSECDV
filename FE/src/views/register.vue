@@ -41,7 +41,7 @@
           <div class="phone-container">
             <input type="tel" id="phoneNumber" v-model="phoneNumber" @blur="validatePhone" required>
           </div>
-          <span v-if="phoneError" class="error-message">{{ phoneError }}</span> <!-- Display the error message -->
+          <span v-if="phoneError" class="error-message">{{ phoneError }}</span>
         </div>
 
         <div>
@@ -146,6 +146,7 @@
     font-weight: bold;
   }
 }
+
 </style>
 
 <script>
@@ -165,7 +166,6 @@ export default {
     };
   },
   methods: {
-    // save details as new account
     createAccount(formData) {
       return fetch('http://localhost:3001/api/users/saveAccount', {
         method: 'POST',
@@ -174,6 +174,14 @@ export default {
     },
 
     submitForm() {
+      const isEmailValid = this.validateEmail();
+      const isPasswordValid = this.validatePassword();
+      const isPhoneValid = this.validatePhone();
+
+      if (!isEmailValid || !isPasswordValid || !isPhoneValid) {
+        return;
+      }
+
       const formData = new FormData();
       formData.append('name', this.fullName);
       formData.append('email', this.email);
@@ -195,7 +203,7 @@ export default {
           console.error('Failed to create account', error);
       });
     },
-
+    
     handleFileUpload(event) {
       const file = event.target.files[0];
       this.profilePicture = file;
