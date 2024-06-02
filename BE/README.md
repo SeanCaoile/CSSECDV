@@ -23,7 +23,7 @@ Note: if MySql is not running due to port issues (especially if port 3306 has is
 
 Note: Check the .env file under Server folder if there are issues with your database and check if they match 
 
-6. cd Server
+6. cd BE
 
 7. npm install
 

@@ -1,7 +1,7 @@
 # SECDV_MP
 ## Project FE Setup
 
-1. cd SECDV_MP
+1. cd FE
 
 2. npm install
 
