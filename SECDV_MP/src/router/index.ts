@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeLayout from '../HomeLayout.vue'; 
+// import Admin from '../views/Admin.vue'; // Adjust the path as necessary
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +24,17 @@ const router = createRouter({
           path: '',
           name: 'home',
           component: () => import('../views/home.vue')
+        }
+      ]
+    },
+    {
+      path: '/admin',
+      component: HomeLayout, // Use HomeLayout.vue as the layout
+      children: [
+        {
+          path: '',
+          name: 'admin',
+          component: () => import('../views/admin.vue')
         }
       ]
     }

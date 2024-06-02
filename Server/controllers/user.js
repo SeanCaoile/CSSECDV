@@ -46,11 +46,15 @@ export const verifyLogin = async (req, res) => {
                     res.send(error);
                 } else {
                     if (results.length > 0) {
-                        const comparison = await bcrypt.compare(password, results[0].password);
+                        const user = results[0];
+                        const comparison = await bcrypt.compare(password, user.password);
                         if (comparison) {
-                            res.send(results[0].name);
+                            return res.send({
+                                name: user.name,
+                                isAdmin: user.isAdmin
+                            });
                         } else {
-                            res.send(false);
+                            return res.send(false);
                         }
                     } else {
                         res.send('User does not exist');

@@ -15,7 +15,8 @@ Note: if MySql is not running due to port issues (especially if port 3306 has is
 
 4. Click **admin under MySQL** to open the MySQL databases
 
-5. Created a new "cssecdv" db with a table "users" which contains columns: id (int 255) as PK, unsigned, auto_increment, name (varchar32), email (varchar32), password (varchar 60), phoneNumber (varchar14), photo (mediumblob)
+5. Created a new "cssecdv" db with a table "users" which contains columns: id (int 255) as PK, unsigned, auto_increment, name (varchar32), email (varchar32), password (varchar 60), phoneNumber (varchar14), photo (mediumblob), and isAdmin(Boolean with default value 0), **Note: when making your admin account, manually vhange the ID to 0 and isAdmin to 1**
+
 5.1 Can also import using the .sql files in the SCHEMA folder (cssecdv.sql for database, users.sql for table) 
 5.2 See image for what its supposed to look like:
 ![alt text](dbsample.png)

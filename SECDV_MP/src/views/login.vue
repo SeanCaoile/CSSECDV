@@ -50,7 +50,7 @@ export default {
           if (!response.ok) {
             throw new Error('Failed to Login');
           }
-          return response.text(); // Convert bool to string
+          return response.json(); // Convert bool to string
         }) 
         .then(result => {
           //successful login
@@ -58,7 +58,7 @@ export default {
             // Redirect to home page with the name
             this.$router.push({ 
               path: '/home',
-              query: { name: result } // Pass the name as a query parameter
+              query: { name: result.name, isAdmin: result.isAdmin } // Pass the name as a query parameter
             });
           } 
           //failed login

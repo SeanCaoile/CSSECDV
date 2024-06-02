@@ -189,7 +189,7 @@ export default {
           return response.json();
         })
         .then(result => {
-          console.log(result);
+          this.$router.push('/');
         })
         .catch(error => {
           console.error('Failed to create account', error);
