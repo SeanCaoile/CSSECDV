@@ -16,6 +16,7 @@
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
+import Cookies from 'js-cookie';
 
 export default {
   data() {
@@ -59,6 +60,7 @@ export default {
       });
     },
     logout() {
+      Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
       this.$router.push('/');
     }
   }

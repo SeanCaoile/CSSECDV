@@ -1,4 +1,5 @@
 import { getUsers } from "../models/UserModel.js";
+import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import db from '../config/database.js';
 
@@ -49,9 +50,11 @@ export const verifyLogin = async (req, res) => {
                         const user = results[0];
                         const comparison = await bcrypt.compare(password, user.password);
                         if (comparison) {
+                            const sessionId = uuidv4();
                             return res.send({
                                 name: user.name,
-                                isAdmin: user.isAdmin
+                                isAdmin: user.isAdmin,
+                                sessionId: sessionId
                             });
                         } else {
                             return res.send(false);

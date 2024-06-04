@@ -12,12 +12,14 @@
         </div>
         <button type="submit" class="login-btn">Login</button>
       </form>
+      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
     </div>
   </div>
 </template>
 
 <script>
 import { resetAppStyles } from '../utils/stylesUtils';
+import Cookies from 'js-cookie';
 
 export default {
   beforeRouteEnter(to, from, next) {
@@ -30,13 +32,15 @@ export default {
     return {
       email: '',
       password: '',
+      errorMessage: '' // State to hold error messages
     };
   },
   methods: {
     validateAccount(formData) {
       return fetch('http://localhost:3001/api/users/verifyLogin', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'include' // Include credentials to allow cookies to be sent and received
       });
     },
 
@@ -50,27 +54,28 @@ export default {
           if (!response.ok) {
             throw new Error('Failed to Login');
           }
-          return response.json(); // Convert bool to string
-        }) 
+          return response.json();
+        })
         .then(result => {
-          //successful login
-          if (result !== 'false') {
-            // Redirect to home page with the name
+          if (result !== false && result !== 'User does not exist') {
+            Cookies.set('sessionId', result.sessionId, {
+              secure: true, // Ensure the cookie is only sent over HTTPS
+              sameSite: 'Strict', // To prevent CSRF attacks
+            });
+            
             this.$router.push({ 
               path: '/home',
-              query: { name: result.name, isAdmin: result.isAdmin } // Pass the name as a query parameter
+              query: { name: result.name, isAdmin: result.isAdmin }
             });
-          } 
-          //failed login
-          else {
-            console.error('Login failed:');
-            //--------------------------------------------- add an error message display 
+          } else {
+            this.errorMessage = 'Invalid email or password';
           }
         })
         .catch(error => {
           console.error('Failed to Login', error);
-      });
-    },
+          this.errorMessage = 'An error occurred during login';
+        });
+    }
   }
 };
 </script>
