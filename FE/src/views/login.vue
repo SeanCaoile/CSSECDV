@@ -62,7 +62,7 @@ export default {
               secure: true, // Ensure the cookie is only sent over HTTPS
               sameSite: 'Strict', // To prevent CSRF attacks
             });
-            
+
             this.$router.push({ 
               path: '/home',
               query: { name: result.name, isAdmin: result.isAdmin }
@@ -111,6 +111,12 @@ export default {
   }
   .login-btn:hover {
     background-color: #45a049; /* Darker green on hover */
+  }
+  .error-message {
+    color: #FF5441;
+    display: block;
+    margin-top: 5px; /* Add some space above the error message */
+    font-weight: bold;
   }
 }
 </style>
