@@ -6,12 +6,12 @@
 
         <div>
           <label for="fullName">Full Name: </label>
-          <input type="text" id="fullName" v-model="fullName" required>
+          <input type="text" id="fullName" v-model="fullName" maxlength="32" required>
         </div>
 
         <div>
           <label for="email">Email: </label>
-          <input type="email" id="email" v-model="email" @blur="validateEmail" required>
+          <input type="email" id="email" v-model="email" @blur="validateEmail" maxlength="320" required>
           <span v-if="emailError" class="error-message">{{ emailError }}</span>
         </div>
 
@@ -20,12 +20,12 @@
             <label for="password">Password: </label>
             <span class="tooltip-icon" @mouseover="showPasswordTooltip = true" @mouseout="showPasswordTooltip = false">?</span>
             <div v-if="showPasswordTooltip" class="tooltip">
-              Password must be within 12 and 64 characters and 
+              Password must be within 12 and 55 characters and 
               contains at least <br>1 uppercase letter, <br>1 lowercase letter, <br>1 numeric digit, and <br>1 special character.
             </div>
           </div>
           <div class="password-container">
-            <input type="password" id="password" v-model="password" @blur="validatePassword" required>
+            <input type="password" id="password" v-model="password" @blur="validatePassword" maxlength="55" required>
           </div>
           <span v-if="passwordError" class="error-message">{{ passwordError }}</span>
         </div>
@@ -210,7 +210,7 @@ export default {
     },
 
     validateEmail() {
-      const emailPattern = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+      const emailPattern = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,320})+$/;
       if (!emailPattern.test(this.email)) {
         this.emailError = 'Invalid email address';
         return false;
@@ -220,7 +220,7 @@ export default {
     },
 
     validatePassword() {
-      const passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[`~!@#$%^&*\(\)\-\_\=\+\[\]\{\};:\'\"\,\.\<\>\?\/\\|]).{12,64}$/;
+      const passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[`~!@#$%^&*\(\)\-\_\=\+\[\]\{\};:\'\"\,\.\<\>\?\/\\|]).{12,55}$/;
       if (!passPattern.test(this.password)) {
         this.passwordError = 'Invalid password';
         return false;
