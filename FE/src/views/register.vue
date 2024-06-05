@@ -31,6 +31,12 @@
         </div>
 
         <div>
+          <label for="confirmPassword">Confirm Password: </label>
+          <input type="password" id="confirmPassword" v-model="confirmPassword" @blur="validateConfirmPassword" maxlength="55" required>
+          <span v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</span>
+        </div>
+
+        <div>
           <div class="label-tooltip">
             <label for="phoneNumber">Phone Number: </label>
             <span class="tooltip-icon" @mouseover="showPhoneTooltip = true" @mouseout="showPhoneTooltip = false">?</span>
@@ -156,10 +162,12 @@ export default {
       fullName: '',
       email: '',
       password: '',
+      confirmPassword: '',
       phoneNumber: '',
       profilePicture: null,
       emailError: '',
       passwordError: '',
+      confirmPasswordError: '',
       phoneError: '',
       showPasswordTooltip: false,
       showPhoneTooltip: false
@@ -176,9 +184,10 @@ export default {
     submitForm() {
       const isEmailValid = this.validateEmail();
       const isPasswordValid = this.validatePassword();
+      const isConfirmPasswordValid = this.validateConfirmPassword();
       const isPhoneValid = this.validatePhone();
 
-      if (!isEmailValid || !isPasswordValid || !isPhoneValid) {
+      if (!isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isPhoneValid) {
         return;
       }
 
@@ -226,6 +235,15 @@ export default {
         return false;
       }
       this.passwordError = '';
+      return true;
+    },
+
+    validateConfirmPassword() {
+      if (this.password !== this.confirmPassword) {
+        this.confirmPasswordError = 'Passwords do not match';
+        return false;
+      }
+      this.confirmPasswordError = '';
       return true;
     },
 
