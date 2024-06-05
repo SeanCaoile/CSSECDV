@@ -14,6 +14,31 @@ export const showUsers = (req, res) => {
     });
 };
 
+export const getUserById = (userId) => {
+    return new Promise((resolve, reject) => {
+        db.query(
+            'SELECT * FROM users WHERE id = ?',
+            [userId],
+            (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    if (results.length > 0) {
+                        resolve(results[0]);
+                    } else {
+                        resolve(null); // User not found
+                    }
+                }
+            }
+        );
+    });
+};
+
+const userSession = {
+    session: '',
+    id: ''
+}
+
 //creates account in db
 export const saveAccount = async (req, res) => {
     const { name, phoneNumber, email, password } = req.body;
@@ -44,18 +69,16 @@ export const verifyLogin = async (req, res) => {
             [email],
             async (error, results, fields) => {
                 if (error) {
-                    res.send(error);
+                    res.status(500).send(error);
                 } else {
                     if (results.length > 0) {
                         const user = results[0];
                         const comparison = await bcrypt.compare(password, user.password);
                         if (comparison) {
                             const sessionId = uuidv4();
-                            return res.send({
-                                name: user.name,
-                                isAdmin: user.isAdmin,
-                                sessionId: sessionId
-                            });
+                            userSession.id = user.id;
+                            userSession.session = sessionId
+                            return res.send({ sessionId: sessionId });
                         } else {
                             return res.send(false);
                         }
@@ -69,3 +92,31 @@ export const verifyLogin = async (req, res) => {
         res.status(500).send(error);
     }
 };
+
+export const validate_session = async (req, res) => {
+    const { sessionId } = req.body;
+    console.log("checkSeSSION", req.body);
+    try {
+        // Check if the session ID matches the stored session ID
+        if (sessionId === userSession.session) {
+            // Session ID is valid, fetch user data from the database
+            const user = await getUserById(userSession.id);
+            if (user) {
+                // Return user data if found
+                console.log("user",user);
+                res.json({ authenticated: true, name: user.name, isAdmin: user.isAdmin });
+            } else {
+                // User not found
+                res.json({ authenticated: false, error: "User not found" });
+            }
+        } else {
+            // Session ID is invalid
+            res.json({ authenticated: false, error: "Invalid session ID" });
+        }
+    } catch (error) {
+        // Handle errors
+        console.error("Error validating session:", error);
+        res.status(500).json({ authenticated: false, error: "Internal server error" });
+    }
+}
+

@@ -1,95 +1,133 @@
 <template>
-    <div class="admin">
-      <nav class="navbar">
-        <button class="home-btn" @click="goHome">Home</button>
-        <h1 class="navbar-title">Admin Page</h1>
-        <button class="logout-btn red" @click="logout">Logout</button>
-      </nav>
-      <div class="centered">
-        <div v-if="users.length > 0">
-          <h2 class="users-header">Users:</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone Numbers</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in users" :key="user.id">
-                <td>{{ user.name }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phoneNumber }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else>
-          <p>No users found.</p>
-        </div>
+  <div class="admin">
+    <nav class="navbar">
+      <button class="home-btn" @click="goHome">Home</button>
+      <h1 class="navbar-title">Admin Page</h1>
+      <button class="logout-btn red" @click="logout">Logout</button>
+    </nav>
+    <div class="centered">
+      <div v-if="users.length > 0">
+        <h2 class="users-header">Users:</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone Numbers</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in users" :key="user.id">
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.phoneNumber }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-else>
+        <p>No users found.</p>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import { ref } from 'vue';
-  import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
-  
-  export default {
-    data() {
-      return {
-        name: '',
-        isAdmin: null,
-        users: []
-      };
-    },
-    beforeRouteEnter(to, from, next) {
-      next(vm => {
-        if (window.innerWidth > 1024) {
-          setAppStylesForHome();
-        }
-      });
-    },
-    beforeRouteLeave(to, from, next) {
-      resetAppStyles();
-      next();
-    },
-  
-    async mounted() {
-      this.name = this.$route.query.name;
-      this.isAdmin = parseInt(this.$route.query.isAdmin, 10);
-      await this.fetchUsers();
-    },
-  
-    methods: {
-      async fetchUsers() {
-        try {
-          const response = await fetch('http://localhost:3001/api/users/showUsers');
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
+  </div>
+</template>
+
+<script>
+import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
+import Cookies from 'js-cookie';
+
+export default {
+  data() {
+    return {
+      name: '',
+      isAdmin: null,
+      users: []
+    };
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      if (window.innerWidth > 1024) {
+        setAppStylesForHome();
+      }
+    });
+  },
+  beforeRouteLeave(to, from, next) {
+    resetAppStyles();
+    next();
+  },
+
+  async mounted() {
+    this.validateSession();
+  },
+
+  methods: {
+    async validateSession() {
+      const sessionId = Cookies.get('sessionId');
+      if (!sessionId) {
+        this.$router.push('/');
+        return;
+      }
+
+      // Validate session with backend
+      try {
+        const response = await fetch('http://localhost:3001/api/users/validate_session', {
+          method: 'POST',
+          body: JSON.stringify({ sessionId }),
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json' 
           }
-          const allUsers = await response.json();
-          // Filter out users with isAdmin set to 1
-          this.users = allUsers.filter(user => user.isAdmin !== 1)
-                                 .map(({ name, email, phoneNumber }) => ({ name, email, phoneNumber }));
-        } catch (error) {
-          console.error('There was a problem with the fetch operation:', error);
-        }
-      },
-  
-      goHome() {
-        this.$router.push({ 
-          path: '/home',
-          query: { name: this.name, isAdmin: this.isAdmin }
         });
-      },
-      logout() {
+
+        if (!response.ok) {
+          throw new Error('Failed to validate session');
+        }
+
+        const data = await response.json();
+        if (!data.authenticated || !data.isAdmin) {
+          Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
+          this.$router.push('/');
+          return;
+        }
+
+        // Fetch users if session is valid and user is an admin
+        await this.fetchUsers();
+      } catch (error) {
+        console.error('Failed to validate session', error);
+        Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
         this.$router.push('/');
       }
+    },
+
+    async fetchUsers() {
+      try {
+        const response = await fetch('http://localhost:3001/api/users/showUsers');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const allUsers = await response.json();
+        // Filter out users with isAdmin set to 1
+        this.users = allUsers.filter(user => user.isAdmin !== 1)
+                              .map(({ name, email, phoneNumber }) => ({ name, email, phoneNumber }));
+      } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+      }
+    },
+
+    goHome() {
+      this.$router.push({ 
+        path: '/home',
+        query: { name: this.name, isAdmin: this.isAdmin }
+      });
+    },
+
+    logout() {
+      Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
+      this.$router.push('/');
     }
-  };
-  </script>
+  }
+};
+</script>
   
   <style scoped>
   .navbar {

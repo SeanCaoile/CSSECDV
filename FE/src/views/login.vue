@@ -57,16 +57,17 @@ export default {
           return response.json();
         })
         .then(result => {
-          if (result !== false && result !== 'User does not exist') {
+          if (result !== false) {
             Cookies.set('sessionId', result.sessionId, {
               secure: true, // Ensure the cookie is only sent over HTTPS
               sameSite: 'Strict', // To prevent CSRF attacks
             });
 
-            this.$router.push({ 
-              path: '/home',
-              query: { name: result.name, isAdmin: result.isAdmin }
-            });
+            this.$router.push('/home');
+            // this.$router.push({ 
+            //   path: '/home',
+            //   query: { sessionId: result.sessionId }
+            // });
           } else {
             this.errorMessage = 'Invalid email or password';
           }

@@ -8,8 +8,9 @@ console.log('host is index in ' + process.env.DB_HOST);
 const port = process.env.PORT
 const app = express();
 
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 
 app.use(cors({
   origin: 'http://localhost:5173', // Allow only this origin

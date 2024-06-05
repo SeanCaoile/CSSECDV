@@ -41,15 +41,16 @@ export default {
 
   mounted() {
     // Retrieve the name and userId from the query parameters
-    this.name = this.$route.query.name;
-    this.isAdmin = parseInt(this.$route.query.isAdmin, 10); // Retrieve and convert userId to a number
+    // this.name = this.$route.query.name;
+    // this.isAdmin = parseInt(this.$route.query.isAdmin, 10); // Retrieve and convert userId to a number
+    this.validateSession();
   },
 
-  computed: {
-    isAdmin() {
-      return this.isAdmin === 1; // Check if userId is 0
-    }
-  },
+  // computed: {
+  //   isAdmin() {
+  //     return this.isAdmin === 1; // Check if userId is 0
+  //   }
+  // },
 
   methods: {
     adminView() {
@@ -62,7 +63,72 @@ export default {
     logout() {
       Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
       this.$router.push('/');
-    }
+    },
+    validateSession() {
+      const sessionId = Cookies.get('sessionId');
+      console.log("COOKIE", sessionId);
+
+      if (!sessionId) {
+        this.$router.push('/');
+        return;
+      }
+
+      // Validate session with backend
+      fetch('http://localhost:3001/api/users/validate_session', {
+        method: 'POST',
+        body: JSON.stringify({ sessionId }),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json' 
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to validate session');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.authenticated) {
+          console.log("good",data);
+          this.name = data.name;
+          this.isAdmin = data.isAdmin;
+
+        } else {
+          // If session is not valid, redirect to login page
+          this.$router.push('/');
+        }
+      })
+      .catch(error => {
+        console.error('Failed to validate session', error);
+        this.$router.push('/');
+      });
+    },
+    fetchUserData() {
+      // Fetch user data from backend
+      fetch('http://localhost:3001/api/get-user-data', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Update component state with user data
+        this.name = data.name;
+        this.isAdmin = data.isAdmin;
+      })
+      .catch(error => {
+        console.error('Failed to fetch user data', error);
+        this.$router.push('/');
+      });
+    },
   }
 };
 </script>
