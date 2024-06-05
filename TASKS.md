@@ -15,7 +15,7 @@
 5. **session id / cookies** (ex: to not allow users to logout and back to re-login)                  |      ✔
 6. **manual url typing fix** (users cant bypass login by typing directly in url)                     |      ✔
     ( ex:http://localhost:5173/home?<ACCOUNT NAME> )
-7.**Try adding more security** aside from the current (BE created sessionId for FE cookie)           |
+7.**Try adding more security** aside from the current (BE created sessionId for FE cookie)           |      ✔
 
 
 **Side Tasks**
