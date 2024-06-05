@@ -57,7 +57,7 @@ export default {
       // this.$router.push('/admin'); // Adjust the path as needed
       this.$router.push({ 
         path: '/admin',
-        query: { name: this.name, isAdmin: this.isAdmin } // Pass the name as a query parameter
+        // query: { name: this.name, isAdmin: this.isAdmin } // Pass the name as a query parameter
       });
     },
     logout() {
@@ -90,7 +90,7 @@ export default {
       })
       .then(data => {
         if (data.authenticated) {
-          console.log("good",data);
+          // console.log("good",data);
           this.name = data.name;
           this.isAdmin = data.isAdmin;
 

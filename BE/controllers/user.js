@@ -50,7 +50,7 @@ export const saveAccount = async (req, res) => {
             [name, email, hashedPassword, phoneNumber],
             (error, results, fields) => {
                 if (error) {
-                    res.send(error);
+                    res.status(500).send(error);
                 } else {
                     res.send(results);
                 }
@@ -95,15 +95,12 @@ export const verifyLogin = async (req, res) => {
 
 export const validate_session = async (req, res) => {
     const { sessionId } = req.body;
-    console.log("checkSeSSION", req.body);
     try {
         // Check if the session ID matches the stored session ID
         if (sessionId === userSession.session) {
             // Session ID is valid, fetch user data from the database
             const user = await getUserById(userSession.id);
             if (user) {
-                // Return user data if found
-                console.log("user",user);
                 res.json({ authenticated: true, name: user.name, isAdmin: user.isAdmin });
             } else {
                 // User not found

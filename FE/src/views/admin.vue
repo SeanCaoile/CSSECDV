@@ -39,8 +39,8 @@ import Cookies from 'js-cookie';
 export default {
   data() {
     return {
-      name: '',
-      isAdmin: null,
+      // name: '',
+      // isAdmin: null,
       users: []
     };
   },
