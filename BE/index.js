@@ -2,16 +2,19 @@ import express from 'express';
 import cors from 'cors';
 import userRoutes from './routes/routes.js';
 import dotenv from 'dotenv';
-import helmet from 'helmet'; 
+import helmet from 'helmet';
+// const cookieParser = require('cookie-parser');
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 console.log('host is index in ' + process.env.DB_HOST);
 
-const port = process.env.PORT
+const port = process.env.PORT;
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors({
   origin: 'http://localhost:5173', // Allow only this origin
   credentials: true

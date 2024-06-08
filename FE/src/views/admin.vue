@@ -6,27 +6,33 @@
       <button class="logout-btn red" @click="logout">Logout</button>
     </nav>
     <div class="centered">
-      <div v-if="users.length > 0">
-        <h2 class="users-header">Users:</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone Numbers</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in users" :key="user.id">
-              <td>{{ user.name }}</td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.phoneNumber }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div v-if="loading">
+        <!-- Loading indicator -->
+        <p>Loading...</p>
       </div>
       <div v-else>
-        <p>No users found.</p>
+        <div v-if="users.length > 0">
+          <h2 class="users-header">Users:</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone Numbers</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in users" :key="user.id">
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.phoneNumber }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else>
+          <p>No users found.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -35,15 +41,16 @@
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
 import Cookies from 'js-cookie';
+import { mapActions } from 'vuex';
 
 export default {
   data() {
     return {
-      // name: '',
-      // isAdmin: null,
-      users: []
+      users: [],
+      loading: true, // Initial loading state
     };
   },
+
   beforeRouteEnter(to, from, next) {
     next(vm => {
       if (window.innerWidth > 1024) {
@@ -51,57 +58,52 @@ export default {
       }
     });
   },
+
   beforeRouteLeave(to, from, next) {
     resetAppStyles();
     next();
   },
 
-  async mounted() {
+  mounted() {
     this.validateSession();
   },
 
   methods: {
-    async validateSession() {
-      const sessionId = Cookies.get('sessionId');
-      if (!sessionId) {
-        this.$router.push('/');
-        return;
-      }
+    ...mapActions(['unauthenticate']),
 
-      // Validate session with backend
+    async validateSession() {
       try {
         const response = await fetch('http://localhost:3001/api/users/validate_session', {
           method: 'POST',
-          body: JSON.stringify({ sessionId }),
           credentials: 'include',
           headers: {
-            'Content-Type': 'application/json' 
+            'Content-Type': 'application/json'
           }
         });
-
         if (!response.ok) {
           throw new Error('Failed to validate session');
         }
-
         const data = await response.json();
-        if (!data.authenticated || !data.isAdmin) {
-          Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
+        if (data.authenticated) {
+          await this.fetchUsers(); // Wait for fetchUsers to complete
+        } else {
+          this.unauthenticate();
           this.$router.push('/');
-          return;
         }
-
-        // Fetch users if session is valid and user is an admin
-        await this.fetchUsers();
       } catch (error) {
         console.error('Failed to validate session', error);
-        Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
+        this.unauthenticate();
         this.$router.push('/');
+      } finally {
+        this.loading = false; // Set loading to false regardless of success or failure
       }
     },
 
     async fetchUsers() {
       try {
-        const response = await fetch('http://localhost:3001/api/users/showUsers');
+        const response = await fetch('http://localhost:3001/api/users/showUsers', {
+          credentials: 'include' // Include credentials if needed
+        });
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -117,100 +119,109 @@ export default {
     goHome() {
       this.$router.push({ 
         path: '/home',
-        query: { name: this.name, isAdmin: this.isAdmin }
+        // query: { name: this.name, isAdmin: this.isAdmin }
       });
     },
 
-    logout() {
-      Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
+    async logout() {
+      const response = await fetch('http://localhost:3001/api/users/removeCookie', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+          console.log('Logged out successfully');
+      } else {
+          console.error('Logout failed');
+      }
+      this.unauthenticate();
       this.$router.push('/');
     }
   }
 };
 </script>
-  
-  <style scoped>
-  .navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 6rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: #333;
-    color: white;
-  }
-  
-  .home-btn,
-  .logout-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    padding: 0.8rem 1.5rem;
-    border-radius: 50px;
-    font-size: 1.1rem;
-    width: 130px;
-  }
-  
-  .logout-btn.red {
-    background-color: #b23b3b; /* Set background color to red */
-  }
-  
-  .home-btn:hover,
-  .logout-btn:hover {
-    text-decoration: underline;
-  }
-  
-  .navbar-title {
-    font-size: 2rem;
-    color: #fff;
-    margin: 0;
-  }
-  
-  .centered {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100vh - 6rem);
-    text-align: center;
-  }
-  
-  h2 {
-    font-size: 1.5rem;
-    color: #333;
-  }
-  
-  .users-header {
-    font-weight: bold;
-    color: #555; /* Adjust the color brightness */
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  th, td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    border-right: 1px solid #ddd; /* Add vertical line */
-  }
-  
-  th {
-    background-color: #f2f2f2;
-    color: black; 
-    font-weight: bold;
-  }
-  
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  </style>
-  
+
+<style scoped>
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #333;
+  color: white;
+}
+
+.home-btn,
+.logout-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  width: 130px;
+}
+
+.logout-btn.red {
+  background-color: #b23b3b; /* Set background color to red */
+}
+
+.home-btn:hover,
+.logout-btn:hover {
+  text-decoration: underline;
+}
+
+.navbar-title {
+  font-size: 2rem;
+  color: #fff;
+  margin: 0;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 6rem);
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.users-header {
+  font-weight: bold;
+  color: #555; /* Adjust the color brightness */
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd; /* Add vertical line */
+}
+
+th {
+  background-color: #f2f2f2;
+  color: black; 
+  font-weight: bold;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>

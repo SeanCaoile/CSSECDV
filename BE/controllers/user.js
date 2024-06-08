@@ -2,7 +2,7 @@ import { getUsers } from "../models/UserModel.js";
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import db from '../config/database.js';
-
+import cookie from 'cookie';
 
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
@@ -78,9 +78,18 @@ export const verifyLogin = async (req, res) => {
                             const sessionId = uuidv4();
                             userSession.id = user.id;
                             userSession.session = sessionId
-                            return res.send({ sessionId: sessionId });
+                            
+                            res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
+                                httpOnly: true,
+                                secure: true, // Use secure cookies in production
+                                sameSite: 'strict',
+                                maxAge: 2 * 60, // 2 minutes in seconds
+                                path: '/'
+                            }));
+
+                            return res.send({ login: true });
                         } else {
-                            return res.send(false);
+                            return res.send({ login: false });
                         }
                     } else {
                         res.send('User does not exist');
@@ -94,7 +103,7 @@ export const verifyLogin = async (req, res) => {
 };
 
 export const validate_session = async (req, res) => {
-    const { sessionId } = req.body;
+    const sessionId = req.cookies.sessionId;
     try {
         // Check if the session ID matches the stored session ID
         if (sessionId === userSession.session) {
@@ -117,3 +126,13 @@ export const validate_session = async (req, res) => {
     }
 }
 
+export const removeSessionCookie = async(req, res) => {
+    res.setHeader('Set-Cookie', cookie.serialize('sessionId', '', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 0, // Expire the cookie immediately
+        path: '/'
+    }));
+    res.status(200).send({ message: 'Logged out successfully' });
+}

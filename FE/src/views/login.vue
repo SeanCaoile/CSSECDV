@@ -19,7 +19,8 @@
 
 <script>
 import { resetAppStyles } from '../utils/stylesUtils';
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
+import { mapActions } from 'vuex';
 
 export default {
   beforeRouteEnter(to, from, next) {
@@ -32,10 +33,12 @@ export default {
     return {
       email: '',
       password: '',
-      errorMessage: '' // State to hold error messages
+      errorMessage: ''
     };
   },
   methods: {
+    ...mapActions(['authenticate']),
+
     validateAccount(formData) {
       return fetch('http://localhost:3001/api/users/verifyLogin', {
         method: 'POST',
@@ -57,17 +60,9 @@ export default {
           return response.json();
         })
         .then(result => {
-          if (result !== false) {
-            Cookies.set('sessionId', result.sessionId, {
-              secure: true, // Ensure the cookie is only sent over HTTPS
-              sameSite: 'Strict', // To prevent CSRF attacks
-            });
-
+          if (result.login === true) {
+            this.authenticate(result.user);
             this.$router.push('/home');
-            // this.$router.push({ 
-            //   path: '/home',
-            //   query: { sessionId: result.sessionId }
-            // });
           } else {
             this.errorMessage = 'Invalid email or password';
           }

@@ -8,21 +8,20 @@
     </nav>
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
-      <!-- <div class="about"> -->
-      <!-- <h1>Home</h1> -->
     </div>
   </div>
 </template>
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
+import { mapActions } from 'vuex';
 
 export default {
   data() {
     return {
       name: '',
-      isAdmin: null // Add userId to the data object
+      isAdmin: null
     };
   },
 
@@ -40,43 +39,35 @@ export default {
   },
 
   mounted() {
-    // Retrieve the name and userId from the query parameters
-    // this.name = this.$route.query.name;
-    // this.isAdmin = parseInt(this.$route.query.isAdmin, 10); // Retrieve and convert userId to a number
     this.validateSession();
   },
 
-  // computed: {
-  //   isAdmin() {
-  //     return this.isAdmin === 1; // Check if userId is 0
-  //   }
-  // },
-
   methods: {
+    ...mapActions(['unauthenticate']),
+
     adminView() {
-      // this.$router.push('/admin'); // Adjust the path as needed
-      this.$router.push({ 
-        path: '/admin',
-        // query: { name: this.name, isAdmin: this.isAdmin } // Pass the name as a query parameter
-      });
+      this.$router.push('/admin');
     },
-    logout() {
-      Cookies.remove('sessionId', { secure: true, sameSite: 'Strict' });
+
+    async logout() {
+      const response = await fetch('http://localhost:3001/api/users/removeCookie', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+          console.log('Logged out successfully');
+      } else {
+          console.error('Logout failed');
+      }
+      
+      this.unauthenticate();
       this.$router.push('/');
     },
+
     validateSession() {
-      const sessionId = Cookies.get('sessionId');
-      console.log("COOKIE", sessionId);
-
-      if (!sessionId) {
-        this.$router.push('/');
-        return;
-      }
-
-      // Validate session with backend
       fetch('http://localhost:3001/api/users/validate_session', {
         method: 'POST',
-        body: JSON.stringify({ sessionId }),
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json' 
@@ -90,22 +81,21 @@ export default {
       })
       .then(data => {
         if (data.authenticated) {
-          // console.log("good",data);
           this.name = data.name;
           this.isAdmin = data.isAdmin;
 
         } else {
-          // If session is not valid, redirect to login page
+          this.unauthenticate();
           this.$router.push('/');
         }
       })
       .catch(error => {
         console.error('Failed to validate session', error);
+        this.unauthenticate();
         this.$router.push('/');
       });
     },
     fetchUserData() {
-      // Fetch user data from backend
       fetch('http://localhost:3001/api/get-user-data', {
         method: 'GET',
         credentials: 'include',
@@ -120,12 +110,12 @@ export default {
         return response.json();
       })
       .then(data => {
-        // Update component state with user data
         this.name = data.name;
         this.isAdmin = data.isAdmin;
       })
       .catch(error => {
         console.error('Failed to fetch user data', error);
+        this.unauthenticate();
         this.$router.push('/');
       });
     },

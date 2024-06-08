@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeLayout from '../HomeLayout.vue'; 
 import Cookies from 'js-cookie';
-// import Admin from '../views/Admin.vue'; // Adjust the path as necessary
-
+import store from '../security/store'; // Import the Vuex store
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +18,7 @@ const router = createRouter({
     },
     {
       path: '/home',
-      component: HomeLayout, // Use HomeLayout.vue as the layout
+      component: HomeLayout,
       children: [
         {
           path: '',
@@ -31,7 +30,7 @@ const router = createRouter({
     },
     {
       path: '/admin',
-      component: HomeLayout, // Use HomeLayout.vue as the layout
+      component: HomeLayout,
       children: [
         {
           path: '',
@@ -48,8 +47,9 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // Check if the route requires authentication
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    // Check if user is authenticated (replace isAuthenticated with your authentication logic)
-    if (!isAuthenticated()) {
+    // Check if user is authenticated
+    // if (!isAuthenticated() && !store.getters.isAuthenticated) {
+    if (!store.getters.isAuthenticated) {
       // If not authenticated, redirect to login page
       next({ name: 'login' });
     } else {
@@ -62,10 +62,9 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-// Example method to check if user is authenticated
-function isAuthenticated() {
-  // Check if session or token exists
-  return Cookies.get('sessionId') !== undefined;
-}
+// function isAuthenticated() {
+//   // Check if session or token exists
+//   return Cookies.get('sessionId') !== undefined;
+// }
 
 export default router;
