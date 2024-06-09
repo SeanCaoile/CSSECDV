@@ -2,6 +2,9 @@ import { getUsers } from "../models/UserModel.js";
 import bcrypt from 'bcrypt';
 import db from '../config/database.js';
 
+let failedAttempts = {};
+let isLocked = {};
+let lastLoginAttempt = {};
 
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
@@ -38,6 +41,14 @@ export const saveAccount = async (req, res) => {
 export const verifyLogin = async (req, res) => {
     const { email, password } = req.body;
     try {
+        if (isLocked[email] && Date.now() - lastLoginAttempt[email] < 60000) { // 1 minute lockout
+            console.log(`Account is locked. Please try again after ${Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000)} seconds.`);
+            return res.status(401).send(`Account is locked. Please try again after ${Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000)} seconds.`);
+        }
+
+        console.log(`Failed attempts for ${email}: ${failedAttempts[email] || 0}`);
+        console.log(`Is account locked for ${email}: ${isLocked[email]}`);
+
         db.query(
             'SELECT * FROM users WHERE email = ?',
             [email],
@@ -49,15 +60,34 @@ export const verifyLogin = async (req, res) => {
                         const user = results[0];
                         const comparison = await bcrypt.compare(password, user.password);
                         if (comparison) {
+                            // Reset failed attempts and last login attempt if login successful
+                            failedAttempts[email] = 0;
+                            lastLoginAttempt[email] = Date.now();
+
                             return res.send({
                                 name: user.name,
                                 isAdmin: user.isAdmin
                             });
                         } else {
-                            return res.send(false);
+                            // Increment failed attempts and lock account if necessary
+                            failedAttempts[email] = (failedAttempts[email] || 0) + 1;
+                            if (failedAttempts[email] >= 5) {
+                                isLocked[email] = true;
+                                setTimeout(() => {
+                                    isLocked[email] = false; // Unlock account after 1 minute
+                                }, 60000);
+                            }
+                            lastLoginAttempt[email] = Date.now();
+
+                            if (isLocked[email]) {
+                                console.log(`Account is locked. Please try again after ${Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000)} seconds.`);
+                                return res.status(401).send(`Account is locked. Please try again after ${Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000)} seconds.`);
+                            } else {
+                                return res.status(401).send('Incorrect email or password');
+                            }
                         }
                     } else {
-                        res.send('User does not exist');
+                        res.status(404).send('User does not exist');
                     }
                 }
             }
