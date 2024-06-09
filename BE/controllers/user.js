@@ -4,6 +4,12 @@ import bcrypt from 'bcrypt';
 import db from '../config/database.js';
 import cookie from 'cookie';
 
+// Validation Functions
+const validateName = (name) => /^[A-Za-z\s]{1,32}$/.test(name);
+const validateEmail = (email) => /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,320})+$/.test(email);
+const validatePassword = (password) => /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[~!#$^\-\_\=\+]).{12,55}$/.test(password);
+const validatePhone = (phoneNumber) => /^09\d{9}$/.test(phoneNumber) || /^\+639\d{9}$/.test(phoneNumber);
+
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
         if (err) {
@@ -39,14 +45,29 @@ const userSession = {
     id: ''
 }
 
-//creates account in db
+// Creates account in db with validation
 export const saveAccount = async (req, res) => {
     const { name, phoneNumber, email, password } = req.body;
+
+    // Validate inputs
+    if (!validateName(name)) {
+        return res.status(400).send({ error: 'Only letters and spaces are allowed in name' });
+    }
+    if (!validateEmail(email)) {
+        return res.status(400).send({ error: 'Invalid email address' });
+    }
+    if (!validatePassword(password)) {
+        return res.status(400).send({ error: 'Invalid password' });
+    }
+    if (!validatePhone(phoneNumber)) {
+        return res.status(400).send({ error: 'Invalid phone number' });
+    }
+
     try {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         db.query(
-            'INSERT INTO `users`(name, email, password, phoneNumber) VALUES (?,?,?,?)',    //--------------------------need to include image files
+            'INSERT INTO `users`(name, email, password, phoneNumber) VALUES (?,?,?,?)', //need to include image files
             [name, email, hashedPassword, phoneNumber],
             (error, results, fields) => {
                 if (error) {
@@ -63,6 +84,12 @@ export const saveAccount = async (req, res) => {
 
 export const verifyLogin = async (req, res) => {
     const { email, password } = req.body;
+
+    // Validate inputs
+    if (!validateEmail(email)) {
+        return res.status(400).send({ error: 'Invalid email address' });
+    }
+
     try {
         db.query(
             'SELECT * FROM users WHERE email = ?',
@@ -77,8 +104,8 @@ export const verifyLogin = async (req, res) => {
                         if (comparison) {
                             const sessionId = uuidv4();
                             userSession.id = user.id;
-                            userSession.session = sessionId
-                            
+                            userSession.session = sessionId;
+
                             res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
                                 httpOnly: true,
                                 secure: true, // Use secure cookies in production
