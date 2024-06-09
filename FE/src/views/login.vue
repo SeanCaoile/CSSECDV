@@ -11,7 +11,11 @@
           <input type="password" id="password" v-model="password" required>
         </div>
         <button type="submit" class="login-btn">Login</button>
+        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <p v-if="lockoutMessage" class="error-message">{{ lockoutMessage }}</p>
       </form>
+      <!-- reCAPTCHA container -->
+      <div id="recaptcha-container"></div>
     </div>
   </div>
 </template>
@@ -30,47 +34,74 @@ export default {
     return {
       email: '',
       password: '',
+      errorMessage: '',
+      lockoutMessage: '',
     };
   },
+  computed: {
+    isAdminComputed() {
+      return this.isAdmin;
+    },
+  },
   methods: {
-    validateAccount(formData) {
-      return fetch('http://localhost:3001/api/users/verifyLogin', {
+    async validateAccount(formData) {
+      return await fetch('http://localhost:3001/api/users/verifyLogin', {
         method: 'POST',
         body: formData
       });
     },
 
-    submitForm() {
-      const formData = new FormData();
-      formData.append('email', this.email);
-      formData.append('password', this.password);
-
-      this.validateAccount(formData)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Failed to Login');
-          }
-          return response.json(); // Convert bool to string
-        }) 
-        .then(result => {
-          //successful login
-          if (result !== 'false') {
-            // Redirect to home page with the name
-            this.$router.push({ 
-              path: '/home',
-              query: { name: result.name, isAdmin: result.isAdmin } // Pass the name as a query parameter
-            });
-          } 
-          //failed login
-          else {
-            console.error('Login failed:');
-            //--------------------------------------------- add an error message display 
-          }
-        })
-        .catch(error => {
-          console.error('Failed to Login', error);
+    async executeRecaptcha() {
+      return new Promise(resolve => {
+        grecaptcha.enterprise.ready(async () => {
+          const token = await grecaptcha.enterprise.execute('6Le05_MpAAAAAHnLZHNRGhOl66j8oVP52nI6Zq3h', { action: 'login' });
+          resolve(token);
+        });
       });
     },
+
+    async submitForm() {
+      try {
+        const formData = new FormData();
+        formData.append('email', this.email);
+        formData.append('password', this.password);
+
+        const response = await this.validateAccount(formData);
+
+        if (!response.ok) {
+          throw new Error('Failed to Login');
+        }
+
+        const result = await response.json();
+
+        if (result !== 'false') {
+          const captchaToken = await this.executeRecaptcha();
+          // Send captchaToken and login details to your backend for verification
+          // Example: await this.sendLoginData(captchaToken, result.name, result.isAdmin);
+
+          // Redirect to home page with the name
+          this.$router.push({ 
+            path: '/home',
+            query: { name: result.name, isAdmin: result.isAdmin }
+          });
+        } else {
+          this.errorMessage = 'Invalid email or password';
+          this.lockoutMessage = '';
+        }
+      } catch (error) {
+        console.error('Failed to Login', error);
+        this.errorMessage = 'Failed to login. Please try again.';
+        this.lockoutMessage = '';
+      }
+    },
+  },
+  mounted() {
+    // Load reCAPTCHA script
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/enterprise.js?render=6Le05_MpAAAAAHnLZHNRGhOl66j8oVP52nI6Zq3h';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
   }
 };
 </script>
@@ -81,31 +112,35 @@ export default {
     min-height: 100vh;
     display: flex;
     align-items: center;
-    justify-content: center; /* Center the form horizontally */
+    justify-content: center;
   }
   form {
-    width: 300px; /* Adjust the width as needed */
+    width: 300px;
   }
   label {
-    display: block; /* Display labels on new lines */
-    margin-bottom: 5px; /* Add some space below labels */
+    display: block;
+    margin-bottom: 5px;
   }
   input {
-    width: 100%; /* Make inputs fill their container */
-    margin-bottom: 10px; /* Add some space below inputs */
+    width: 100%;
+    margin-bottom: 10px;
   }
   .login-btn {
-    width: 100%; /* Make button fill its container */
-    background-color: #4CAF50; /* Green background */
-    color: white; /* White text */
-    padding: 10px 20px; /* Padding */
-    border: none; /* Remove border */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    font-size: 1rem; /* Font size */
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
   }
   .login-btn:hover {
-    background-color: #45a049; /* Darker green on hover */
+    background-color: #45a049;
   }
+}
+.error-message {
+  color: red;
+  margin-top: 5px;
 }
 </style>
