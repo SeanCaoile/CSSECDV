@@ -204,7 +204,10 @@ export default {
       this.createAccount(formData)
         .then(response => {
           if (!response.ok) {
-            throw new Error('Failed to create account');
+            //check if backend returns a specific error message
+            return response.json().then(errorData => {
+              throw new Error(errorData.error);
+            });
           }
           return response.json();
         })
@@ -212,7 +215,11 @@ export default {
           this.$router.push('/');
         })
         .catch(error => {
-          console.error('Failed to create account', error);
+          if (error.message === 'Email already exists') {
+            this.emailError = 'Email already exists';
+          } else {
+            console.error('Failed to create account', error);
+          }
       });
     },
     
