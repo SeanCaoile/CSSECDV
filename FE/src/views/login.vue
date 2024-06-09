@@ -12,7 +12,6 @@
         </div>
         <button type="submit" class="login-btn">Login</button>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-        <p v-if="lockoutMessage" class="error-message">{{ lockoutMessage }}</p>
       </form>
       <!-- reCAPTCHA container -->
       <div id="recaptcha-container"></div>
@@ -34,29 +33,35 @@ export default {
     return {
       email: '',
       password: '',
-      errorMessage: '',
-      lockoutMessage: '',
+      errorMessage: ''
     };
-  },
-  computed: {
-    isAdminComputed() {
-      return this.isAdmin;
-    },
   },
   methods: {
     async validateAccount(formData) {
-      return await fetch('http://localhost:3001/api/users/verifyLogin', {
+      const response = await fetch('http://localhost:3001/api/users/verifyLogin', {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
       });
+      return response.json().then(data => ({ status: response.status, data }));
     },
 
     async executeRecaptcha() {
-      return new Promise(resolve => {
-        grecaptcha.enterprise.ready(async () => {
-          const token = await grecaptcha.enterprise.execute('6Le05_MpAAAAAHnLZHNRGhOl66j8oVP52nI6Zq3h', { action: 'login' });
-          resolve(token);
-        });
+      return new Promise((resolve, reject) => {
+        if (typeof grecaptcha !== 'undefined') {
+          grecaptcha.enterprise.ready(async () => {
+            try {
+              const token = await grecaptcha.enterprise.execute('6Le05_MpAAAAAHnLZHNRGhOl66j8oVP52nI6Zq3h', { action: 'login' });
+              resolve(token);
+            } catch (error) {
+              reject(error);
+            }
+          });
+        } else {
+          reject(new Error('reCAPTCHA not loaded'));
+        }
       });
     },
 
@@ -66,41 +71,37 @@ export default {
         formData.append('email', this.email);
         formData.append('password', this.password);
 
-        const response = await this.validateAccount(formData);
+        const { status, data } = await this.validateAccount(formData);
 
-        if (!response.ok) {
-          throw new Error('Failed to Login');
-        }
-
-        const result = await response.json();
-
-        if (result !== 'false') {
+        if (status === 200) {
           const captchaToken = await this.executeRecaptcha();
-          // Send captchaToken and login details to your backend for verification
-          // Example: await this.sendLoginData(captchaToken, result.name, result.isAdmin);
-
-          // Redirect to home page with the name
-          this.$router.push({ 
+          // Handle successful login here, for example, by redirecting the user:
+          this.$router.push({
             path: '/home',
-            query: { name: result.name, isAdmin: result.isAdmin }
+            query: { name: data.name, isAdmin: data.isAdmin }
           });
         } else {
-          this.errorMessage = 'Invalid email or password';
-          this.lockoutMessage = '';
+          this.errorMessage = data.message;
         }
       } catch (error) {
-        console.error('Failed to Login', error);
+        console.error('Failed to login', error);
         this.errorMessage = 'Failed to login. Please try again.';
-        this.lockoutMessage = '';
       }
     },
   },
   mounted() {
-    // Load reCAPTCHA script
     const script = document.createElement('script');
     script.src = 'https://www.google.com/recaptcha/enterprise.js?render=6Le05_MpAAAAAHnLZHNRGhOl66j8oVP52nI6Zq3h';
     script.async = true;
     script.defer = true;
+    script.onload = () => {
+      grecaptcha.enterprise.ready(() => {
+        console.log('reCAPTCHA loaded');
+      });
+    };
+    script.onerror = () => {
+      console.error('Failed to load reCAPTCHA');
+    };
     document.head.appendChild(script);
   }
 };
