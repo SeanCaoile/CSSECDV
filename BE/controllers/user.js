@@ -64,6 +64,21 @@ export const saveAccount = async (req, res) => {
     }
 
     try {
+        //Check if email already exists in the database
+        const [existingUser] = await new Promise((resolve, reject) => {
+            db.query('SELECT * FROM users WHERE email = ?', [email], (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+
+        if (existingUser) {
+            return res.status(400).send({ error: 'Email already exists' });
+        }
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         db.query(
