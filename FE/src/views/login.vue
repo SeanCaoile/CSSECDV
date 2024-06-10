@@ -11,8 +11,11 @@
           <input type="password" id="password" v-model="password" required>
         </div>
         <button type="submit" class="login-btn">Login</button>
+        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       </form>
       <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <!-- reCAPTCHA container -->
+      <div id="recaptcha-container"></div>
     </div>
   </div>
 </template>
@@ -36,6 +39,7 @@ export default {
       errorMessage: ''
     };
   },
+
   methods: {
     ...mapActions(['authenticate']),
 
@@ -43,35 +47,66 @@ export default {
       return fetch('http://localhost:3001/api/users/verifyLogin', {
         method: 'POST',
         body: formData,
-        credentials: 'include' // Include credentials to allow cookies to be sent and received
+        credentials: 'include' // Include credentials to allow cookies to be sent and received      }
       });
     },
 
-    submitForm() {
-      const formData = new FormData();
-      formData.append('email', this.email);
-      formData.append('password', this.password);
+    async executeRecaptcha() {
+      return new Promise((resolve, reject) => {
+        if (typeof grecaptcha !== 'undefined') {
+          grecaptcha.enterprise.ready(async () => {
+            try {
+              const token = await grecaptcha.enterprise.execute('6Le05_MpAAAAAHnLZHNRGhOl66j8oVP52nI6Zq3h', { action: 'login' });
+              resolve(token);
+            } catch (error) {
+              reject(error);
+            }
+          });
+        } else {
+          reject(new Error('reCAPTCHA not loaded'));
+        }
+      });
+    },
 
-      this.validateAccount(formData)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Failed to Login');
-          }
-          return response.json();
-        })
-        .then(result => {
-          if (result.login === true) {
-            this.authenticate(result.user);
+    async submitForm() {
+      try {
+        const formData = new FormData();
+        formData.append('email', this.email);
+        formData.append('password', this.password);
+
+        const { status, data } = await this.validateAccount(formData);
+
+        if (status === 200) {
+          const captchaToken = await this.executeRecaptcha();
+
+            // Authenticate the user and redirect to the home page
+            this.authenticate(data.user);
             this.$router.push('/home');
-          } else {
-            this.errorMessage = 'Invalid email or password';
-          }
-        })
-        .catch(error => {
-          console.error('Failed to Login', error);
-          this.errorMessage = 'An error occurred during login';
-        });
-    }
+        } else {
+          // Handle invalid login attempts
+          this.errorMessage = 'Invalid email or password';
+        }
+      } catch (error) {
+        console.error('Failed to login', error);
+        this.errorMessage = 'An error occurred during login. Please try again.';
+      }
+    },
+  },
+
+  mounted() {
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/enterprise.js?render=6Le05_MpAAAAAHnLZHNRGhOl66j8oVP52nI6Zq3h';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      grecaptcha.enterprise.ready(() => {
+        console.log('reCAPTCHA loaded');
+      });
+    };
+    script.onerror = () => {
+      console.error('Failed to load reCAPTCHA');
+    };
+    document.head.appendChild(script);
   }
 };
 </script>
@@ -82,31 +117,31 @@ export default {
     min-height: 100vh;
     display: flex;
     align-items: center;
-    justify-content: center; /* Center the form horizontally */
+    justify-content: center;
   }
   form {
-    width: 300px; /* Adjust the width as needed */
+    width: 300px;
   }
   label {
-    display: block; /* Display labels on new lines */
-    margin-bottom: 5px; /* Add some space below labels */
+    display: block;
+    margin-bottom: 5px;
   }
   input {
-    width: 100%; /* Make inputs fill their container */
-    margin-bottom: 10px; /* Add some space below inputs */
+    width: 100%;
+    margin-bottom: 10px;
   }
   .login-btn {
-    width: 100%; /* Make button fill its container */
-    background-color: #4CAF50; /* Green background */
-    color: white; /* White text */
-    padding: 10px 20px; /* Padding */
-    border: none; /* Remove border */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    font-size: 1rem; /* Font size */
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
   }
   .login-btn:hover {
-    background-color: #45a049; /* Darker green on hover */
+    background-color: #45a049;
   }
   .error-message {
     color: #FF5441;
@@ -114,5 +149,9 @@ export default {
     margin-top: 5px; /* Add some space above the error message */
     font-weight: bold;
   }
+}
+.error-message {
+  color: red;
+  margin-top: 5px;
 }
 </style>

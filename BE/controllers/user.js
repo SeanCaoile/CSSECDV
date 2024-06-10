@@ -10,13 +10,16 @@ const validateEmail = (email) => /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]
 const validatePassword = (password) => /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[~!#$^\-\_\=\+]).{12,55}$/.test(password);
 const validatePhone = (phoneNumber) => /^09\d{9}$/.test(phoneNumber) || /^\+639\d{9}$/.test(phoneNumber);
 
+const failedAttempts = {};
+const isLocked = {};
+const lastLoginAttempt = {};
+
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
         if (err) {
-            res.send(err);
-        } else {
-            res.json(data);
+            return res.status(500).send(err);
         }
+        res.json(data);
     });
 };
 
@@ -82,14 +85,13 @@ export const saveAccount = async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         db.query(
-            'INSERT INTO `users`(name, email, password, phoneNumber) VALUES (?,?,?,?)', //need to include image files
+            'INSERT INTO `users` (name, email, password, phoneNumber) VALUES (?, ?, ?, ?)', 
             [name, email, hashedPassword, phoneNumber],
-            (error, results, fields) => {
+            (error, results) => {
                 if (error) {
-                    res.status(500).send(error);
-                } else {
-                    res.send(results);
+                    return res.status(500).send(error);
                 }
+                res.status(201).send(results);
             }
         );
     } catch (error) {
@@ -106,43 +108,71 @@ export const verifyLogin = async (req, res) => {
     }
 
     try {
-        db.query(
-            'SELECT * FROM users WHERE email = ?',
-            [email],
-            async (error, results, fields) => {
-                if (error) {
-                    res.status(500).send(error);
+        if (isLocked[email] && Date.now() - lastLoginAttempt[email] < 60000) {
+            const lockoutTime = Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000);
+            return res.status(401).send({
+                message: `Account is locked. Please try again after ${lockoutTime} seconds.`,
+                failedAttempts: failedAttempts[email],
+                isLocked: true
+            });
+        }
+
+        db.query('SELECT * FROM users WHERE email = ?', [email], async (error, results) => {
+            if (error) {
+                return res.status(500).send(error);
+            } 
+            
+            if (results.length === 0) {
+                return res.status(404).send('User does not exist');
+            }
+
+            const user = results[0];
+            const comparison = await bcrypt.compare(password, user.password);
+
+            if (comparison) {
+                const sessionId = uuidv4();
+                userSession.id = user.id;
+                userSession.session = sessionId;
+
+                res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
+                    httpOnly: true,
+                    secure: true, // Use secure cookies in production
+                    sameSite: 'strict',
+                    maxAge: 2 * 60, // 2 minutes
+                    path: '/'
+                }));
+
+                resetLoginAttempts(email);
+                return res.send({ login: true });
+            } else {
+                handleFailedLoginAttempt(email);
+                const lockoutTime = Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000);
+                
+                if (isLocked[email]) {
+                    return res.status(401).send({
+                        message: `Account is locked. Please try again after ${lockoutTime} seconds.`,
+                        failedAttempts: failedAttempts[email],
+                        isLocked: true
+                    });
                 } else {
-                    if (results.length > 0) {
-                        const user = results[0];
-                        const comparison = await bcrypt.compare(password, user.password);
-                        if (comparison) {
-                            const sessionId = uuidv4();
-                            userSession.id = user.id;
-                            userSession.session = sessionId;
-
-                            res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
-                                httpOnly: true,
-                                secure: true, // Use secure cookies in production
-                                sameSite: 'strict',
-                                maxAge: 2 * 60, // 2 minutes in seconds
-                                path: '/'
-                            }));
-
-                            return res.send({ login: true });
-                        } else {
-                            return res.send({ login: false });
-                        }
-                    } else {
-                        res.send('User does not exist');
-                    }
+                    return res.status(401).send({
+                        message: 'Incorrect email or password',
+                        failedAttempts: failedAttempts[email],
+                        isLocked: false
+                    });
                 }
             }
-        );
-    } catch (error) {
-        res.status(500).send(error);
-    }
-};
+        });
+        } catch (error) {
+            res.status(500).send(error);
+        }
+    };
+
+        // if (comparison) {
+        //     resetLoginAttempts(email);
+        //     return res.send({ name: user.name, isAdmin: user.isAdmin });
+        // }
+
 
 export const validate_session = async (req, res) => {
     const sessionId = req.cookies.sessionId;
@@ -178,3 +208,20 @@ export const removeSessionCookie = async(req, res) => {
     }));
     res.status(200).send({ message: 'Logged out successfully' });
 }
+
+const resetLoginAttempts = (email) => {
+    failedAttempts[email] = 0;
+    lastLoginAttempt[email] = Date.now();
+};
+
+const handleFailedLoginAttempt = (email) => {
+    failedAttempts[email] = (failedAttempts[email] || 0) + 1;
+    lastLoginAttempt[email] = Date.now();
+
+    if (failedAttempts[email] >= 5) {
+        isLocked[email] = true;
+        setTimeout(() => {
+            isLocked[email] = false;
+        }, 60000);
+    }
+};

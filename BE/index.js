@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
 dotenv.config();
+
 console.log('host is index in ' + process.env.DB_HOST);
 
 const port = process.env.PORT;
@@ -45,6 +46,8 @@ app.use(helmet({
 
 app.use('/api', userRoutes);
 
+// Routes
+app.use('/api', userRoutes);
 
 app.listen(port, () => {
   console.log('Server running on port ' + port);
