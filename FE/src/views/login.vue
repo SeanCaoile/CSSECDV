@@ -74,9 +74,14 @@ export default {
         formData.append('email', this.email);
         formData.append('password', this.password);
 
-        const { status, data } = await this.validateAccount(formData);
+        // const { status, data } = await this.validateAccount(formData);
 
-        if (status === 200) {
+        const response = await this.validateAccount(formData);
+        const data = await response.json(); // Parse the JSON data
+
+        console.log("DATA", data);
+
+        if (response.status === 200) {
           const captchaToken = await this.executeRecaptcha();
 
             // Authenticate the user and redirect to the home page
