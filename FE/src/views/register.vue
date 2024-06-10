@@ -6,12 +6,13 @@
 
         <div>
           <label for="fullName">Full Name: </label>
-          <input type="text" id="fullName" v-model="fullName" required>
+          <input type="text" id="fullName" v-model="fullName" @blur="validateName" maxlength="32" required>
+          <span v-if="nameError" class="error-message">{{ nameError }}</span>
         </div>
 
         <div>
           <label for="email">Email: </label>
-          <input type="email" id="email" v-model="email" @blur="validateEmail" required>
+          <input type="email" id="email" v-model="email" @blur="validateEmail" maxlength="320" required>
           <span v-if="emailError" class="error-message">{{ emailError }}</span>
         </div>
 
@@ -20,14 +21,20 @@
             <label for="password">Password: </label>
             <span class="tooltip-icon" @mouseover="showPasswordTooltip = true" @mouseout="showPasswordTooltip = false">?</span>
             <div v-if="showPasswordTooltip" class="tooltip">
-              Password must be within 12 and 64 characters and 
+              Password must be within 12 and 55 characters and 
               contains at least <br>1 uppercase letter, <br>1 lowercase letter, <br>1 numeric digit, and <br>1 special character.
             </div>
           </div>
           <div class="password-container">
-            <input type="password" id="password" v-model="password" @blur="validatePassword" required>
+            <input type="password" id="password" v-model="password" @blur="validatePassword" maxlength="55" required>
           </div>
           <span v-if="passwordError" class="error-message">{{ passwordError }}</span>
+        </div>
+
+        <div>
+          <label for="confirmPassword">Confirm Password: </label>
+          <input type="password" id="confirmPassword" v-model="confirmPassword" @blur="validateConfirmPassword" maxlength="55" required>
+          <span v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</span>
         </div>
 
         <div>
@@ -156,10 +163,13 @@ export default {
       fullName: '',
       email: '',
       password: '',
+      confirmPassword: '',
       phoneNumber: '',
       profilePicture: null,
+      nameError: '',
       emailError: '',
       passwordError: '',
+      confirmPasswordError: '',
       phoneError: '',
       showPasswordTooltip: false,
       showPhoneTooltip: false
@@ -174,11 +184,13 @@ export default {
     },
 
     submitForm() {
+      const isNameValid = this.validateName();
       const isEmailValid = this.validateEmail();
       const isPasswordValid = this.validatePassword();
+      const isConfirmPasswordValid = this.validateConfirmPassword();
       const isPhoneValid = this.validatePhone();
 
-      if (!isEmailValid || !isPasswordValid || !isPhoneValid) {
+      if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isPhoneValid) {
         return;
       }
 
@@ -192,7 +204,10 @@ export default {
       this.createAccount(formData)
         .then(response => {
           if (!response.ok) {
-            throw new Error('Failed to create account');
+            //check if backend returns a specific error message
+            return response.json().then(errorData => {
+              throw new Error(errorData.error);
+            });
           }
           return response.json();
         })
@@ -200,7 +215,11 @@ export default {
           this.$router.push('/');
         })
         .catch(error => {
-          console.error('Failed to create account', error);
+          if (error.message === 'Email already exists') {
+            this.emailError = 'Email already exists';
+          } else {
+            console.error('Failed to create account', error);
+          }
       });
     },
     
@@ -209,8 +228,18 @@ export default {
       this.profilePicture = file;
     },
 
+    validateName() {
+      const namePattern = /^[A-Za-z\s]{1,32}$/;
+      if (!namePattern.test(this.fullName)) {
+        this.nameError = 'Only letters and spaces are allowed';
+        return false;
+      }
+      this.nameError = '';
+      return true;
+    },
+
     validateEmail() {
-      const emailPattern = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+      const emailPattern = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,320})+$/;
       if (!emailPattern.test(this.email)) {
         this.emailError = 'Invalid email address';
         return false;
@@ -220,12 +249,22 @@ export default {
     },
 
     validatePassword() {
-      const passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[`~!@#$%^&*\(\)\-\_\=\+\[\]\{\};:\'\"\,\.\<\>\?\/\\|]).{12,64}$/;
+      // old pass pattern ^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[`~!@#$%^&*\(\)\-\_\=\+\[\]\{\};:\'\"\,\.\<\>\?\/\\|]).{12,55}$
+      const passPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[~!#$^\-\_\=\+]).{12,55}$/;
       if (!passPattern.test(this.password)) {
         this.passwordError = 'Invalid password';
         return false;
       }
       this.passwordError = '';
+      return true;
+    },
+
+    validateConfirmPassword() {
+      if (this.password !== this.confirmPassword) {
+        this.confirmPasswordError = 'Passwords do not match';
+        return false;
+      }
+      this.confirmPasswordError = '';
       return true;
     },
 

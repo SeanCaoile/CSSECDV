@@ -12,12 +12,15 @@
         </div>
         <button type="submit" class="login-btn">Login</button>
       </form>
+      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
     </div>
   </div>
 </template>
 
 <script>
 import { resetAppStyles } from '../utils/stylesUtils';
+// import Cookies from 'js-cookie';
+import { mapActions } from 'vuex';
 
 export default {
   beforeRouteEnter(to, from, next) {
@@ -30,13 +33,17 @@ export default {
     return {
       email: '',
       password: '',
+      errorMessage: ''
     };
   },
   methods: {
+    ...mapActions(['authenticate']),
+
     validateAccount(formData) {
       return fetch('http://localhost:3001/api/users/verifyLogin', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'include' // Include credentials to allow cookies to be sent and received
       });
     },
 
@@ -50,27 +57,21 @@ export default {
           if (!response.ok) {
             throw new Error('Failed to Login');
           }
-          return response.json(); // Convert bool to string
-        }) 
+          return response.json();
+        })
         .then(result => {
-          //successful login
-          if (result !== 'false') {
-            // Redirect to home page with the name
-            this.$router.push({ 
-              path: '/home',
-              query: { name: result.name, isAdmin: result.isAdmin } // Pass the name as a query parameter
-            });
-          } 
-          //failed login
-          else {
-            console.error('Login failed:');
-            //--------------------------------------------- add an error message display 
+          if (result.login === true) {
+            this.authenticate(result.user);
+            this.$router.push('/home');
+          } else {
+            this.errorMessage = 'Invalid email or password';
           }
         })
         .catch(error => {
           console.error('Failed to Login', error);
-      });
-    },
+          this.errorMessage = 'An error occurred during login';
+        });
+    }
   }
 };
 </script>
@@ -106,6 +107,12 @@ export default {
   }
   .login-btn:hover {
     background-color: #45a049; /* Darker green on hover */
+  }
+  .error-message {
+    color: #FF5441;
+    display: block;
+    margin-top: 5px; /* Add some space above the error message */
+    font-weight: bold;
   }
 }
 </style>
