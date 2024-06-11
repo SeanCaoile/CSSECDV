@@ -51,6 +51,8 @@ const userSession = {
 // Creates account in db with validation
 export const saveAccount = async (req, res) => {
     const { name, phoneNumber, email, password } = req.body;
+    const { filename } = req.file;
+    
 
     // Validate inputs
     if (!validateName(name)) {
@@ -85,13 +87,14 @@ export const saveAccount = async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         db.query(
-            'INSERT INTO `users` (name, email, password, phoneNumber) VALUES (?, ?, ?, ?)', 
-            [name, email, hashedPassword, phoneNumber],
+            'INSERT INTO `users`(name, email, password, phoneNumber, photo) VALUES (?,?,?,?,?)',
+            [name, email, hashedPassword, phoneNumber, filename],
             (error, results) => {
                 if (error) {
                     return res.status(500).send(error);
                 }
                 res.status(201).send(results);
+                console.log("Operation complete")
             }
         );
     } catch (error) {
@@ -179,10 +182,9 @@ export const validate_session = async (req, res) => {
     try {
         // Check if the session ID matches the stored session ID
         if (sessionId === userSession.session) {
-            // Session ID is valid, fetch user data from the database
             const user = await getUserById(userSession.id);
             if (user) {
-                res.json({ authenticated: true, name: user.name, isAdmin: user.isAdmin });
+                res.json({ authenticated: true, name: user.name, photo: user.photo, isAdmin: user.isAdmin });
             } else {
                 // User not found
                 res.json({ authenticated: false, error: "User not found" });
