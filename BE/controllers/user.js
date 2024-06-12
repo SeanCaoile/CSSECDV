@@ -59,7 +59,7 @@ export const fetchImage = (req, res) => {
         }
         if (results.length > 0) {
             const photo = results[0].photo;
-            results.contentType('image/png'); // or the appropriate image content type
+            results.contentType('image/jpg');
             res.send(photo);
         } else {
             res.status(404).send('Image not found');

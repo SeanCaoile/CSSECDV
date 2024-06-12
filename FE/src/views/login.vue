@@ -79,7 +79,6 @@ export default {
           const captchaToken = await this.executeRecaptcha();
             // this.authenticate(data.user);
             this.authenticate();
-            // console.log("TEST" ,data.user);
             this.$router.push('/home');
         } else {  // Invalid login attempts
           this.errorMessage = data.message;

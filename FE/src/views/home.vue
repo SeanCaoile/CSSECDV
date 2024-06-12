@@ -18,7 +18,6 @@
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
-// import Cookies from 'js-cookie';
 import { mapActions } from 'vuex';
 
 export default {
@@ -108,27 +107,6 @@ export default {
         this.$router.push('/');
       });
     },
-    // fetchUserPhoto() {
-    //   console.log('fetching user photo') //delete this later
-    //   fetch('http://localhost:3001/api/users/photo', {
-    //     method: 'GET',
-    //     credentials: 'include',
-    //   })
-    //   .then(response => {
-    //     if (!response.ok) {
-    //       throw new Error('Failed to fetch user photo');
-    //     }
-    //     return response.blob();
-    //   })
-    //   .then(blob => {
-    //     this.imageSrc = URL.createObjectURL(blob);
-    //     console.log('got photo') //delete this later
-    //     console.log(this.imageSrc) //delete this later
-    //   })
-    //   .catch(error => {
-    //     console.error('Failed to fetch user photo', error);
-    //   });
-    // },
     fetchUserData() {
       fetch('http://localhost:3001/api/get-user-data', {
         method: 'GET',
@@ -157,7 +135,6 @@ export default {
         this.$router.push('/');
       });
     },
-    
   }
 };
 </script>
@@ -229,6 +206,6 @@ h1 {
 }
 
 .user-photo-container {
-  display: block; /* Ensures the container takes up the full width and starts on a new line */
+  display: block;
 }
 </style>

@@ -21,7 +21,7 @@
             <span class="tooltip-icon" @mouseover="showPasswordTooltip = true" @mouseout="showPasswordTooltip = false">?</span>
             <div v-if="showPasswordTooltip" class="tooltip">
               Password must be within 12 and 55 characters and 
-              contains at least <br>1 uppercase letter, <br>1 lowercase letter, <br>1 numeric digit, and <br>1 special character.
+              contains at least <br>1 uppercase letter, <br>1 lowercase letter, <br>1 numeric digit, and <br>1 special character <br> (~ ! # $ ^ - _ = +).
             </div>
           </div>
           <div class="password-container">
@@ -253,7 +253,7 @@ export default {
 
           // Not supported file type
           if (!header.startsWith(fileTypeSignatures.jpeg) && !header.startsWith(fileTypeSignatures.png)) {
-            this.imageError = 'Invalid file type. Only jpg, jpeg, and png are allowed.';
+            this.imageError = 'Invalid file type. Only JPG, JPEG, and PNG are allowed.';
             event.target.value = '';
             this.profilePicture = null;
           } else {
