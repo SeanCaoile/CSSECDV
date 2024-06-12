@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import { saveAccount, showUsers, verifyLogin, validate_session, removeSessionCookie, fetchImage } from '../controllers/user.js';
+import { saveAccount, showUsers, verifyLogin, validate_session, removeSessionCookie } from '../controllers/user.js';
 
 const router = express.Router();
 
@@ -35,6 +35,5 @@ router.post("/users/saveAccount", upload.single('profilePicture'), saveAccount);
 router.post("/users/verifyLogin", upload.none(), verifyLogin);
 router.post("/users/validate_session", upload.none(), validate_session);
 router.post("/users/removeCookie", upload.none(), removeSessionCookie);
-router.get('/users/photo', fetchImage)
 
 export default router;

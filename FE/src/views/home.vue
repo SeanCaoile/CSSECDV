@@ -8,7 +8,8 @@
     </nav>
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
-      <img v-if="imageSrc" :src="imageSrc" alt="User Photo" class="user-photo"/>
+      <br />
+      <img v-if="photo" :src="photo" alt="User Photo" class="user-photo"/>
     </div>
   </div>
 </template>
@@ -22,6 +23,7 @@ export default {
   data() {
     return {
       name: '',
+      photo: '',
       isAdmin: null
     };
   },
@@ -84,8 +86,7 @@ export default {
         if (data.authenticated) {
           this.name = data.name;
           this.isAdmin = data.isAdmin;
-          this.fetchUserPhoto(); //fetch photo
-
+          this.photo = data.photo;
         } else {
           this.unauthenticate();
           this.$router.push('/');
@@ -97,27 +98,27 @@ export default {
         this.$router.push('/');
       });
     },
-    fetchUserPhoto() {
-      console.log('fetching user photo') //delete this later
-      fetch('http://localhost:3001/api/users/photo', {
-        method: 'GET',
-        credentials: 'include',
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch user photo');
-        }
-        return response.blob();
-      })
-      .then(blob => {
-        this.imageSrc = URL.createObjectURL(blob);
-        console.log('got photo') //delete this later
-        console.log(this.imageSrc) //delete this later
-      })
-      .catch(error => {
-        console.error('Failed to fetch user photo', error);
-      });
-    },
+    // fetchUserPhoto() {
+    //   console.log('fetching user photo') //delete this later
+    //   fetch('http://localhost:3001/api/users/photo', {
+    //     method: 'GET',
+    //     credentials: 'include',
+    //   })
+    //   .then(response => {
+    //     if (!response.ok) {
+    //       throw new Error('Failed to fetch user photo');
+    //     }
+    //     return response.blob();
+    //   })
+    //   .then(blob => {
+    //     this.imageSrc = URL.createObjectURL(blob);
+    //     console.log('got photo') //delete this later
+    //     console.log(this.imageSrc) //delete this later
+    //   })
+    //   .catch(error => {
+    //     console.error('Failed to fetch user photo', error);
+    //   });
+    // },
     fetchUserData() {
       fetch('http://localhost:3001/api/get-user-data', {
         method: 'GET',
@@ -204,6 +205,7 @@ export default {
   justify-content: center;
   align-items: center;
   height: calc(100vh - 6rem); /* Full height minus navbar */
+  /* padding: center; */
   text-align: center;
 }
 

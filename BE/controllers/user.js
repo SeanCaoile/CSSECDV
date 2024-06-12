@@ -50,22 +50,22 @@ const userSession = {
     id: ''
 }
 
-export const fetchImage = (req, res) => {
-    const userId = userSession.id; 
+// export const fetchImage = (req, res) => {
+//     const userId = userSession.id; 
 
-    db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
-        if (error) {
-            return res.status(500).send('Server error');
-        }
-        if (results.length > 0) {
-            const photo = results[0].photo;
-            res.contentType('image/png'); // or the appropriate image content type
-            res.send(photo);
-        } else {
-            res.status(404).send('Image not found');
-        }
-    });
-}
+//     db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
+//         if (error) {
+//             return res.status(500).send('Server error');
+//         }
+//         if (results.length > 0) {
+//             const photo = results[0].photo;
+//             results.contentType('image/png'); // or the appropriate image content type
+//             res.send(photo);
+//         } else {
+//             res.status(404).send('Image not found');
+//         }
+//     });
+// }
 
 
 // Creates account in db with validation
@@ -114,7 +114,6 @@ export const saveAccount = async (req, res) => {
                     return res.status(500).send(error);
                 }
                 res.status(201).send(results);
-                console.log("Operation complete")
             }
         );
     } catch (error) {
@@ -204,7 +203,10 @@ export const validate_session = async (req, res) => {
         if (sessionId === userSession.session) {
             const user = await getUserById(userSession.id);
             if (user) {
-                res.json({ authenticated: true, name: user.name, photo: user.photo, isAdmin: user.isAdmin });
+                const photoData = user.photo;
+                const base64Photo = Buffer.from(photoData, 'binary').toString('base64');
+                const photoString = `data:/image/png;base64,${base64Photo}`
+                res.json({ authenticated: true, name: user.name, photo: photoString, isAdmin: user.isAdmin });
             } else {
                 // User not found
                 res.json({ authenticated: false, error: "User not found" });
