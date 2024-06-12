@@ -14,6 +14,7 @@ const failedAttempts = {};
 const isLocked = {};
 const lastLoginAttempt = {};
 
+
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
         if (err) {
@@ -47,6 +48,24 @@ const userSession = {
     session: '',
     id: ''
 }
+
+export const fetchImage = (req, res) => {
+    const userId = userSession.id; 
+
+    db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
+        if (error) {
+            return res.status(500).send('Server error');
+        }
+        if (results.length > 0) {
+            const photo = results[0].photo;
+            res.contentType('image/png'); // or the appropriate image content type
+            res.send(photo);
+        } else {
+            res.status(404).send('Image not found');
+        }
+    });
+}
+
 
 // Creates account in db with validation
 export const saveAccount = async (req, res) => {

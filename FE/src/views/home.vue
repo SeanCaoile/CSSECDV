@@ -8,6 +8,7 @@
     </nav>
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
+      <img v-if="imageSrc" :src="imageSrc" alt="User Photo" class="user-photo"/>
     </div>
   </div>
 </template>
@@ -83,6 +84,7 @@ export default {
         if (data.authenticated) {
           this.name = data.name;
           this.isAdmin = data.isAdmin;
+          this.fetchUserPhoto(); //fetch photo
 
         } else {
           this.unauthenticate();
@@ -93,6 +95,27 @@ export default {
         console.error('Failed to validate session', error);
         this.unauthenticate();
         this.$router.push('/');
+      });
+    },
+    fetchUserPhoto() {
+      console.log('fetching user photo') //delete this later
+      fetch('http://localhost:3001/api/users/photo', {
+        method: 'GET',
+        credentials: 'include',
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch user photo');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        this.imageSrc = URL.createObjectURL(blob);
+        console.log('got photo') //delete this later
+        console.log(this.imageSrc) //delete this later
+      })
+      .catch(error => {
+        console.error('Failed to fetch user photo', error);
       });
     },
     fetchUserData() {
@@ -119,6 +142,7 @@ export default {
         this.$router.push('/');
       });
     },
+    
   }
 };
 </script>
