@@ -7,7 +7,6 @@ export const getUsers = (result) => {
             result(err, null);
             return;
         }
-        // console.log("users: ", res);
         result(null, res);
     });
 };

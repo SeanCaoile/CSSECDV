@@ -8,12 +8,11 @@
         </div>
         <div>
           <label for="password">Password: </label>
-          <input type="password" id="password" v-model="password" required>
+          <input type="password" id="password" v-model="password" autocomplete="off" required>
         </div>
         <button type="submit" class="login-btn">Login</button>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       </form>
-      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
       <!-- reCAPTCHA container -->
       <div id="recaptcha-container"></div>
     </div>
@@ -22,7 +21,6 @@
 
 <script>
 import { resetAppStyles } from '../utils/stylesUtils';
-// import Cookies from 'js-cookie';
 import { mapActions } from 'vuex';
 
 export default {
@@ -47,7 +45,7 @@ export default {
       return fetch('http://localhost:3001/api/users/verifyLogin', {
         method: 'POST',
         body: formData,
-        credentials: 'include' // Include credentials to allow cookies to be sent and received      }
+        credentials: 'include' // Include credentials to allow cookies to be sent and received
       });
     },
 
@@ -74,25 +72,17 @@ export default {
         formData.append('email', this.email);
         formData.append('password', this.password);
 
-        // const { status, data } = await this.validateAccount(formData);
-
         const response = await this.validateAccount(formData);
-        const data = await response.json(); // Parse the JSON data
-
-        console.log("DATA", data);
+        const data = await response.json();
 
         if (response.status === 200) {
           const captchaToken = await this.executeRecaptcha();
-
-            // Authenticate the user and redirect to the home page
             this.authenticate(data.user);
             this.$router.push('/home');
-        } else {
-          // Handle invalid login attempts
-          this.errorMessage = 'Invalid email or password';
+        } else {  // Invalid login attempts
+          this.errorMessage = data.message;
         }
       } catch (error) {
-        console.error('Failed to login', error);
         this.errorMessage = 'An error occurred during login. Please try again.';
       }
     },
@@ -105,11 +95,11 @@ export default {
     script.defer = true;
     script.onload = () => {
       grecaptcha.enterprise.ready(() => {
-        console.log('reCAPTCHA loaded');
+        // console.log('reCAPTCHA loaded');
       });
     };
     script.onerror = () => {
-      console.error('Failed to load reCAPTCHA');
+      // console.error('Failed to load reCAPTCHA');
     };
     document.head.appendChild(script);
   }
@@ -151,7 +141,7 @@ export default {
   .error-message {
     color: #FF5441;
     display: block;
-    margin-top: 5px; /* Add some space above the error message */
+    margin-top: 5px;
     font-weight: bold;
   }
 }

@@ -40,14 +40,14 @@
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 import { mapActions } from 'vuex';
 
 export default {
   data() {
     return {
       users: [],
-      loading: true, // Initial loading state
+      loading: true,
     };
   },
 
@@ -87,11 +87,19 @@ export default {
         if (data.authenticated) {
           await this.fetchUsers(); // Wait for fetchUsers to complete
         } else {
+          fetch('http://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
           this.unauthenticate();
           this.$router.push('/');
         }
       } catch (error) {
         console.error('Failed to validate session', error);
+        fetch('http://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
         this.unauthenticate();
         this.$router.push('/');
       } finally {
@@ -102,7 +110,7 @@ export default {
     async fetchUsers() {
       try {
         const response = await fetch('http://localhost:3001/api/users/showUsers', {
-          credentials: 'include' // Include credentials if needed
+          credentials: 'include'
         });
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -119,7 +127,6 @@ export default {
     goHome() {
       this.$router.push({ 
         path: '/home',
-        // query: { name: this.name, isAdmin: this.isAdmin }
       });
     },
 
@@ -169,7 +176,7 @@ export default {
 }
 
 .logout-btn.red {
-  background-color: #b23b3b; /* Set background color to red */
+  background-color: #b23b3b;
 }
 
 .home-btn:hover,
@@ -198,7 +205,7 @@ h2 {
 
 .users-header {
   font-weight: bold;
-  color: #555; /* Adjust the color brightness */
+  color: #555;
 }
 
 table {
@@ -210,7 +217,7 @@ th, td {
   padding: 8px;
   text-align: left;
   border-bottom: 1px solid #ddd;
-  border-right: 1px solid #ddd; /* Add vertical line */
+  border-right: 1px solid #ddd;
 }
 
 th {

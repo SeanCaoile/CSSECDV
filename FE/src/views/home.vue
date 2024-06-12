@@ -60,7 +60,7 @@ export default {
       } else {
           console.error('Logout failed');
       }
-      
+  
       this.unauthenticate();
       this.$router.push('/');
     },
@@ -85,12 +85,20 @@ export default {
           this.isAdmin = data.isAdmin;
 
         } else {
+          fetch('http://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
           this.unauthenticate();
           this.$router.push('/');
         }
       })
       .catch(error => {
         console.error('Failed to validate session', error);
+        fetch('http://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
         this.unauthenticate();
         this.$router.push('/');
       });
@@ -115,6 +123,10 @@ export default {
       })
       .catch(error => {
         console.error('Failed to fetch user data', error);
+        fetch('http://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
         this.unauthenticate();
         this.$router.push('/');
       });
@@ -129,11 +141,11 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 6rem; /* Increased height */
+  height: 6rem;
   display: flex;
-  justify-content: space-between; /* Adjusted to space out buttons */
+  justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem; /* Adjusted padding */
+  padding: 1rem 2rem;
   background-color: #333;
   color: white;
 }
@@ -148,11 +160,11 @@ export default {
   color: white;
   border: none;
   cursor: pointer;
-  padding: 0.8rem 1.5rem; /* Adjusted padding */
-  border-radius: 50px; /* Make button oval-shaped */
-  font-size: 1.1rem; /* Adjust font size */
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
   width: 150px;
-  margin-right: 1rem; /* Add margin to the right */
+  margin-right: 1rem;
 }
 
 .new-page-btn:hover {
@@ -164,11 +176,11 @@ export default {
   color: white;
   border: none;
   cursor: pointer;
-  padding: 0.8rem 1.5rem; /* Adjusted padding */
-  border-radius: 50px; /* Make button oval-shaped */
-  font-size: 1.1rem; /* Adjust font size */
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
   width: 130px;
-  margin-left: auto; /* Push the logout button to the right */
+  margin-left: auto;
 }
 
 .logout-btn:hover {
@@ -184,7 +196,7 @@ export default {
 }
 
 h1 {
-  font-size: 2rem; /* Adjusted font size */
+  font-size: 2rem;
   color: #333;
 }
 </style>

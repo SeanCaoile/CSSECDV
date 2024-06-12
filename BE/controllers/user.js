@@ -53,18 +53,10 @@ export const saveAccount = async (req, res) => {
     const { name, phoneNumber, email, password } = req.body;
 
     // Validate inputs
-    if (!validateName(name)) {
-        return res.status(400).send({ error: 'Only letters and spaces are allowed in name' });
-    }
-    if (!validateEmail(email)) {
-        return res.status(400).send({ error: 'Invalid email address' });
-    }
-    if (!validatePassword(password)) {
-        return res.status(400).send({ error: 'Invalid password' });
-    }
-    if (!validatePhone(phoneNumber)) {
-        return res.status(400).send({ error: 'Invalid phone number' });
-    }
+    if (!validateName(name)) { return res.status(400).send({ error: 'Only letters and spaces are allowed in name' }); }
+    if (!validateEmail(email)) { return res.status(400).send({ error: 'Invalid email address' }); }
+    if (!validatePassword(password)) { return res.status(400).send({ error: 'Invalid password' }); }
+    if (!validatePhone(phoneNumber)) { return res.status(400).send({ error: 'Invalid phone number' }); } 
 
     try {
         //Check if email already exists in the database
@@ -136,7 +128,7 @@ export const verifyLogin = async (req, res) => {
 
                 res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
                     httpOnly: true,
-                    secure: true, // Use secure cookies in production
+                    secure: true,
                     sameSite: 'strict',
                     maxAge: 2 * 60, // 2 minutes
                     path: '/'
@@ -163,16 +155,10 @@ export const verifyLogin = async (req, res) => {
                 }
             }
         });
-        } catch (error) {
-            res.status(500).send(error);
-        }
-    };
-
-        // if (comparison) {
-        //     resetLoginAttempts(email);
-        //     return res.send({ name: user.name, isAdmin: user.isAdmin });
-        // }
-
+    } catch (error) {
+        res.status(500).send(error);
+    }
+};
 
 export const validate_session = async (req, res) => {
     const sessionId = req.cookies.sessionId;

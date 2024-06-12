@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeLayout from '../HomeLayout.vue'; 
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 import store from '../security/store'; // Import the Vuex store
 
 const router = createRouter({
@@ -48,8 +48,11 @@ router.beforeEach((to, from, next) => {
   // Check if the route requires authentication
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // Check if user is authenticated
-    // if (!isAuthenticated() && !store.getters.isAuthenticated) {
     if (!store.getters.isAuthenticated) {
+      fetch('http://localhost:3001/api/users/removeCookie', {
+        method: 'POST',
+        credentials: 'include',
+      });
       // If not authenticated, redirect to login page
       next({ name: 'login' });
     } else {
@@ -61,10 +64,5 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
-
-// function isAuthenticated() {
-//   // Check if session or token exists
-//   return Cookies.get('sessionId') !== undefined;
-// }
 
 export default router;
