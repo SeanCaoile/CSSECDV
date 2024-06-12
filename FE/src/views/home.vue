@@ -8,20 +8,20 @@
     </nav>
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
-      <!-- <div class="about"> -->
-      <!-- <h1>Home</h1> -->
     </div>
   </div>
 </template>
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
+// import Cookies from 'js-cookie';
+import { mapActions } from 'vuex';
 
 export default {
   data() {
     return {
       name: '',
-      isAdmin: null // Add userId to the data object
+      isAdmin: null
     };
   },
 
@@ -39,28 +39,98 @@ export default {
   },
 
   mounted() {
-    // Retrieve the name and userId from the query parameters
-    this.name = this.$route.query.name;
-    this.isAdmin = parseInt(this.$route.query.isAdmin, 10); // Retrieve and convert userId to a number
-  },
-
-  computed: {
-    isAdmin() {
-      return this.isAdmin === 1; // Check if userId is 0
-    }
+    this.validateSession();
   },
 
   methods: {
+    ...mapActions(['unauthenticate']),
+
     adminView() {
-      // this.$router.push('/admin'); // Adjust the path as needed
-      this.$router.push({ 
-        path: '/admin',
-        query: { name: this.name, isAdmin: this.isAdmin } // Pass the name as a query parameter
+      this.$router.push('/admin');
+    },
+
+    async logout() {
+      const response = await fetch('http://localhost:3001/api/users/removeCookie', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+          console.log('Logged out successfully');
+      } else {
+          console.error('Logout failed');
+      }
+  
+      this.unauthenticate();
+      this.$router.push('/');
+    },
+
+    validateSession() {
+      fetch('http://localhost:3001/api/users/validate_session', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json' 
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to validate session');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.authenticated) {
+          this.name = data.name;
+          this.isAdmin = data.isAdmin;
+
+        } else {
+          fetch('http://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
+        }
+      })
+      .catch(error => {
+        console.error('Failed to validate session', error);
+        fetch('http://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
       });
     },
-    logout() {
-      this.$router.push('/');
-    }
+    fetchUserData() {
+      fetch('http://localhost:3001/api/get-user-data', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        return response.json();
+      })
+      .then(data => {
+        this.name = data.name;
+        this.isAdmin = data.isAdmin;
+      })
+      .catch(error => {
+        console.error('Failed to fetch user data', error);
+        fetch('http://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      });
+    },
   }
 };
 </script>
@@ -71,11 +141,11 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 6rem; /* Increased height */
+  height: 6rem;
   display: flex;
-  justify-content: space-between; /* Adjusted to space out buttons */
+  justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem; /* Adjusted padding */
+  padding: 1rem 2rem;
   background-color: #333;
   color: white;
 }
@@ -90,11 +160,11 @@ export default {
   color: white;
   border: none;
   cursor: pointer;
-  padding: 0.8rem 1.5rem; /* Adjusted padding */
-  border-radius: 50px; /* Make button oval-shaped */
-  font-size: 1.1rem; /* Adjust font size */
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
   width: 150px;
-  margin-right: 1rem; /* Add margin to the right */
+  margin-right: 1rem;
 }
 
 .new-page-btn:hover {
@@ -106,11 +176,11 @@ export default {
   color: white;
   border: none;
   cursor: pointer;
-  padding: 0.8rem 1.5rem; /* Adjusted padding */
-  border-radius: 50px; /* Make button oval-shaped */
-  font-size: 1.1rem; /* Adjust font size */
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
   width: 130px;
-  margin-left: auto; /* Push the logout button to the right */
+  margin-left: auto;
 }
 
 .logout-btn:hover {
@@ -126,7 +196,7 @@ export default {
 }
 
 h1 {
-  font-size: 2rem; /* Adjusted font size */
+  font-size: 2rem;
   color: #333;
 }
 </style>
