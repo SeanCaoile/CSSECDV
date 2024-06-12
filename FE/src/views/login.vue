@@ -77,7 +77,9 @@ export default {
 
         if (response.status === 200) {
           const captchaToken = await this.executeRecaptcha();
-            this.authenticate(data.user);
+            // this.authenticate(data.user);
+            this.authenticate();
+            // console.log("TEST" ,data.user);
             this.$router.push('/home');
         } else {  // Invalid login attempts
           this.errorMessage = data.message;

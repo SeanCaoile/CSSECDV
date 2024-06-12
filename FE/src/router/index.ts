@@ -18,27 +18,15 @@ const router = createRouter({
     },
     {
       path: '/home',
-      component: HomeLayout,
-      children: [
-        {
-          path: '',
-          name: 'home',
-          component: () => import('../views/home.vue'),
-          meta: { requiresAuth: true }
-        }
-      ]
+      name: 'home',
+      component: () => import('../views/home.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/admin',
       component: HomeLayout,
-      children: [
-        {
-          path: '',
-          name: 'admin',
-          component: () => import('../views/admin.vue'),
-          meta: { requiresAuth: true }
-        }
-      ]
+      component: () => import('../views/admin.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 });
