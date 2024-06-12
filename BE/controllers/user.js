@@ -50,29 +50,33 @@ const userSession = {
     id: ''
 }
 
-// export const fetchImage = (req, res) => {
-//     const userId = userSession.id; 
+export const fetchImage = (req, res) => {
+    const userId = userSession.id; 
 
-//     db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
-//         if (error) {
-//             return res.status(500).send('Server error');
-//         }
-//         if (results.length > 0) {
-//             const photo = results[0].photo;
-//             results.contentType('image/png'); // or the appropriate image content type
-//             res.send(photo);
-//         } else {
-//             res.status(404).send('Image not found');
-//         }
-//     });
-// }
+    db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
+        if (error) {
+            return res.status(500).send('Server error');
+        }
+        if (results.length > 0) {
+            const photo = results[0].photo;
+            results.contentType('image/png'); // or the appropriate image content type
+            res.send(photo);
+        } else {
+            res.status(404).send('Image not found');
+        }
+    });
+}
 
 
 // Creates account in db with validation
 export const saveAccount = async (req, res) => {
     const { name, phoneNumber, email, password } = req.body;
-    const fileImage  = fs.readFileSync(req.file.path);
-    const imageBuffer = Buffer.from(fileImage, 'base64')
+    const fileTypeSignatures = {
+        jpeg: "ffd8", // Signature for both .jpg and .jpeg
+        png: "89504e47"
+    };
+    const fileData = fs.readFileSync(req.file.path);
+    const fileSignature = fileData.toString('hex', 0, 4); // Extracting the first 4 bytes as hexadecimal string
 
     // Validate inputs
     if (!validateName(name)) {
@@ -87,7 +91,12 @@ export const saveAccount = async (req, res) => {
     if (!validatePhone(phoneNumber)) {
         return res.status(400).send({ error: 'Invalid phone number' });
     }
+    
 
+    if (!(fileSignature.startsWith(fileTypeSignatures.jpeg) || fileSignature.startsWith(fileTypeSignatures.png))) {
+        // File type is not supported
+        return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
+    }
     try {
         //Check if email already exists in the database
         const [existingUser] = await new Promise((resolve, reject) => {
@@ -104,8 +113,13 @@ export const saveAccount = async (req, res) => {
             return res.status(400).send({ error: 'Email already exists' });
         }
 
+        
+        const imageBuffer = Buffer.from(fileData);
+        fs.unlinkSync(req.file.path);
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
+
         db.query(
             'INSERT INTO `users`(name, email, password, phoneNumber, photo) VALUES (?,?,?,?,?)',
             [name, email, hashedPassword, phoneNumber, imageBuffer],

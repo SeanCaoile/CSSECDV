@@ -9,7 +9,9 @@
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
       <br />
-      <img v-if="photo" :src="photo" alt="User Photo" class="user-photo"/>
+      <div class="user-photo-container">
+        <img v-if="photo" :src="photo" alt="User Photo" class="user-photo"/>
+      </div>
     </div>
   </div>
 </template>
@@ -204,13 +206,17 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   height: calc(100vh - 6rem); /* Full height minus navbar */
-  /* padding: center; */
   text-align: center;
 }
 
 h1 {
   font-size: 2rem; /* Adjusted font size */
   color: #333;
+}
+
+.user-photo-container {
+  display: block; /* Ensures the container takes up the full width and starts on a new line */
 }
 </style>
