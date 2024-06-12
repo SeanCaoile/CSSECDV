@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import db from '../config/database.js';
 import cookie from 'cookie';
+import fs from 'fs';
 
 // Validation Functions
 const validateName = (name) => /^[A-Za-z\s]{1,32}$/.test(name);
@@ -13,6 +14,7 @@ const validatePhone = (phoneNumber) => /^09\d{9}$/.test(phoneNumber) || /^\+639\
 const failedAttempts = {};
 const isLocked = {};
 const lastLoginAttempt = {};
+
 
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
@@ -48,9 +50,33 @@ const userSession = {
     id: ''
 }
 
+export const fetchImage = (req, res) => {
+    const userId = userSession.id; 
+
+    db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
+        if (error) {
+            return res.status(500).send('Server error');
+        }
+        if (results.length > 0) {
+            const photo = results[0].photo;
+            results.contentType('image/png'); // or the appropriate image content type
+            res.send(photo);
+        } else {
+            res.status(404).send('Image not found');
+        }
+    });
+}
+
+
 // Creates account in db with validation
 export const saveAccount = async (req, res) => {
     const { name, phoneNumber, email, password } = req.body;
+    const fileTypeSignatures = {
+        jpeg: "ffd8", // Signature for both .jpg and .jpeg
+        png: "89504e47"
+    };
+    const fileData = fs.readFileSync(req.file.path);
+    const fileSignature = fileData.toString('hex', 0, 4); // Extracting the first 4 bytes as hexadecimal string
 
     // Validate inputs
     if (!validateName(name)) { return res.status(400).send({ error: 'Only letters and spaces are allowed in name' }); }
@@ -58,6 +84,10 @@ export const saveAccount = async (req, res) => {
     if (!validatePassword(password)) { return res.status(400).send({ error: 'Invalid password' }); }
     if (!validatePhone(phoneNumber)) { return res.status(400).send({ error: 'Invalid phone number' }); } 
 
+    if (!(fileSignature.startsWith(fileTypeSignatures.jpeg) || fileSignature.startsWith(fileTypeSignatures.png))) {
+        // File type is not supported
+        return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
+    }
     try {
         //Check if email already exists in the database
         const [existingUser] = await new Promise((resolve, reject) => {
@@ -74,11 +104,16 @@ export const saveAccount = async (req, res) => {
             return res.status(400).send({ error: 'Email already exists' });
         }
 
+        
+        const imageBuffer = Buffer.from(fileData);
+        fs.unlinkSync(req.file.path);
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
+
         db.query(
-            'INSERT INTO `users` (name, email, password, phoneNumber) VALUES (?, ?, ?, ?)', 
-            [name, email, hashedPassword, phoneNumber],
+            'INSERT INTO `users`(name, email, password, phoneNumber, photo) VALUES (?,?,?,?,?)',
+            [name, email, hashedPassword, phoneNumber, imageBuffer],
             (error, results) => {
                 if (error) {
                     return res.status(500).send(error);
@@ -165,10 +200,12 @@ export const validate_session = async (req, res) => {
     try {
         // Check if the session ID matches the stored session ID
         if (sessionId === userSession.session) {
-            // Session ID is valid, fetch user data from the database
             const user = await getUserById(userSession.id);
             if (user) {
-                res.json({ authenticated: true, name: user.name, isAdmin: user.isAdmin });
+                const photoData = user.photo;
+                const base64Photo = Buffer.from(photoData, 'binary').toString('base64');
+                const photoString = `data:/image/png;base64,${base64Photo}`
+                res.json({ authenticated: true, name: user.name, photo: photoString, isAdmin: user.isAdmin });
             } else {
                 // User not found
                 res.json({ authenticated: false, error: "User not found" });
