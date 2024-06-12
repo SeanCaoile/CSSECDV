@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeLayout from '../HomeLayout.vue'; 
-// import Cookies from 'js-cookie';
 import store from '../security/store'; // Import the Vuex store
 
 const router = createRouter({
@@ -24,7 +22,6 @@ const router = createRouter({
     },
     {
       path: '/admin',
-      component: HomeLayout,
       component: () => import('../views/admin.vue'),
       meta: { requiresAuth: true }
     }

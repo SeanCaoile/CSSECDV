@@ -194,7 +194,7 @@ export default {
       if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isPhoneValid) {
         return;
       }
-      const err = false;
+      var err = false;
       const formData = new FormData();
       formData.append('name', this.fullName);
       formData.append('email', this.email);

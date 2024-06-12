@@ -40,7 +40,6 @@
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
-// import Cookies from 'js-cookie';
 import { mapActions } from 'vuex';
 
 export default {
