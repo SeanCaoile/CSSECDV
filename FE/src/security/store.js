@@ -3,7 +3,7 @@ import { createStore } from 'vuex';
 export default createStore({
   state: {
     isAuthenticated: false,
-    user: null
+    // user: null
   },
   mutations: {
     SET_AUTH(state, status) {
@@ -26,6 +26,6 @@ export default createStore({
   },
   getters: {
     isAuthenticated: state => state.isAuthenticated,
-    user: state => state.user
+    // user: state => state.user
   }
 });

@@ -3,7 +3,6 @@ import cors from 'cors';
 import userRoutes from './routes/routes.js';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
-// const cookieParser = require('cookie-parser');
 import cookieParser from 'cookie-parser';
 
 dotenv.config();
@@ -13,11 +12,11 @@ console.log('host is index in ' + process.env.DB_HOST);
 const port = process.env.PORT;
 const app = express();
 
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow only this origin
+  origin: 'http://localhost:5173', // Allow only this origin (for FE)
   credentials: true
 }));
 
@@ -26,8 +25,10 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      // scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      // styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'"],
       imgSrc: ["'self'"],
       connectSrc: ["'self'"],
       fontSrc: ["'self'"],
@@ -44,9 +45,6 @@ app.use(helmet({
   },
 }));
 
-app.use('/api', userRoutes);
-
-// Routes
 app.use('/api', userRoutes);
 
 app.listen(port, () => {
