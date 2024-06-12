@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import db from '../config/database.js';
 import cookie from 'cookie';
+import fs from 'fs';
 
 // Validation Functions
 const validateName = (name) => /^[A-Za-z\s]{1,32}$/.test(name);
@@ -51,8 +52,8 @@ const userSession = {
 // Creates account in db with validation
 export const saveAccount = async (req, res) => {
     const { name, phoneNumber, email, password } = req.body;
-    const { filename } = req.file;
-    
+    const fileImage  = fs.readFileSync(req.file.path);
+    const imageBuffer = Buffer.from(fileImage, 'base64')
 
     // Validate inputs
     if (!validateName(name)) {
@@ -88,7 +89,7 @@ export const saveAccount = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         db.query(
             'INSERT INTO `users`(name, email, password, phoneNumber, photo) VALUES (?,?,?,?,?)',
-            [name, email, hashedPassword, phoneNumber, filename],
+            [name, email, hashedPassword, phoneNumber, imageBuffer],
             (error, results) => {
                 if (error) {
                     return res.status(500).send(error);
