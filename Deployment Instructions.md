@@ -1,3 +1,7 @@
+# GROUP
+## Sean Caoile, Daniel Capinpin, Justine Tan, Bryan Alvarez
+
+
 # Deployment Instructions:
 
 ## Starting Application
