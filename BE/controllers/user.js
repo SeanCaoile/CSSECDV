@@ -84,45 +84,45 @@ export const saveAccount = async (req, res) => {
     if (!validatePassword(password)) { return res.status(400).send({ error: 'Invalid password' }); }
     if (!validatePhone(phoneNumber)) { return res.status(400).send({ error: 'Invalid phone number' }); } 
 
-    if (!(fileSignature.startsWith(fileTypeSignatures.jpeg) || fileSignature.startsWith(fileTypeSignatures.png))) {
+    if (fileSignature.startsWith(fileTypeSignatures.jpeg) || fileSignature.startsWith(fileTypeSignatures.png)) {
+        try {
+            //Check if email already exists in the database
+            const [existingUser] = await new Promise((resolve, reject) => {
+                db.query('SELECT * FROM users WHERE email = ?', [email], (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(results);
+                    }
+                });
+            });
+    
+            if (existingUser) {
+                return res.status(400).send({ error: 'Email already exists' });
+            }
+    
+            const imageBuffer = Buffer.from(fileData);
+            fs.unlinkSync(req.file.path);
+    
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            db.query(
+                'INSERT INTO `users`(name, email, password, phoneNumber, photo) VALUES (?,?,?,?,?)',
+                [name, email, hashedPassword, phoneNumber, imageBuffer],
+                (error, results) => {
+                    if (error) {
+                        return res.status(500).send(error);
+                    }
+                    res.status(201).send(results);
+                }
+            );
+        } catch (error) {
+            res.status(500).send(error);
+        }
+    }
+    else {
         // File type is not supported
         return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
-    }
-    try {
-        //Check if email already exists in the database
-        const [existingUser] = await new Promise((resolve, reject) => {
-            db.query('SELECT * FROM users WHERE email = ?', [email], (error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(results);
-                }
-            });
-        });
-
-        if (existingUser) {
-            return res.status(400).send({ error: 'Email already exists' });
-        }
-
-        
-        const imageBuffer = Buffer.from(fileData);
-        fs.unlinkSync(req.file.path);
-
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        db.query(
-            'INSERT INTO `users`(name, email, password, phoneNumber, photo) VALUES (?,?,?,?,?)',
-            [name, email, hashedPassword, phoneNumber, imageBuffer],
-            (error, results) => {
-                if (error) {
-                    return res.status(500).send(error);
-                }
-                res.status(201).send(results);
-            }
-        );
-    } catch (error) {
-        res.status(500).send(error);
     }
 };
 
