@@ -11,6 +11,7 @@
       <br />
       <div class="user-photo-container">
         <img v-if="photo" :src="photo" alt="User Photo" class="user-photo"/>
+        
       </div>
     </div>
   </div>
@@ -207,5 +208,10 @@ h1 {
 
 .user-photo-container {
   display: block;
+}
+
+.user-photo {
+  max-width: 150px;
+  max-height: 150px;
 }
 </style>
