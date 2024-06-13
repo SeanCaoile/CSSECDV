@@ -31,8 +31,11 @@ After registering, the account details will be saved in the db and the user will
 ___
 
 # After Logging in
-Logging in will lead you to the home page where you can see your account name <!-- and profile picture -->.
+Logging in will lead you to the home page where you can see your account name and profile picture.
 If the account logged in is the admin account, then the user may click on the "Admin Page" button on the top left. 
-This page will allow you to see the different user accounts saved in the database except the admin account.
+This page will allow you to see the different user accounts saved in the database except admin accounts.
 
 Clicking home will bring the user back the home page. The user may also logout at any time by clicking the "Logout" button  
+
+# Creating a New Admin Account
+If you wish to create your own admin account, after registering an account in the database, edit the account's "isAdmin" value from 0 to 1. Alternately, changing the value from 1 to 0 removes the account's admin privileges.
