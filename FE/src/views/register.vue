@@ -21,7 +21,7 @@
             <span class="tooltip-icon" @mouseover="showPasswordTooltip = true" @mouseout="showPasswordTooltip = false">?</span>
             <div v-if="showPasswordTooltip" class="tooltip">
               Password must be within 12 and 55 characters and 
-              contains at least <br>1 uppercase letter, <br>1 lowercase letter, <br>1 numeric digit, and <br>1 special character.
+              contains at least <br>1 uppercase letter, <br>1 lowercase letter, <br>1 numeric digit, and <br>1 special character <br> (~ ! # $ ^ - _ = +).
             </div>
           </div>
           <div class="password-container">
@@ -52,7 +52,8 @@
 
         <div>
           <label for="profilePicture">Profile Picture: </label>
-          <input type="file" id="profilePicture" accept="image/*" @change="handleFileUpload">
+          <input type="file" id="profilePicture" accept="image/*" @change="handleFileUpload" required>
+          <span v-if="imageError" class="error-message">{{ imageError }}</span>
         </div>
 
         <button type="submit" class="register-button">Create Account</button> 
@@ -170,6 +171,7 @@ export default {
       passwordError: '',
       confirmPasswordError: '',
       phoneError: '',
+      imageError: '',
       showPasswordTooltip: false,
       showPhoneTooltip: false
     };
@@ -192,7 +194,7 @@ export default {
       if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isPhoneValid) {
         return;
       }
-
+      var err = false;
       const formData = new FormData();
       formData.append('name', this.fullName);
       formData.append('email', this.email);
@@ -202,29 +204,65 @@ export default {
 
       this.createAccount(formData)
         .then(response => {
-          if (!response.ok) {
+          if (response.status === 400) {
             //check if backend returns a specific error message
             return response.json().then(errorData => {
-              throw new Error(errorData.error);
+              if (errorData.error) {
+                alert('Invalid Input/s');
+                err = true;
+              }
+              else{
+                throw new Error('Failed to create account');
+              }
             });
+          } else if (!response.ok){
+            throw new Error('Failed to create account');
           }
           return response.json();
         })
         .then(result => {
-          this.$router.push('/');
+          if (!err) {
+            this.$router.push('/');
+          }
+          else{
+            err = false;
+          }
         })
         .catch(error => {
-          if (error.message === 'Email already exists') {
-            this.emailError = 'Email already exists';
-          } else {
-            console.error('Failed to create account', error);
-          }
-      });
+          console.error('Failed to create account', error);
+        });
     },
     
     handleFileUpload(event) {
       const file = event.target.files[0];
-      this.profilePicture = file;
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = (e) => {
+          const arr = (new Uint8Array(e.target.result)).subarray(0, 4);
+          let header = "";
+          for (let i = 0; i < arr.length; i++) {
+            header += arr[i].toString(16);
+          }
+
+          const fileTypeSignatures = {
+            jpeg: "ffd8", // Signature for both .jpg and .jpeg
+            png: "89504e47"
+          };
+
+          this.profilePicture = file;
+
+          // Not supported file type
+          if (!header.startsWith(fileTypeSignatures.jpeg) && !header.startsWith(fileTypeSignatures.png)) {
+            this.imageError = 'Invalid file type. Only JPG, JPEG, and PNG are allowed.';
+            event.target.value = '';
+            this.profilePicture = null;
+          } else {
+            this.profilePicture = file;
+            this.imageError = '';
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
     },
 
     validateName() {

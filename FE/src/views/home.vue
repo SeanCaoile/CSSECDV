@@ -8,19 +8,24 @@
     </nav>
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
+      <br />
+      <div class="user-photo-container">
+        <img v-if="photo" :src="photo" alt="User Photo" class="user-photo"/>
+        
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
-// import Cookies from 'js-cookie';
 import { mapActions } from 'vuex';
 
 export default {
   data() {
     return {
       name: '',
+      photo: '',
       isAdmin: null
     };
   },
@@ -83,7 +88,7 @@ export default {
         if (data.authenticated) {
           this.name = data.name;
           this.isAdmin = data.isAdmin;
-
+          this.photo = data.photo;
         } else {
           fetch('http://localhost:3001/api/users/removeCookie', {
             method: 'POST',
@@ -191,6 +196,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   height: calc(100vh - 6rem); /* Full height minus navbar */
   text-align: center;
 }
@@ -198,5 +204,14 @@ export default {
 h1 {
   font-size: 2rem;
   color: #333;
+}
+
+.user-photo-container {
+  display: block;
+}
+
+.user-photo {
+  max-width: 150px;
+  max-height: 150px;
 }
 </style>

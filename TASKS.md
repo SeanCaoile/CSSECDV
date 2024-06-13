@@ -8,17 +8,16 @@
 
 
 **IMPORTANT TASKS**:                                                                                     Accomplished:  (use this for marking: ✔ )
-1. add **image file type detection** when uploading an image                                         |     
-2. **include image in database** when registering                                                    |
-3. **anti brute-force protection** (i think ex are attempt limits and captchas, tho not sure)        |
-4. **administration panel** (can implement view users here)                                          |      ✔
-5. **session id / cookies** (ex: to not allow users to logout and back to re-login)                  |      ✔
-6. **manual url typing fix** (users cant bypass login by typing directly in url)                     |      ✔
-    ( ex:http://localhost:5173/home?<ACCOUNT NAME> )
-7.**Try adding more security** aside from the current (BE created sessionId for FE cookie)           |      ✔
+- add **image file type detection** when uploading an image                                          |       ✔
+-  **include image in database** when registering                                                    |       ✔
+- **anti brute-force protection** (i think ex are attempt limits and captchas, tho not sure)         |       ✔
+- **administration panel** (can implement view users here)                                           |       ✔
+-  **session id / cookies** (ex: to not allow users to logout and back to re-login)                  |       ✔
+-  **manual url typing fix** (users cant bypass login by typing directly in url)                     |       ✔
+- **Try adding more security** aside from the current (BE created sessionId for FE cookie)           |       ✔
 
 
 **Side Tasks**
 1. Small design improvements to overall site                                                         |
-2. Show image in home screen after logging in                                                        |
+2. Show image in home screen after logging in                                                        |       ✔
 3. 

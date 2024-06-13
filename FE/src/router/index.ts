@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeLayout from '../HomeLayout.vue'; 
-// import Cookies from 'js-cookie';
 import store from '../security/store'; // Import the Vuex store
 
 const router = createRouter({
@@ -18,27 +16,14 @@ const router = createRouter({
     },
     {
       path: '/home',
-      component: HomeLayout,
-      children: [
-        {
-          path: '',
-          name: 'home',
-          component: () => import('../views/home.vue'),
-          meta: { requiresAuth: true }
-        }
-      ]
+      name: 'home',
+      component: () => import('../views/home.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/admin',
-      component: HomeLayout,
-      children: [
-        {
-          path: '',
-          name: 'admin',
-          component: () => import('../views/admin.vue'),
-          meta: { requiresAuth: true }
-        }
-      ]
+      component: () => import('../views/admin.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 });
