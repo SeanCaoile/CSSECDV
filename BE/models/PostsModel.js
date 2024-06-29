@@ -2,7 +2,7 @@ import db from '../config/database.js';
 
 // Get all blogs
 export const getBlogs = (result) => {
-    db.query("SELECT * FROM `blogs`", (err, res) => {
+    db.query("SELECT * FROM `posts`", (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -14,9 +14,9 @@ export const getBlogs = (result) => {
 
 // Create a new blog
 export const createBlog = (newBlog, result) => {
-    const { authorID, authorEmail, dateCreated, content, replies, title } = newBlog;
-    db.query("INSERT INTO `blogs` (authorID, authorEmail, dateCreated, content, replies, title) VALUES (?, ?, ?, ?, ?, ?)", 
-    [authorID, authorEmail, dateCreated, content, replies, title], 
+    const { authorID, authorEmail, dateCreated, content, title } = newBlog;
+    db.query("INSERT INTO `posts` (authorID, authorEmail, dateCreated, content, title) VALUES (?, ?, ?, ?, ?)", 
+    [authorID, authorEmail, dateCreated, content, title], 
     (err, res) => {
         if (err) {
             console.log("error: ", err);
@@ -29,7 +29,7 @@ export const createBlog = (newBlog, result) => {
 
 // Get a blog by ID
 export const getBlogById = (blogID, result) => {
-    db.query("SELECT * FROM `blogs` WHERE blogID = ?", [blogID], (err, res) => {
+    db.query("SELECT * FROM `posts` WHERE blogID = ?", [blogID], (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -47,7 +47,7 @@ export const getBlogById = (blogID, result) => {
 export const updateBlogById = (blogID, blog, result) => {
     const { authorID, authorEmail, dateCreated, content, replies, title } = blog;
     db.query(
-        "UPDATE `blogs` SET authorID = ?, authorEmail = ?, dateCreated = ?, content = ?, replies = ?, title = ? WHERE blogID = ?",
+        "UPDATE `posts` SET authorID = ?, authorEmail = ?, dateCreated = ?, content = ?, replies = ?, title = ? WHERE blogID = ?",
         [authorID, authorEmail, dateCreated, content, replies, title, blogID],
         (err, res) => {
             if (err) {
@@ -66,7 +66,7 @@ export const updateBlogById = (blogID, blog, result) => {
 
 // Delete a blog by ID
 export const deleteBlogById = (blogID, result) => {
-    db.query("DELETE FROM `blogs` WHERE blogID = ?", [blogID], (err, res) => {
+    db.query("DELETE FROM `posts` WHERE blogID = ?", [blogID], (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);

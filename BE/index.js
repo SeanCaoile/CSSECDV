@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import userRoutes from './routes/routes.js';
+import blogRoutes from './routes/blogRoutes.js';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -44,6 +45,7 @@ app.use(helmet({
 }));
 
 app.use('/api', userRoutes);
+app.use('/api', blogRoutes);
 
 app.listen(port, () => {
   console.log('Server running on port ' + port);

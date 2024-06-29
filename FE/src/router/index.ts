@@ -24,6 +24,11 @@ const router = createRouter({
       path: '/admin',
       component: () => import('../views/admin.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: "/createBlog",
+      component: () => import("../views/createBlog.vue"),
+      meta: { requiresAuth: true }
     }
   ]
 });

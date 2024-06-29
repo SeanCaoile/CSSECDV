@@ -13,6 +13,7 @@
         <img v-if="photo" :src="photo" alt="User Photo" class="user-photo"/>
         
       </div>
+      <button class = "create-blog-btn" @click="goCreateBlog">Create Blog</button>
     </div>
   </div>
 </template>
@@ -52,6 +53,12 @@ export default {
 
     adminView() {
       this.$router.push('/admin');
+    },
+
+    goCreateBlog() {
+      this.$router.push({ 
+        path: '/createBlog',
+      });
     },
 
     async logout() {

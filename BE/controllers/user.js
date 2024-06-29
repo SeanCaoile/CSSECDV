@@ -205,7 +205,9 @@ export const validate_session = async (req, res) => {
                 const photoData = user.photo;
                 const base64Photo = Buffer.from(photoData, 'binary').toString('base64');
                 const photoString = `data:/image/png;base64,${base64Photo}`
-                res.json({ authenticated: true, name: user.name, photo: photoString, isAdmin: user.isAdmin });
+                res.json({ authenticated: true, name: user.name, photo: photoString, isAdmin: user.isAdmin
+                    , email: user.email, id: user.id
+                 }); //Please read:::: I added the email and id to the response, not sure how this will affect security
             } else {
                 // User not found
                 res.json({ authenticated: false, error: "User not found" });
