@@ -14,7 +14,7 @@ export const getBlogs = (result) => {
 };
 
 // Create a new blog
-export const createBlog = (newBlog, result) => {
+export const createBlog = (newBlog, ip, result) => {
     const { authorID, authorEmail, dateCreated, content, title } = newBlog;
     db.query("INSERT INTO `posts` (authorID, authorEmail, dateCreated, content, title) VALUES (?, ?, ?, ?, ?)", 
     [authorID, authorEmail, dateCreated, content, title], 
@@ -25,7 +25,7 @@ export const createBlog = (newBlog, result) => {
             return;
         }
         const createdBlog = { blogID: res.insertId, ...newBlog };
-        logOperation('createBlog', createdBlog);
+        logOperation('createBlog', ip, createdBlog);
         result(null, createdBlog);
     });
 };

@@ -16,9 +16,9 @@ if (!fs.existsSync(logDirectory)) {
 }
 
 // Function to log operations
-export const logOperation = (operation, data) => {
+export const logOperation = (operation, ip, data) => {
     const logFilePath = path.join(logDirectory, 'operations.log');
-    const logEntry = `${new Date().toISOString()} - ${operation}: ${JSON.stringify(data)}\n`;
+    const logEntry = `${new Date().toISOString()} ${ip} - ${operation}: ${JSON.stringify(data)}\n`;
 
     fs.appendFile(logFilePath, logEntry, (err) => {
         if (err) {

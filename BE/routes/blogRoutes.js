@@ -22,7 +22,8 @@ router.get('/blogs', (req, res) => {
 // Create a new blog
 router.post('/blogs', (req, res) => {
   const newBlog = req.body;
-  createBlog(newBlog, (err, data) => {
+  const ip = req.ipv4; // Assuming the IP address is passed in the request
+  createBlog(newBlog, ip, (err, data) => {
     if (err) {
       return res.status(500).send(err);
     }
