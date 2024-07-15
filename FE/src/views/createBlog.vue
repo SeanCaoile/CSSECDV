@@ -52,7 +52,7 @@
           console.error('Error fetching current user:', error);
         }
       },*/
-      fetch('http://localhost:3001/api/users/validate_session', {
+      fetch('https://localhost:3001/api/users/validate_session', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -72,7 +72,7 @@
             this.blog.authorID = data.id;
             this.blog.authorEmail = data.email;
         } else {
-          fetch('http://localhost:3001/api/users/removeCookie', {
+          fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',
           });
@@ -82,7 +82,7 @@
       })
       .catch(error => {
         console.error('Failed to validate session', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });
@@ -92,7 +92,7 @@
     },
       async submitForm() {
         try {
-          const response = await fetch('http://localhost:3001/api/blogs', {
+          const response = await fetch('https://localhost:3001/api/blogs', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

@@ -6,6 +6,11 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 
+import path from 'path';
+import fs from 'fs';
+import https from 'https'
+
+
 dotenv.config();
 
 console.log('host is index in ' + process.env.DB_HOST);
@@ -13,11 +18,13 @@ console.log('host is index in ' + process.env.DB_HOST);
 const port = process.env.PORT;
 const app = express();
 
+
+
 // app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow only this origin (for FE)
+  origin: 'https://localhost:5173', // Allow only this origin (for FE)
   credentials: true
 }));
 
@@ -65,6 +72,29 @@ app.use(helmet({
 app.use('/api', userRoutes);
 app.use('/api', blogRoutes);
 
-app.listen(port, () => {
-  console.log('Server running on port ' + port);
+// Resolve directory path using import.meta.url
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+
+// Read SSL certificate and key files
+// const privateKey = fs.readFileSync(path.join(__dirname, 'cert', 'key.pem'));
+// const certificate = fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem'));
+
+const privateKey = fs.readFileSync('cert/key.pem', 'utf8');
+const certificate = fs.readFileSync('cert/cert.pem', 'utf8');
+
+console.log(privateKey);
+console.log(certificate);
+
+const credentials = { key: privateKey, cert: certificate };
+
+// Create HTTPS server
+const httpsServer = https.createServer(credentials, app);
+
+// Start HTTPS server
+httpsServer.listen(port, () => {
+  console.log('HTTPS Server running on port ' + port);
 });
+
+// app.listen(port, () => {
+//   console.log('Server running on port ' + port);
+// });

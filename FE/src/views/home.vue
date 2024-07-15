@@ -62,7 +62,7 @@ export default {
     },
 
     async logout() {
-      const response = await fetch('http://localhost:3001/api/users/removeCookie', {
+      const response = await fetch('https://localhost:3001/api/users/removeCookie', {
         method: 'POST',
         credentials: 'include',
       });
@@ -78,7 +78,7 @@ export default {
     },
 
     validateSession() {
-      fetch('http://localhost:3001/api/users/validate_session', {
+      fetch('https://localhost:3001/api/users/validate_session', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -97,7 +97,7 @@ export default {
           this.isAdmin = data.isAdmin;
           this.photo = data.photo;
         } else {
-          fetch('http://localhost:3001/api/users/removeCookie', {
+          fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',
           });
@@ -107,7 +107,7 @@ export default {
       })
       .catch(error => {
         console.error('Failed to validate session', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });
@@ -116,7 +116,7 @@ export default {
       });
     },
     fetchUserData() {
-      fetch('http://localhost:3001/api/get-user-data', {
+      fetch('https://localhost:3001/api/get-user-data', {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -135,7 +135,7 @@ export default {
       })
       .catch(error => {
         console.error('Failed to fetch user data', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });

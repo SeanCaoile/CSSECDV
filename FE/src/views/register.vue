@@ -178,7 +178,7 @@ export default {
   },
   methods: {
     createAccount(formData) {
-      return fetch('http://localhost:3001/api/users/saveAccount', {
+      return fetch('https://localhost:3001/api/users/saveAccount', {
         method: 'POST',
         body: formData
       });

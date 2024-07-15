@@ -72,7 +72,7 @@ export default {
 
     async validateSession() {
       try {
-        const response = await fetch('http://localhost:3001/api/users/validate_session', {
+        const response = await fetch('https://localhost:3001/api/users/validate_session', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -86,7 +86,7 @@ export default {
         if (data.authenticated) {
           await this.fetchUsers(); // Wait for fetchUsers to complete
         } else {
-          fetch('http://localhost:3001/api/users/removeCookie', {
+          fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',
           });
@@ -95,7 +95,7 @@ export default {
         }
       } catch (error) {
         console.error('Failed to validate session', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });
@@ -108,7 +108,7 @@ export default {
 
     async fetchUsers() {
       try {
-        const response = await fetch('http://localhost:3001/api/users/showUsers', {
+        const response = await fetch('https://localhost:3001/api/users/showUsers', {
           credentials: 'include'
         });
         if (!response.ok) {
@@ -130,7 +130,7 @@ export default {
     },
 
     async logout() {
-      const response = await fetch('http://localhost:3001/api/users/removeCookie', {
+      const response = await fetch('https://localhost:3001/api/users/removeCookie', {
         method: 'POST',
         credentials: 'include',
       });
