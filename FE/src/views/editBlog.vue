@@ -1,6 +1,6 @@
 <template>
     <div class="edit-blog">
-      <h2>Edit Blog</h2>
+      <h2>Edit Blog Post</h2>
       <form @submit.prevent="submitForm">
         <div class="form-group">
           <label for="title">Title:</label>
@@ -10,7 +10,10 @@
           <label for="content">Content:</label>
           <textarea id="content" v-model="blog.content" required></textarea>
         </div>
-        <button type="submit">Save Changes</button>
+        
+        <!-- Only show edit button if current user is the author -->
+        <button v-if="isAuthor" type="submit">Update Blog</button>
+        <span v-else>You are not authorized to edit this blog.</span>
       </form>
     </div>
   </template>
@@ -22,30 +25,67 @@
         blog: {
           id: '',
           title: '',
-          content: ''
-        }
+          content: '',
+          authorID: '', // This will be set after fetching blog data
+          // Other properties as needed
+        },
+        isAuthor: false // Flag to check if current user is the author
       };
     },
     created() {
-      const blogId = this.$route.params.id;
-      this.fetchBlog(blogId);
+      this.fetchBlog();
+      this.fetchCurrentUser();
     },
     methods: {
-      async fetchBlog(blogId) {
+      async fetchBlog() {
         try {
-          const response = await fetch(`http://localhost:3001/api/blogs/${blogId}`);
+          const blogID = this.$route.params.blogID;
+          const response = await fetch(`http://localhost:3001/api/blogs/${blogID}`);
           if (!response.ok) {
             throw new Error('Failed to fetch blog');
           }
           const data = await response.json();
-          this.blog = data;
+          this.blog.id = data.blogID; // Adjust based on your API response
+          this.blog.title = data.title;
+          this.blog.content = data.content;
+          this.blog.authorID = data.authorID; // Assuming you fetch authorID
+          // Optionally update other blog properties
+          this.checkAuthorization();
         } catch (error) {
           console.error('Error fetching blog:', error);
         }
       },
+      async fetchCurrentUser() {
+        try {
+          // Fetch current user details or check session/token
+          // Example: Use fetch or Axios to validate session
+          const response = await fetch('http://localhost:3001/api/users/validate_session', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json' 
+            }
+          });
+          if (!response.ok) {
+            throw new Error('Failed to validate session');
+          }
+          const data = await response.json();
+          // Example assuming data contains current user details
+          this.currentUser = data;
+          this.checkAuthorization();
+        } catch (error) {
+          console.error('Error fetching current user:', error);
+          // Handle unauthenticated state as needed
+        }
+      },
+      checkAuthorization() {
+        // Check if the current user is the author of the blog
+        this.isAuthor = this.currentUser && this.blog.authorID === this.currentUser.id;
+      },
       async submitForm() {
         try {
-          const response = await fetch(`http://localhost:3001/api/blogs/${this.blog.id}`, {
+          const blogID = this.blog.id;
+          const response = await fetch(`http://localhost:3001/api/blogs/${blogID}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
@@ -55,8 +95,8 @@
           if (!response.ok) {
             throw new Error('Failed to update blog');
           }
-          // Redirect to the blog detail page after successful update
-          this.$router.push(`/blogs/${this.blog.id}`);
+          console.log('Blog updated successfully');
+          this.$router.push(`/blogs/${blogID}`); // Redirect to blog detail page after successful update
         } catch (error) {
           console.error('Error updating blog:', error);
         }
@@ -74,17 +114,21 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
+  
   h2 {
     text-align: center;
     margin-bottom: 1rem;
   }
+  
   .form-group {
     margin-bottom: 1rem;
   }
+  
   label {
     display: block;
     margin-bottom: 0.5rem;
   }
+  
   input[type='text'],
   textarea {
     width: 100%;
@@ -92,6 +136,7 @@
     border: 1px solid #ccc;
     border-radius: 4px;
   }
+  
   button {
     display: block;
     width: 100%;
@@ -102,6 +147,7 @@
     border-radius: 4px;
     cursor: pointer;
   }
+  
   button:hover {
     background-color: #0056b3;
   }

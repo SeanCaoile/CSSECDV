@@ -9,14 +9,25 @@
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
       <br />
-      <div class="user-photo-container">
-        <img v-if="photo" :src="photo" alt="User Photo" class="user-photo"/>
-        
+      <div v-if="blogs.length === 0">
+        <p>No blogs found.</p>
       </div>
-      <button class = "create-blog-btn" @click="goCreateBlog">Create Blog</button>
+      <div v-else>
+        <div v-for="blog in blogs" :key="blog.blogID" class="blog-item">
+          <h2>{{ blog.title }}</h2>
+          <p>{{ blog.content }}</p>
+          <p>Author: {{ blog.authorEmail }}</p>
+          <p>Date Created: {{ blog.dateCreated }}</p>
+          <!-- Button to view blog details -->
+          <button @click="viewBlogDetail(blog.blogID)">View Details</button>
+          <hr>
+        </div>
+      </div>
+      <button class="create-blog-btn" @click="goCreateBlog">Create Blog</button>
     </div>
   </div>
 </template>
+
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
@@ -26,8 +37,8 @@ export default {
   data() {
     return {
       name: '',
-      photo: '',
-      isAdmin: null
+      isAdmin: null,
+      blogs: [] // Array to store fetched blogs
     };
   },
 
@@ -38,7 +49,7 @@ export default {
       }
     });
   },
-  
+
   beforeRouteLeave(to, from, next) {
     resetAppStyles();
     next();
@@ -46,6 +57,7 @@ export default {
 
   mounted() {
     this.validateSession();
+    this.fetchBlogs(); // Fetch blogs when component mounts
   },
 
   methods: {
@@ -61,6 +73,14 @@ export default {
       });
     },
 
+    viewBlogDetail(blogId) {
+      this.$router.push({ path: `/blogs/${blogId}` });
+    },
+
+    editBlog(blogId) {
+      this.$router.push({ path: `/blogs/${blogId}/edit` });
+    },
+
     async logout() {
       const response = await fetch('http://localhost:3001/api/users/removeCookie', {
         method: 'POST',
@@ -68,11 +88,11 @@ export default {
       });
 
       if (response.ok) {
-          console.log('Logged out successfully');
+        console.log('Logged out successfully');
       } else {
-          console.error('Logout failed');
+        console.error('Logout failed');
       }
-  
+
       this.unauthenticate();
       this.$router.push('/');
     },
@@ -95,7 +115,6 @@ export default {
         if (data.authenticated) {
           this.name = data.name;
           this.isAdmin = data.isAdmin;
-          this.photo = data.photo;
         } else {
           fetch('http://localhost:3001/api/users/removeCookie', {
             method: 'POST',
@@ -115,34 +134,25 @@ export default {
         this.$router.push('/');
       });
     },
-    fetchUserData() {
-      fetch('http://localhost:3001/api/get-user-data', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-        return response.json();
-      })
-      .then(data => {
-        this.name = data.name;
-        this.isAdmin = data.isAdmin;
-      })
-      .catch(error => {
-        console.error('Failed to fetch user data', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
-          method: 'POST',
-          credentials: 'include',
+
+    fetchBlogs() {
+      fetch('http://localhost:3001/api/blogs')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch blogs');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Assuming 'data' is an array of blogs
+          this.blogs = data.map(blog => {
+            return blog;
+          });
+        })
+        .catch(error => {
+          console.error('Failed to fetch blogs', error);
         });
-        this.unauthenticate();
-        this.$router.push('/');
-      });
-    },
+    }
   }
 };
 </script>
@@ -213,12 +223,45 @@ h1 {
   color: #333;
 }
 
-.user-photo-container {
-  display: block;
+.blog-item {
+  max-width: 600px;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  color:black;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.user-photo {
-  max-width: 150px;
-  max-height: 150px;
+h2 {
+  margin-bottom: 0.5rem;
+}
+
+button {
+  padding: 0.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.create-blog-btn {
+  padding: 0.75rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.create-blog-btn:hover {
+  background-color: #0056b3;
 }
 </style>
