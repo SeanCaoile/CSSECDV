@@ -164,8 +164,12 @@ export const verifyLogin = async (req, res) => {
 
                 const sessionId = uuidv4();
                 userSession.id = user.id;
+
                 userSession.session = sessionId;
-                userSession.userIP = ip
+                userSession.IP = ip
+
+                console.log(`Login attempt from IP: ${ip}`)
+                console.log(`saved attempt from IP: ${userSession.IP}`)
 
                 res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
                     httpOnly: true,
