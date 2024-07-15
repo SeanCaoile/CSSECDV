@@ -21,6 +21,24 @@ app.use(cors({
   credentials: true
 }));
 
+// Middleware to get IPv4 address if possible
+app.use((req, res, next) => {
+  let ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress;
+
+  // Handle IPv6 loopback address
+  if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+    ip = '127.0.0.1';
+  }
+
+  // Check if IP is IPv4-mapped IPv6 address
+  if (ip.includes('::ffff:')) {
+    ip = ip.split(':').pop();  // Extract the IPv4 part
+  }
+
+  req.ipv4 = ip;
+  next();
+}); 
+
 // Use helmet with CSP
 app.use(helmet({
   contentSecurityPolicy: {

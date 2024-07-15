@@ -47,7 +47,8 @@ export const getUserById = (userId) => {
 
 const userSession = {
     session: '',
-    id: ''
+    id: '',
+    IP: ''
 }
 
 export const fetchImage = (req, res) => {
@@ -157,9 +158,14 @@ export const verifyLogin = async (req, res) => {
             const comparison = await bcrypt.compare(password, user.password);
 
             if (comparison) {
+
+                const ip = req.ipv4;
+                // console.log(`Login attempt from IP: ${ip}`);
+
                 const sessionId = uuidv4();
                 userSession.id = user.id;
                 userSession.session = sessionId;
+                userSession.userIP = ip
 
                 res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
                     httpOnly: true,
@@ -197,10 +203,13 @@ export const verifyLogin = async (req, res) => {
 
 export const validate_session = async (req, res) => {
     const sessionId = req.cookies.sessionId;
+    const ip = req.ipv4;
+    console.log(`Login attempt from IP: ${ip}`);
     try {
         // Check if the session ID matches the stored session ID
-        if (sessionId === userSession.session) {
+        if (sessionId === userSession.session && ip == userSession.IP) {
             const user = await getUserById(userSession.id);
+
             if (user) {
                 const photoData = user.photo;
                 const base64Photo = Buffer.from(photoData, 'binary').toString('base64');
@@ -214,7 +223,7 @@ export const validate_session = async (req, res) => {
             }
         } else {
             // Session ID is invalid
-            res.json({ authenticated: false, error: "Invalid session ID" });
+            res.json({ authenticated: false, error: "Invalid session" });
         }
     } catch (error) {
         // Handle errors
