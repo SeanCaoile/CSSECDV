@@ -45,10 +45,24 @@ export const getBlogById = (blogID, result) => {
 
 // Update a blog by ID
 export const updateBlogById = (blogID, blog, result) => {
-    const { authorID, authorEmail, dateCreated, content, replies, title } = blog;
+    const { title, content } = blog;
+    const updateFields = [];
+    const params = [];
+
+    if (title) {
+        updateFields.push('title = ?');
+        params.push(title);
+    }
+    if (content) {
+        updateFields.push('content = ?');
+        params.push(content);
+    }
+
+    params.push(blogID);
+
     db.query(
-        "UPDATE `posts` SET authorID = ?, authorEmail = ?, dateCreated = ?, content = ?, replies = ?, title = ? WHERE blogID = ?",
-        [authorID, authorEmail, dateCreated, content, replies, title, blogID],
+        `UPDATE posts SET ${updateFields.join(', ')} WHERE blogID = ?`,
+        params,
         (err, res) => {
             if (err) {
                 console.log("error: ", err);
@@ -64,6 +78,40 @@ export const updateBlogById = (blogID, blog, result) => {
     );
 };
 
+export const editBlog = async (req, res) => {
+    const sessionId = req.cookies.sessionId; // Retrieve sessionId from cookies
+  
+    // Validate sessionId
+    if (!isValidSession(sessionId)) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+  
+    // Assuming you have validated the session, proceed with editing the blog
+    const { blogID, updatedContent } = req.body;
+  
+    try {
+      // Fetch the blog post from the database and perform editing
+      const blog = await fetchBlogById(blogID);
+      
+      if (!blog) {
+        return res.status(404).send({ error: 'Blog not found' });
+      }
+  
+      // Check if the current user has permission to edit this blog
+      if (blog.authorEmail !== req.session.user.email) {
+        return res.status(403).send({ error: 'You are not authorized to edit this blog' });
+      }
+  
+      // Update the blog content in the database
+      await updateBlog(blogID, { content: updatedContent });
+  
+      res.status(200).send({ message: 'Blog updated successfully' });
+    } catch (error) {
+      console.error('Error editing blog:', error);
+      res.status(500).send({ error: 'Internal server error' });
+    }
+  };
+  
 // Delete a blog by ID
 export const deleteBlogById = (blogID, result) => {
     db.query("DELETE FROM `posts` WHERE blogID = ?", [blogID], (err, res) => {
