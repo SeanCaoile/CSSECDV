@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import db from '../config/database.js';
 import cookie from 'cookie';
 import fs from 'fs';
+import { logOperation } from '../utils/logger.js'; // Import the logging function
+
 
 // Validation Functions
 const validateName = (name) => /^[A-Za-z\s]{1,32}$/.test(name);
@@ -50,6 +52,7 @@ const userSession = {
     id: '',
     IP: ''
 }
+
 
 export const fetchImage = (req, res) => {
     const userId = userSession.id; 
@@ -169,6 +172,7 @@ export const verifyLogin = async (req, res) => {
                 userSession.IP = ip
 
                 console.log(`Login attempt from IP: ${ip}`)
+                logOperation('Login', ip, {result: "success", email: email, id: userSession.id} );
                 console.log(`saved attempt from IP: ${userSession.IP}`)
 
                 res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
@@ -184,6 +188,8 @@ export const verifyLogin = async (req, res) => {
             } else {
                 handleFailedLoginAttempt(email);
                 const lockoutTime = Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000);
+                const ip = req.ipv4;
+                logOperation('Login', ip, {result: "failed", email: email} );
                 
                 if (isLocked[email]) {
                     return res.status(401).send({
