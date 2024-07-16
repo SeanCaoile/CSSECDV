@@ -82,9 +82,6 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const privateKey = fs.readFileSync('cert/key.pem', 'utf8');
 const certificate = fs.readFileSync('cert/cert.pem', 'utf8');
 
-console.log(privateKey);
-console.log(certificate);
-
 const credentials = { key: privateKey, cert: certificate };
 
 // Create HTTPS server

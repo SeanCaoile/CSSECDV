@@ -168,8 +168,8 @@ export const verifyLogin = async (req, res) => {
                 userSession.session = sessionId;
                 userSession.IP = ip
 
-                console.log(`Login attempt from IP: ${ip}`)
-                console.log(`saved attempt from IP: ${userSession.IP}`)
+                // console.log(`Login attempt from IP: ${ip}`)
+                // console.log(`saved attempt from IP: ${userSession.IP}`)
 
                 res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
                     httpOnly: true,
@@ -208,13 +208,22 @@ export const verifyLogin = async (req, res) => {
 export const validate_session = async (req, res) => {
     const sessionId = req.cookies.sessionId;
     const ip = req.ipv4;
-    console.log(`Login attempt from IP: ${ip}`);
+    // console.log(`Login attempt from IP: ${ip}`);
     try {
         // Check if the session ID matches the stored session ID
         if (sessionId === userSession.session && ip == userSession.IP) {
             const user = await getUserById(userSession.id);
 
             if (user) {
+                res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'strict',
+                    maxAge: 2 * 60, // 2 minutes
+                    path: '/'
+                }));
+                console.log("NEW COOKIE TIMER");
+                
                 const photoData = user.photo;
                 const base64Photo = Buffer.from(photoData, 'binary').toString('base64');
                 const photoString = `data:/image/png;base64,${base64Photo}`
