@@ -104,7 +104,7 @@
           // Redirect to another page or give feedback to the user
           this.$router.push('/home');
         } catch (error) {
-          console.error('There was an error creating the blog:', error);
+          console.error('There was an error creating the blog');
         }
       }
     }
@@ -124,6 +124,7 @@
   h2 {
     text-align: center;
     margin-bottom: 1rem;
+    color: black;
   }
   
   .form-group {
@@ -133,6 +134,7 @@
   label {
     display: block;
     margin-bottom: 0.5rem;
+    color: black;
   }
   
   input[type='text'],
