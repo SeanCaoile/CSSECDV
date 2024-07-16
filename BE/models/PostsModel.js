@@ -1,4 +1,5 @@
 import db from '../config/database.js';
+import { logOperation } from '../utils/logger.js'; // Import the logging function
 
 // Get all blogs
 export const getBlogs = (result) => {
@@ -13,7 +14,7 @@ export const getBlogs = (result) => {
 };
 
 // Create a new blog
-export const createBlog = (newBlog, result) => {
+export const createBlog = (newBlog, ip, result) => {
     const { authorID, authorEmail, dateCreated, content, title } = newBlog;
     db.query("INSERT INTO `posts` (authorID, authorEmail, dateCreated, content, title) VALUES (?, ?, ?, ?, ?)", 
     [authorID, authorEmail, dateCreated, content, title], 
@@ -23,7 +24,9 @@ export const createBlog = (newBlog, result) => {
             result(err, null);
             return;
         }
-        result(null, { blogID: res.insertId, ...newBlog });
+        const createdBlog = { blogID: res.insertId, ...newBlog };
+        logOperation('createBlog', ip, createdBlog);
+        result(null, createdBlog);
     });
 };
 
@@ -59,7 +62,9 @@ export const updateBlogById = (blogID, blog, result) => {
                 result({ kind: "not_found" }, null);
                 return;
             }
-            result(null, { blogID, ...blog });
+            const updatedBlog = { blogID, ...blog };
+            logOperation('updateBlogById', updatedBlog);
+            result(null, updatedBlog);
         }
     );
 };
@@ -76,6 +81,7 @@ export const deleteBlogById = (blogID, result) => {
             result({ kind: "not_found" }, null);
             return;
         }
+        logOperation('deleteBlogById', { blogID });
         result(null, res);
     });
 };
