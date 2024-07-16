@@ -5,7 +5,7 @@ import db from '../config/database.js';
 import cookie from 'cookie';
 import fs from 'fs';
 import { logOperation } from '../utils/logger.js'; // Import the logging function
-
+import { error } from "console";
 
 // Validation Functions
 const validateName = (name) => /^[A-Za-z\s]{1,32}$/.test(name);
@@ -17,15 +17,40 @@ const failedAttempts = {};
 const isLocked = {};
 const lastLoginAttempt = {};
 
+const debug = process.env.DEBUG;
 
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
         if (err) {
-            return res.status(500).send(err);
+            if (debug===1){
+                return res.status(500).send(err);
+            } else {
+                return res.status(500).send("An error occured while accessing data");
+            }
         }
         res.json(data);
     });
 };
+
+// export const getUserById = (userId) => {
+//     return new Promise((resolve, reject) => {
+//         db.query(
+//             'SELECT * FROM users WHERE id = ?',
+//             [userId],
+//             (error, results) => {
+//                 if (error) {
+//                     reject(error);
+//                 } else {
+//                     if (results.length > 0) {
+//                         resolve(results[0]);
+//                     } else {
+//                         resolve(null); // User not found
+//                     }
+//                 }
+//             }
+//         );
+//     });
+// };
 
 export const getUserById = (userId) => {
     return new Promise((resolve, reject) => {
@@ -34,7 +59,12 @@ export const getUserById = (userId) => {
             [userId],
             (error, results) => {
                 if (error) {
-                    reject(error);
+                    if (debug === 1) {
+                        reject(error);
+                    }
+                    else{
+                        reject("An error occured while accessing data");
+                    }
                 } else {
                     if (results.length > 0) {
                         resolve(results[0]);
@@ -53,20 +83,28 @@ const userSession = {
     IP: ''
 }
 
-
 export const fetchImage = (req, res) => {
     const userId = userSession.id; 
 
     db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
         if (error) {
-            return res.status(500).send('Server error');
+            if(debug===1){
+                return res.status(500).send(error);
+            } else {
+                return res.status(500).send("An error occured while accessing data");
+            }
+            
         }
         if (results.length > 0) {
             const photo = results[0].photo;
             results.contentType('image/jpg');
             res.send(photo);
         } else {
-            res.status(404).send('Image not found');
+            if(debug===1){
+                res.status(404).send('Image not found');
+            } else {
+                res.status(404).send("An error occured while accessing data");
+            }
         }
     });
 }
@@ -83,10 +121,34 @@ export const saveAccount = async (req, res) => {
     const fileSignature = fileData.toString('hex', 0, 4); // Extracting the first 4 bytes as hexadecimal string
 
     // Validate inputs
-    if (!validateName(name)) { return res.status(400).send({ error: 'Only letters and spaces are allowed in name' }); }
-    if (!validateEmail(email)) { return res.status(400).send({ error: 'Invalid email address' }); }
-    if (!validatePassword(password)) { return res.status(400).send({ error: 'Invalid password' }); }
-    if (!validatePhone(phoneNumber)) { return res.status(400).send({ error: 'Invalid phone number' }); } 
+    if (!validateName(name)) { 
+        if(debug===1){
+            return res.status(400).send(error);
+        } else {
+            return res.status(400).send({ error: 'Only letters and spaces are allowed in name' });
+        }
+    }     
+    if (!validateEmail(email)) { 
+        if(debug===1){
+            return res.status(400).send(error); 
+        } else {
+            return res.status(400).send({ error: 'Invalid email address' }); 
+        }
+    }
+    if (!validatePassword(password)) { 
+        if (debug===1) {
+            return res.status(400).send(error); 
+        } else {
+            return res.status(400).send({ error: 'Invalid password' }); 
+        }
+    }
+    if (!validatePhone(phoneNumber)) { 
+        if (debug===1) {
+            return res.status(400).send(error); 
+        } else {
+            return res.status(400).send({ error: 'Invalid phone number' }); 
+        }
+    } 
 
     if (fileSignature.startsWith(fileTypeSignatures.jpeg) || fileSignature.startsWith(fileTypeSignatures.png)) {
         try {
@@ -94,7 +156,11 @@ export const saveAccount = async (req, res) => {
             const [existingUser] = await new Promise((resolve, reject) => {
                 db.query('SELECT * FROM users WHERE email = ?', [email], (error, results) => {
                     if (error) {
-                        reject(error);
+                        if(debug===1){
+                            reject(error);
+                        } else {
+                            reject("An error occured while accessing data")
+                        }
                     } else {
                         resolve(results);
                     }
@@ -118,18 +184,29 @@ export const saveAccount = async (req, res) => {
                 [name, email, hashedPassword, phoneNumber, imageBuffer],
                 (error, results) => {
                     if (error) {
-                        return res.status(500).send(error);
+                        if(debug===1){
+                            return res.status(500).send(error);
+                        } else {
+                            return res.status(500).send("An error occured while accessing the data")
+                        }       
                     }
                     res.status(201).send(results);
                 }
             );
         } catch (error) {
-            res.status(500).send(error);
+            if(debug===1){
+                res.status(500).send(error);
+            } else {
+                res.status(500).send("An error occured while accessing the data");
+            }
         }
     }
     else {
         // File type is not supported
-        return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
+        if (debug = 1)
+            return res.status(400).send(error);
+        else
+            return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
     }
 };
 
@@ -137,37 +214,54 @@ export const verifyLogin = async (req, res) => {
     const { email, password } = req.body;
 
     // Validate inputs
-    if (!validateEmail(email)) {
-        return res.status(400).send({ error: 'Invalid email address' });
+    if (!validateEmail(email)) { 
+        if(debug===1){
+            return res.status(400).send(error); 
+        } else {
+            return res.status(400).send({ error: 'Invalid email address' }); 
+        }
     }
 
     try {
         if (isLocked[email] && Date.now() - lastLoginAttempt[email] < 60000) {
             const lockoutTime = Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000);
-            return res.status(401).send({
-                message: `Account is locked. Please try again after ${lockoutTime} seconds.`,
-                failedAttempts: failedAttempts[email],
-                isLocked: true
-            });
+            if(debug===1){
+                return res.status(401).send({
+                    message: `Account is locked. Please try again after ${lockoutTime} seconds.`,
+                    failedAttempts: failedAttempts[email],
+                    isLocked: true
+                });
+            } else {
+                return res.status(401).send({
+                    message: `Account is temporarily suspended.`,
+                    failedAttempts: failedAttempts[email],
+                    isLocked: true
+                });
+            }
         }
 
         db.query('SELECT * FROM users WHERE email = ?', [email], async (error, results) => {
             if (error) {
-                return res.status(500).send(error);
+                if(debug === 1){
+                    return res.status(500).send(error);
+                } else {
+                    return res.status(500).send("An error occured while accessing the data");
+                }
             } 
             
             if (results.length === 0) {
-                return res.status(404).send('User does not exist');
+                if(debug===1){
+                    return res.status(404).send('User does not exist');
+                } else {
+                    return res.status(404).send("Invalid Email Provided");
+                }
             }
 
             const user = results[0];
             const comparison = await bcrypt.compare(password, user.password);
 
             if (comparison) {
-
                 const ip = req.ipv4;
-                // console.log(`Login attempt from IP: ${ip}`);
-
                 const sessionId = uuidv4();
                 userSession.id = user.id;
 
@@ -195,29 +289,50 @@ export const verifyLogin = async (req, res) => {
                 logOperation('Login', ip, {result: "failed", email: email} );
                 
                 if (isLocked[email]) {
-                    return res.status(401).send({
-                        message: `Account is locked. Please try again after ${lockoutTime} seconds.`,
-                        failedAttempts: failedAttempts[email],
-                        isLocked: true
-                    });
+                    if(debug === 1){
+                        return res.status(401).send({
+                            message: `Account is locked. Please try again after ${lockoutTime} seconds.`,
+                            failedAttempts: failedAttempts[email],
+                            isLocked: true
+                        });
+                    } else {
+                        return res.status(401).send({
+                            message: `Account is temporarily suspended`,
+                            failedAttempts: failedAttempts[email],
+                            isLocked: true
+                        });
+                    }
+                    
                 } else {
-                    return res.status(401).send({
-                        message: 'Incorrect email or password',
-                        failedAttempts: failedAttempts[email],
-                        isLocked: false
-                    });
+                    if (debug === 1) {
+                        return res.status(401).send({
+                            message: 'Incorrect Password for Inputted Email',
+                            failedAttempts: failedAttempts[email],
+                            isLocked: false
+                        });
+                    } else {
+                        return res.status(401).send({
+                            message: 'Incorrect email or password',
+                            failedAttempts: failedAttempts[email],
+                            isLocked: false
+                        });
+                    }
                 }
             }
         });
     } catch (error) {
-        res.status(500).send(error);
+        if(debug===1){
+            res.status(500).send(error);
+        } else {
+            res.status(500).send("An error occured while accessing the data");
+        }
     }
 };
 
 export const validate_session = async (req, res) => {
     const sessionId = req.cookies.sessionId;
     const ip = req.ipv4;
-    // console.log(`Login attempt from IP: ${ip}`);
+
     try {
         // Check if the session ID matches the stored session ID
         if (sessionId === userSession.session && ip == userSession.IP) {
@@ -244,13 +359,29 @@ export const validate_session = async (req, res) => {
                 res.json({ authenticated: false, error: "User not found" });
             }
         } else {
-            // Session ID is invalid
-            res.json({ authenticated: false, error: "Invalid session" });
+            if (sessionId !== userSession.session) {
+                if(debug===1){
+                    res.json({ authenticated: false, error: "Invalid Session ID" });
+                } else {
+                    res.json({ authenticated: false, error: "Disconnected from the server" });
+                }
+            }
+            else if (ip !== userSession.IP) {
+                if(debug===1){
+                    res.json({ authenticated: false, error: "IP Address Mismatch" });
+                } else {
+                    res.json({ authenticated: false, error: "Disconnected from the server" });
+                }
+            }
         }
     } catch (error) {
         // Handle errors
-        console.error("Error validating session:", error);
-        res.status(500).json({ authenticated: false, error: "Internal server error" });
+        // console.error("Error validating session:", error);
+        if(debug === 1){
+            res.status(500).json({ authenticated: false, error});
+        } else {
+            res.status(500).json({ authenticated: false, error: "Internal server error" });
+        }
     }
 }
 
