@@ -110,6 +110,9 @@ export const saveAccount = async (req, res) => {
     
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const ip = req.ipv4;
+
+            logOperation('Register', ip, {result: "success", name: name, email: email, phoneNumber: phoneNumber} );
             db.query(
                 'INSERT INTO `users`(name, email, password, phoneNumber, photo) VALUES (?,?,?,?,?)',
                 [name, email, hashedPassword, phoneNumber, imageBuffer],
