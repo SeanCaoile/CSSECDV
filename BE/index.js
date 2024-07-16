@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import userRoutes from './routes/routes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import announcementRoutes from './routes/announcementRoutes.js';
+
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -71,6 +73,8 @@ app.use(helmet({
 
 app.use('/api', userRoutes);
 app.use('/api', blogRoutes);
+app.use('/api/announcements', announcementRoutes);
+
 
 // Resolve directory path using import.meta.url
 const __dirname = path.dirname(new URL(import.meta.url).pathname);

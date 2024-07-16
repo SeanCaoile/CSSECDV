@@ -6,6 +6,9 @@
       </div>
       <button class="logout-btn" @click="logout">Logout</button>
     </nav>
+    <div class="announcement-bar" v-if="announcement">
+      <p>Latest Announcement: {{ announcement.content }}</p>
+    </div>
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
       <br />
@@ -27,7 +30,8 @@ export default {
     return {
       name: '',
       photo: '',
-      isAdmin: null
+      isAdmin: null,
+      announcement: null
     };
   },
 
@@ -46,6 +50,7 @@ export default {
 
   mounted() {
     this.validateSession();
+    this.fetchLastAnnouncement();
   },
 
   methods: {
@@ -115,6 +120,7 @@ export default {
         this.$router.push('/');
       });
     },
+    
     fetchUserData() {
       fetch('https://localhost:3001/api/get-user-data', {
         method: 'GET',
@@ -143,6 +149,28 @@ export default {
         this.$router.push('/');
       });
     },
+
+    fetchLastAnnouncement() {
+      fetch('https://localhost:3001/api/announcements/last', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch the last announcement');
+        }
+        return response.json();
+      })
+      .then(data => {
+        this.announcement = data;
+      })
+      .catch(error => {
+        console.error('Failed to fetch the last announcement', error);
+      });
+    },
   }
 };
 </script>
@@ -160,6 +188,17 @@ export default {
   padding: 1rem 2rem;
   background-color: #333;
   color: white;
+}
+
+.announcement-bar {
+  position: fixed;
+  top: 6rem;
+  left: 0;
+  width: 100%;
+  background-color: #ff9800;
+  color: black;
+  text-align: center;
+  padding: 1rem 0;
 }
 
 .left-buttons {
