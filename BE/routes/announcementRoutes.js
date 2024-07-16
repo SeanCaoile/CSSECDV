@@ -3,6 +3,9 @@ import { getLastAnnouncement, createAnnouncement } from '../models/AnnouncementM
 
 const router = express.Router();
 
+const debug = process.env.DEBUG;
+
+
 // Get the last announcement
 router.get('/last', (req, res) => {
     getLastAnnouncement((err, announcement) => {
