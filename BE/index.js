@@ -19,7 +19,6 @@ const port = process.env.PORT;
 const app = express();
 
 
-
 // app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -76,9 +75,6 @@ app.use('/api', blogRoutes);
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 // Read SSL certificate and key files
-// const privateKey = fs.readFileSync(path.join(__dirname, 'cert', 'key.pem'));
-// const certificate = fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem'));
-
 const privateKey = fs.readFileSync('cert/key.pem', 'utf8');
 const certificate = fs.readFileSync('cert/cert.pem', 'utf8');
 
@@ -91,7 +87,3 @@ const httpsServer = https.createServer(credentials, app);
 httpsServer.listen(port, () => {
   console.log('HTTPS Server running on port ' + port);
 });
-
-// app.listen(port, () => {
-//   console.log('Server running on port ' + port);
-// });

@@ -1,6 +1,8 @@
 import db from '../config/database.js';
 import { logOperation } from '../utils/logger.js'; // Import the logging function
 
+const debug = process.env.DEBUG;
+
 // Get all blogs
 export const getBlogs = (result) => {
     db.query("SELECT * FROM `posts`", (err, res) => {
