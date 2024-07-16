@@ -7,9 +7,11 @@ const router = express.Router();
 router.get('/last', (req, res) => {
     getLastAnnouncement((err, announcement) => {
         if (err) {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving the last announcement."
-            });
+            if (debug === 1){
+                return res.status(500).send(err);
+              } else {
+                return res.status(500).send("An error occured while accessing data");
+              }
         } else {
             res.send(announcement);
         }
@@ -26,9 +28,11 @@ router.post('/create', (req, res) => {
 
     createAnnouncement(newAnnouncement, ip, (err, announcement) => {
         if (err) {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating the announcement."
-            });
+            if (debug === 1){
+                return res.status(500).send(err);
+              } else {
+                return res.status(500).send("An error occured while accessing data");
+              }
         } else {
             res.send(announcement);
         }
