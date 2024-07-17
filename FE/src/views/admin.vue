@@ -39,6 +39,7 @@
             <div>
               <label for="announcementContent">Content:</label>
               <textarea v-model="announcementContent" id="announcementContent" required></textarea>
+              <p v-if="contentError" class="error">{{ contentError }}</p>
             </div>
             <button type="submit">Submit</button>
           </form>
@@ -58,7 +59,8 @@ export default {
       users: [],
       loading: true,
       authorEmail: '', // This will be set after fetching user data
-      announcementContent: ''
+      announcementContent: '',
+      contentError: '' // Error message for announcement content
     };
   },
 
@@ -158,6 +160,10 @@ export default {
     },
 
     async createAnnouncement() {
+      if (!this.validateAnnouncement()) {
+        return;
+      }
+
       try {
         const response = await fetch('https://localhost:3001/api/announcements/create', {
           method: 'POST',
@@ -176,12 +182,23 @@ export default {
         }
 
         this.announcementContent = '';
+        this.contentError = '';
         alert('Announcement created successfully');
       } catch (error) {
         console.error('Error creating announcement');
         alert('Failed to create announcement');
       }
-    }
+    },
+
+    validateAnnouncement() {
+      const contentPattern = /^.{0,500}$/;
+      if (!contentPattern.test(this.announcementContent)) {
+        this.contentError = 'Announcement must be under 500 characters';
+        return false;
+      }
+      this.contentError = '';
+      return true;
+    },
   }
 };
 </script>
@@ -312,5 +329,10 @@ th {
 
 .announcement-form button:hover {
   background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  font-size: 0.9rem;
 }
 </style>
