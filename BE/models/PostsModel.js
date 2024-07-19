@@ -1,14 +1,26 @@
 import db from '../config/database.js';
 
 // Get all blogs
-export const getBlogs = (result) => {
-    db.query("SELECT * FROM `posts`", (err, res) => {
+export const getBlogs = (currentPage, limit, offset, result) => {
+    db.query("SELECT * FROM `posts` LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
             return;
+        } else {
+            db.query('SELECT COUNT(*) AS count FROM `posts`', (err, countResult) => {
+                if (err) {
+                    console.log("error: ", err);
+                    result(err, null);
+                    return;
+                }
+                else {
+                    const totalItems = countResult[0].count;
+                    const totalPages = Math.ceil(totalItems / limit);
+                    result(null, {data: res, currentPage: currentPage, totalPages: totalPages});
+                }
+            })
         }
-        result(null, res);
     });
 };
 

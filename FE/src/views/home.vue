@@ -22,6 +22,11 @@
           <button @click="viewBlogDetail(blog.blogID)">View Details</button>
           <hr>
         </div>
+        <div>
+          <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
+          <span>Page {{ currentPage }} of {{ totalPages }}</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+        </div>
       </div>
       <button class="create-blog-btn" @click="goCreateBlog">Create Blog</button>
     </div>
@@ -38,7 +43,10 @@ export default {
     return {
       name: '',
       isAdmin: null,
-      blogs: [] // Array to store fetched blogs
+      blogs: [], // Array to store fetched blogs
+      currentPage: 1,
+      limit: 10,
+      totalPages: 1
     };
   },
 
@@ -136,7 +144,7 @@ export default {
     },
 
     fetchBlogs() {
-      fetch('http://localhost:3001/api/blogs')
+      fetch('http://localhost:3001/api/blogs?page=${this.currentPage}&limit=${this.limit}')
         .then(response => {
           if (!response.ok) {
             throw new Error('Failed to fetch blogs');
@@ -145,13 +153,23 @@ export default {
         })
         .then(data => {
           // Assuming 'data' is an array of blogs
-          this.blogs = data.map(blog => {
-            return blog;
-          });
+          this.blogs = data.data;
+          this.currentPage = data.currentPage;
+          this.totalPages = data.totalPages;
         })
         .catch(error => {
           console.error('Failed to fetch blogs', error);
         });
+    },
+
+    nextPage(){
+      this.currentPage += 1;
+      this.fetchBlogs();
+    },
+
+    prevPage(){
+      this.currentPage -= 1;
+      this.fetchBlogs();
     }
   }
 };

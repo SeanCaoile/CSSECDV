@@ -11,7 +11,10 @@ const router = express.Router();
 
 // Get all blogs
 router.get('/blogs', (req, res) => {
-  getBlogs((err, data) => {
+  const currentPage = parseInt(req.query.currentPage) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (currentPage - 1) * limit;
+  getBlogs(currentPage, limit, offset, (err, data) => {
     if (err) {
       return res.status(500).send(err);
     }
