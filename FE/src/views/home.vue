@@ -18,11 +18,10 @@
           <p>{{ blog.content }}</p>
           <p>Author: {{ blog.authorEmail }}</p>
           <p>Date Created: {{ blog.dateCreated }}</p>
-          <!-- Button to view blog details -->
           <button @click="viewBlogDetail(blog.blogID)">View Details</button>
           <hr>
         </div>
-        <div>
+        <div class="pagination-controls">
           <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
           <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
@@ -144,7 +143,16 @@ export default {
     },
 
     fetchBlogs() {
-      fetch('http://localhost:3001/api/blogs?page=${this.currentPage}&limit=${this.limit}')
+      fetch('http://localhost:3001/api/showBlogs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          page: this.currentPage,
+          limit: this.limit
+        })
+      })
         .then(response => {
           if (!response.ok) {
             throw new Error('Failed to fetch blogs');
@@ -152,7 +160,6 @@ export default {
           return response.json();
         })
         .then(data => {
-          // Assuming 'data' is an array of blogs
           this.blogs = data.data;
           this.currentPage = data.currentPage;
           this.totalPages = data.totalPages;
@@ -165,6 +172,7 @@ export default {
     nextPage(){
       this.currentPage += 1;
       this.fetchBlogs();
+      console.log("PAGE", this.currentPage);
     },
 
     prevPage(){
@@ -232,8 +240,10 @@ export default {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  height: calc(100vh - 6rem); /* Full height minus navbar */
+  /* height: calc(100vh - 6rem); */
   text-align: center;
+  margin-top: 200px; /* Adjust this value as needed */
+  margin-bottom: 50px;
 }
 
 h1 {
@@ -282,4 +292,16 @@ button:hover {
 .create-blog-btn:hover {
   background-color: #0056b3;
 }
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination-controls button {
+  margin: 0 10px;
+}
+
 </style>

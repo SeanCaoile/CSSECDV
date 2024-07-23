@@ -10,10 +10,11 @@ import {
 const router = express.Router();
 
 // Get all blogs
-router.get('/blogs', (req, res) => {
-  const currentPage = parseInt(req.query.currentPage) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+router.post('/showBlogs', (req, res) => {
+  const currentPage = parseInt(req.body.page) || 1;
+  const limit = parseInt(req.body.limit) || 10;
   const offset = (currentPage - 1) * limit;
+
   getBlogs(currentPage, limit, offset, (err, data) => {
     if (err) {
       return res.status(500).send(err);
@@ -23,7 +24,7 @@ router.get('/blogs', (req, res) => {
 });
 
 // Create a new blog
-router.post('/blogs', (req, res) => {
+router.post('/createBlog', (req, res) => {
   const newBlog = req.body;
   createBlog(newBlog, (err, data) => {
     if (err) {
