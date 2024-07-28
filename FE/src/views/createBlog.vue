@@ -4,13 +4,16 @@
     <form @submit.prevent="submitForm">
       <div class="form-group">
         <label for="title">Title:</label>
-        <input type="text" id="title" v-model="blog.title" required />
+        <input type="text" id="title" v-model="blog.title" maxlength="30" required @input="validateTitle" />
+        <small>{{ titleRemainingChars }} characters remaining</small>
+        <span v-if="titleError" class="error">{{ titleError }}</span>
       </div>
       <div class="form-group">
         <label for="content">Content:</label>
-        <textarea id="content" v-model="blog.content" required></textarea>
+        <textarea id="content" v-model="blog.content" maxlength="500" required @input="validateContent"></textarea>
+        <small>{{ contentRemainingChars }} characters remaining</small>
+        <span v-if="contentError" class="error">{{ contentError }}</span>
       </div>
-      
       <button type="submit">Create Blog</button>
     </form>
   </div>
@@ -23,12 +26,15 @@ export default {
   data() {
     return {
       blog: {
+        blogID: Date.now(),
         title: '',
         content: '',
-        authorID: '', // This will be set after fetching user data
-        authorEmail: '', // This will be set after fetching user data
+        authorID: '',
+        authorEmail: '',
         dateCreated: new Date().toISOString().slice(0, 19).replace('T', ' ')
-      }
+      },
+      titleError: '',
+      contentError: ''
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -50,7 +56,7 @@ export default {
       try {
         const response = await fetch('http://localhost:3001/api/users/validate_session', {
           method: 'POST',
-          credentials: 'include', // Send cookies with the request
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
           }
@@ -67,14 +73,39 @@ export default {
           this.blog.authorID = data.id;
           this.blog.authorEmail = data.email;
         } else {
-          // Handle unauthenticated state
           console.error('User is not authenticated');
         }
       } catch (error) {
         console.error('Error fetching current user:', error);
       }
     },
+    validateTitle() {
+      const titlePattern = /^[A-Za-z0-9\s]{1,30}$/;
+      if (!titlePattern.test(this.blog.title)) {
+        this.titleError = 'Title must be alphanumeric and up to 30 characters long';
+        return false;
+      } else {
+        this.titleError = '';
+        return true;
+      }
+    },
+    validateContent() {
+      if (this.blog.content.length > 500) {
+        this.contentError = 'Content must be up to 500 characters long';
+        return false;
+      } else {
+        this.contentError = '';
+        return true;
+      }
+    },
     async submitForm() {
+      const isTitleValid = this.validateTitle();
+      const isContentValid = this.validateContent();
+
+      if (!isTitleValid || !isContentValid) {
+        return;
+      }
+
       try {
         const response = await fetch('http://localhost:3001/api/createBlog', {
           method: 'POST',
@@ -83,9 +114,14 @@ export default {
           },
           body: JSON.stringify(this.blog)
         });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText);
+        }
+
         const data = await response.json();
         console.log('Blog created successfully:', data);
-        // Redirect to another page or give feedback to the user
         this.$router.push('/home');
       } catch (error) {
         console.error('There was an error creating the blog:', error);
@@ -104,7 +140,6 @@ export default {
           return response.text().then(text => {
             console.error('Failed to validate session:', text);
 
-            
             fetch('http://localhost:3001/api/users/removeCookie', {
               method: 'POST',
               credentials: 'include',
@@ -139,6 +174,14 @@ export default {
         this.unauthenticate();
         this.$router.push('/');
       });
+    }
+  },
+  computed: {
+    titleRemainingChars() {
+      return 30 - this.blog.title.length;
+    },
+    contentRemainingChars() {
+      return 500 - this.blog.content.length;
     }
   }
 };
@@ -176,15 +219,20 @@ textarea {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 1.1rem; /* Increased font size */
+  font-size: 1.1rem;
 }
 
 input[type='text'] {
-  height: 2.5rem; /* Increased height for input box */
+  height: 2.5rem;
 }
 
 textarea {
-  height: 250px; /* Increased height for textarea */
+  height: 250px;
+}
+
+small {
+  color: #ccc;
+  margin-top: 0.25rem;
 }
 
 button {
@@ -200,5 +248,9 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+.error {
+  color: red;
 }
 </style>

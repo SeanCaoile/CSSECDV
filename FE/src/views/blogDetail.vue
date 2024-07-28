@@ -1,18 +1,26 @@
 <template>
   <div class="blog-detail">
     <div class="blog-content">
-      <h1>{{ blog.title }}</h1>
-      <p>{{ blog.content }}</p>
-      <p>Author: {{ blog.authorEmail }}</p>
-      <p>Date Created: {{ blog.dateCreated }}</p>
+      <div class="blog-text">
+        <h1>{{ blog.title }}</h1>
+        <p class="author">Author: {{ blog.authorEmail }}</p>
+        <p class="date">Date Created: {{ formatDate(blog.dateCreated) }}</p>
+        <p>{{ blog.content }}</p>
+      </div>
       
-      <!-- Edit button, visible only to the author -->
-      <button v-if="isAuthor" @click="editBlog">Edit Blog</button>
+      <!-- Buttons container -->
+      <div class="buttons-container">
+        <button class="back-button" @click="goBack">Back</button>
+        <button v-if="isAuthor" class="edit-button" @click="editBlog">Edit</button>
+        
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { setAppStylesForBlogDetail } from '../utils/stylesUtils';
+
 export default {
   props: {
     blogID: {
@@ -30,6 +38,7 @@ export default {
   created() {
     this.fetchBlog(this.blogID);
     this.fetchCurrentUser();
+    setAppStylesForBlogDetail(); // Apply styles for blog detail page
   },
   methods: {
     async fetchBlog(blogID) {
@@ -71,47 +80,103 @@ export default {
     },
     editBlog() {
       this.$router.push({ name: 'editBlog', params: { blogID: this.blogID } });
+    },
+    goBack() {
+      this.$router.push({ name: 'home' }); // Navigate to the home page
+    },
+    formatDate(dateString) {
+      // Create a new Date object from the dateString
+      const date = new Date(dateString);
+      // Extract the date parts
+      const day = date.getDate();
+      const month = date.getMonth() + 1; // Months are zero-based
+      const year = date.getFullYear();
+      // Format the date as "YYYY-MM-DD"
+      return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     }
   }
 };
 </script>
 
 <style scoped>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f5f5; /* Light background color for contrast */
+}
+
 .blog-detail {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%; /* Ensures the component takes full height */
+  width: 100%;
 }
 
 .blog-content {
   max-width: 800px;
-  padding: 1rem;
+  padding: 2rem;
   background-color: #fff; /* White background */
   color: #000; /* Black font color */
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for depth */
+  box-sizing: border-box; /* Ensures padding is included in the element's total width and height */
+  position: relative; /* Enable absolute positioning for child elements */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.blog-text {
+  flex: 1; /* Take up available space */
 }
 
 h1 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  font-size: 3rem; /* Larger font size for title */
+  font-weight: bold; /* Bold font for title */
+  margin-bottom: 0.5rem; /* Add some space below the title */
 }
 
-p {
-  margin-bottom: 0.5rem;
+.author, .date {
+  font-size: 1rem; /* Smaller font size for author and date */
+  margin: 0.25rem 0; /* Add some space above and below */
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
 }
 
 button {
   padding: 0.75rem 1.5rem;
-  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #0056b3;
+.back-button {
+  background-color: #007bff; /* Blue color for the back button */
+}
+
+.back-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+.edit-button {
+  background-color: #6c757d; /* Gray color for the edit button */
+}
+
+.edit-button:hover {
+  background-color: #5a6268; /* Darker gray on hover */
 }
 </style>

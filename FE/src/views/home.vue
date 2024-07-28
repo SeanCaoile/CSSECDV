@@ -15,9 +15,9 @@
       <div v-else>
         <div v-for="blog in blogs" :key="blog.blogID" class="blog-item">
           <h2>{{ blog.title }}</h2>
+          <p class="author">Author: {{ blog.authorEmail }}</p>
+          <p class="date">Date Created: {{ formatDate(blog.dateCreated) }}</p>
           <p>{{ blog.content }}</p>
-          <p>Author: {{ blog.authorEmail }}</p>
-          <p>Date Created: {{ blog.dateCreated }}</p>
           <button @click="viewBlogDetail(blog.blogID)">View Details</button>
           <hr>
         </div>
@@ -31,7 +31,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
@@ -178,6 +177,17 @@ export default {
     prevPage(){
       this.currentPage -= 1;
       this.fetchBlogs();
+    },
+
+    formatDate(dateString) {
+      // Create a new Date object from the dateString
+      const date = new Date(dateString);
+      // Extract the date parts
+      const day = date.getDate();
+      const month = date.getMonth() + 1; // Months are zero-based
+      const year = date.getFullYear();
+      // Format the date as "YYYY-MM-DD"
+      return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     }
   }
 };
@@ -240,10 +250,10 @@ export default {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  /* height: calc(100vh - 6rem); */
   text-align: center;
   margin-top: 200px; /* Adjust this value as needed */
   margin-bottom: 50px;
+  margin-left: 25px;
 }
 
 h1 {
@@ -256,13 +266,25 @@ h1 {
   margin-bottom: 2rem;
   padding: 1rem;
   background-color: #f9f9f9;
-  color:black;
+  color: black;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
-  margin-bottom: 0.5rem;
+.blog-item h2 {
+  font-size: 1.5rem; /* Larger font size for title */
+  font-weight: bold; /* Bold font for title */
+  margin-bottom: 0.5rem; /* Add some space below the title */
+}
+
+.blog-item .author, 
+.blog-item .date {
+  font-size: 1rem; /* Smaller font size for author and date */
+  margin: 0.25rem 0; /* Add some space above and below */
+}
+
+.blog-item p {
+  text-align: justify; /* Justify the text within blog content */
 }
 
 button {
@@ -273,6 +295,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
   margin-right: 1rem;
+  align-items: center;
 }
 
 button:hover {
@@ -303,5 +326,4 @@ button:hover {
 .pagination-controls button {
   margin: 0 10px;
 }
-
 </style>
