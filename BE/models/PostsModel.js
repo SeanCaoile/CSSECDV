@@ -2,7 +2,7 @@ import db from '../config/database.js';
 
 // Get all blogs
 export const getBlogs = (currentPage, limit, offset, result) => {
-    db.query("SELECT * FROM `posts` LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
+    db.query("SELECT * FROM `posts` WHERE isDeleted = 0 LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -125,17 +125,12 @@ export const editBlog = async (req, res) => {
   };
   
 // Delete a blog by ID
-export const deleteBlogById = (blogID, result) => {
-    db.query("DELETE FROM `posts` WHERE blogID = ?", [blogID], (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(err, null);
-            return;
-        }
-        if (res.affectedRows == 0) {
-            result({ kind: "not_found" }, null);
-            return;
-        }
-        result(null, res);
+export const deleteBlogById = (blogID, callback) => {
+    db.query('UPDATE posts SET isDeleted = 1 WHERE blogID = ?', [blogID], (err, results) => {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, results);
     });
-};
+  };
+  
