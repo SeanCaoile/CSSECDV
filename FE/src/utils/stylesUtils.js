@@ -37,3 +37,13 @@ export function setAppStylesForBlogDetail() {
     appElement.style.padding = '2rem'; // Adjust padding if needed
   }
 }
+export function setAppStylesForDeleteBlog() {
+  const appElement = document.getElementById('app');
+  if (appElement) {
+    appElement.style.display = 'flex';
+    appElement.style.justifyContent = 'center';
+    appElement.style.alignItems = 'center';
+    appElement.style.height = '100vh'; // Ensure full viewport height
+    appElement.style.padding = '0';
+  }
+}
