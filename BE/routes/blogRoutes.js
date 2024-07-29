@@ -63,17 +63,19 @@ router.put('/blogs/:id', (req, res) => {
   });
 });
 
-// Delete a blog by ID
-router.delete('/blogs/:id', (req, res) => {
-  const blogID = req.params.id;
-  deleteBlogById(blogID, (err, data) => {
+// Delete a blog by ID (update isDeleted column to 1)
+router.post('/blogs/deleteBlog', (req, res) => {
+  const { blogID } = req.body;
+  console.log('Received delete request with blogID:', blogID);
+  deleteBlogById(blogID, (err, result) => {
     if (err) {
-      return res.status(500).send(err);
+      console.error('Error deleting blog:', err);
+      return res.status(500).send({ message: 'Failed to delete blog' });
     }
-    if (!data.affectedRows) {
+    if (result.affectedRows === 0) {
       return res.status(404).send({ message: 'Blog not found' });
     }
-    res.json({ message: 'Blog deleted successfully' });
+    res.status(200).send({ message: 'Blog deleted successfully' });
   });
 });
 
