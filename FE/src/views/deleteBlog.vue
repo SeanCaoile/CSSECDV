@@ -24,6 +24,7 @@
   </template>
   
   <script>
+  import { resetAppStyles, setAppStylesForDeleteBlog} from '../utils/stylesUtils';
   export default {
     props: {
       blogID: {
@@ -39,6 +40,7 @@
     },
     created() {
       this.fetchBlog();
+      setAppStylesForDeleteBlog();
     },
     methods: {
       async fetchBlog() {
