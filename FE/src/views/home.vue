@@ -19,6 +19,7 @@
           <p class="date">Date Created: {{ formatDate(blog.dateCreated) }}</p>
           <p>{{ blog.content }}</p>
           <button @click="viewBlogDetail(blog.blogID)">View Details</button>
+          <button v-if="isAdmin" class="delete-button" @click="deleteBlog(blog.blogID)">Delete</button>
           <hr>
         </div>
         <div class="pagination-controls">
@@ -41,7 +42,7 @@ export default {
     return {
       name: '',
       isAdmin: null,
-      blogs: [], // Array to store fetched blogs
+      blogs: [],
       currentPage: 1,
       limit: 10,
       totalPages: 1
@@ -63,7 +64,7 @@ export default {
 
   mounted() {
     this.validateSession();
-    this.fetchBlogs(); // Fetch blogs when component mounts
+    this.fetchBlogs();
   },
 
   methods: {
@@ -83,8 +84,8 @@ export default {
       this.$router.push({ path: `/blogs/${blogId}` });
     },
 
-    editBlog(blogId) {
-      this.$router.push({ path: `/blogs/${blogId}/edit` });
+    deleteBlog(blogId){
+      this.$router.push({ path:`/blogs/${blogId}/delete`})
     },
 
     async logout() {
@@ -180,13 +181,10 @@ export default {
     },
 
     formatDate(dateString) {
-      // Create a new Date object from the dateString
       const date = new Date(dateString);
-      // Extract the date parts
       const day = date.getDate();
-      const month = date.getMonth() + 1; // Months are zero-based
+      const month = date.getMonth() + 1;
       const year = date.getFullYear();
-      // Format the date as "YYYY-MM-DD"
       return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     }
   }
@@ -314,6 +312,19 @@ button:hover {
 
 .create-blog-btn:hover {
   background-color: #0056b3;
+}
+
+.delete-button {
+  padding: 0.75rem;
+  background-color: #dc3545; /* Red color for delete button */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #c82333; /* Darker red on hover */
 }
 
 .pagination-controls {

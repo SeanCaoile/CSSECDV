@@ -12,8 +12,17 @@
       <div class="buttons-container">
         <button class="back-button" @click="goBack">Back</button>
         <button v-if="isAuthor" class="edit-button" @click="editBlog">Edit</button>
-        
+        <!-- Delete Button for Admins -->
+        <button v-if="isAdmin" class="delete-button" @click="confirmDelete">Delete</button>
       </div>
+      
+      <!-- Confirmation Dialog for Deletion -->
+      <div v-if="confirmDeleteDialog" class="confirm-delete">
+        <p>Are you sure you want to delete this blog post?</p>
+        <button class="confirm-button" @click="deleteBlog">Yes</button>
+        <button class="cancel-button" @click="confirmDeleteDialog = false">No</button>
+      </div>
+      
     </div>
   </div>
 </template>
@@ -32,7 +41,9 @@ export default {
     return {
       blog: {},
       currentUser: null,
-      isAuthor: false // Flag to check if current user is the author
+      isAuthor: false, // Flag to check if current user is the author
+      isAdmin: false,  // Flag to check if current user is an admin
+      confirmDeleteDialog: false // Flag to show confirmation dialog
     };
   },
   created() {
@@ -68,6 +79,7 @@ export default {
         }
         const data = await response.json();
         this.currentUser = data;
+        this.isAdmin = data.isAdmin; // Update isAdmin flag
         this.checkAuthorization();
       } catch (error) {
         console.error('Failed to fetch current user', error);
@@ -80,6 +92,29 @@ export default {
     },
     editBlog() {
       this.$router.push({ name: 'editBlog', params: { blogID: this.blogID } });
+    },
+    async deleteBlog() {
+      try {
+        const response = await fetch('http://localhost:3001/api/blogs/deleteBlog', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ blogID: this.blogID })
+        });
+        if (response.ok) {
+          console.log('Blog deleted successfully');
+          this.$router.push('/home'); // Redirect to home page
+        } else {
+          const errorText = await response.text();
+          console.error('Failed to delete blog', errorText);
+        }
+      } catch (error) {
+        console.error('Error deleting blog', error);
+      }
+    },
+    confirmDelete() {
+      this.confirmDeleteDialog = true; // Show confirmation dialog
     },
     goBack() {
       this.$router.push({ name: 'home' }); // Navigate to the home page
@@ -177,6 +212,46 @@ button {
 }
 
 .edit-button:hover {
+  background-color: #5a6268; /* Darker gray on hover */
+}
+
+.delete-button {
+  background-color: #dc3545; /* Red color for delete button */
+}
+
+.delete-button:hover {
+  background-color: #c82333; /* Darker red on hover */
+}
+
+.confirm-delete {
+  margin-top: 20px;
+  background-color: #f8d7da; /* Light red background for confirmation area */
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.confirm-button, .cancel-button {
+  padding: 0.75rem 1.5rem;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.confirm-button {
+  background-color: #dc3545; /* Red color for confirm button */
+}
+
+.confirm-button:hover {
+  background-color: #c82333; /* Darker red on hover */
+}
+
+.cancel-button {
+  background-color: #6c757d; /* Gray color for cancel button */
+}
+
+.cancel-button:hover {
   background-color: #5a6268; /* Darker gray on hover */
 }
 </style>
