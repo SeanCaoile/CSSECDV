@@ -172,6 +172,7 @@ html, body {
 
 .blog-text {
   flex: 1; /* Take up available space */
+  word-break: break-word; /* Break words to fit content within the container */
 }
 
 h1 {
