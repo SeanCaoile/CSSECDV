@@ -13,7 +13,7 @@
         <button class="back-button" @click="goBack">Back</button>
         <button v-if="isAuthor" class="edit-button" @click="editBlog">Edit</button>
         <!-- Delete Button for Admins -->
-        <button v-if="isAdmin" class="delete-button" @click="confirmDelete">Delete</button>
+        <button v-if="isAdmin || isAuthor" class="delete-button" @click="confirmDelete">Delete</button>
       </div>
       
       <!-- Confirmation Dialog for Deletion -->
