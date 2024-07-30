@@ -34,7 +34,7 @@ router.post('/createBlog', (req, res) => {
   });
 });
 
-// Get a blog by ID
+// Get a blog by ID including the author's photo
 router.get('/blogs/:id', (req, res) => {
   const blogID = req.params.id;
   getBlogById(blogID, (err, data) => {
