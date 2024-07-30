@@ -3,8 +3,13 @@
     <div class="blog-content">
       <div class="blog-text">
         <h1>{{ blog.title }}</h1>
-        <p class="author">Author: {{ blog.authorEmail }}</p>
-        <p class="date">Date Created: {{ formatDate(blog.dateCreated) }}</p>
+        <div class="author-info">
+          <img v-if="blog.authorPhoto" :src="blog.authorPhoto" alt="Author Photo" class="author-photo">
+          <div class="author-details">
+            <p class="author">Author: {{ blog.authorEmail }}</p>
+            <p class="date">Date Created: {{ formatDate(blog.dateCreated) }}</p>
+          </div>
+        </div>
         <p>{{ blog.content }}</p>
       </div>
       
@@ -22,7 +27,6 @@
         <button class="confirm-button" @click="deleteBlog">Yes</button>
         <button class="cancel-button" @click="confirmDeleteDialog = false">No</button>
       </div>
-      
     </div>
   </div>
 </template>
@@ -41,15 +45,15 @@ export default {
     return {
       blog: {},
       currentUser: null,
-      isAuthor: false, // Flag to check if current user is the author
-      isAdmin: false,  // Flag to check if current user is an admin
-      confirmDeleteDialog: false // Flag to show confirmation dialog
+      isAuthor: false,
+      isAdmin: false,
+      confirmDeleteDialog: false
     };
   },
   created() {
     this.fetchBlog(this.blogID);
     this.fetchCurrentUser();
-    setAppStylesForBlogDetail(); // Apply styles for blog detail page
+    setAppStylesForBlogDetail();
   },
   methods: {
     async fetchBlog(blogID) {
@@ -71,7 +75,7 @@ export default {
           method: 'POST',
           credentials: 'include',
           headers: {
-            'Content-Type': 'application/json' 
+            'Content-Type': 'application/json'
           }
         });
         if (!response.ok) {
@@ -79,7 +83,7 @@ export default {
         }
         const data = await response.json();
         this.currentUser = data;
-        this.isAdmin = data.isAdmin; // Update isAdmin flag
+        this.isAdmin = data.isAdmin;
         this.checkAuthorization();
       } catch (error) {
         console.error('Failed to fetch current user', error);
@@ -104,7 +108,7 @@ export default {
         });
         if (response.ok) {
           console.log('Blog deleted successfully');
-          this.$router.push('/home'); // Redirect to home page
+          this.$router.push('/home');
         } else {
           const errorText = await response.text();
           console.error('Failed to delete blog', errorText);
@@ -114,19 +118,16 @@ export default {
       }
     },
     confirmDelete() {
-      this.confirmDeleteDialog = true; // Show confirmation dialog
+      this.confirmDeleteDialog = true;
     },
     goBack() {
-      this.$router.push({ name: 'home' }); // Navigate to the home page
+      this.$router.push({ name: 'home' });
     },
     formatDate(dateString) {
-      // Create a new Date object from the dateString
       const date = new Date(dateString);
-      // Extract the date parts
       const day = date.getDate();
-      const month = date.getMonth() + 1; // Months are zero-based
+      const month = date.getMonth() + 1;
       const year = date.getFullYear();
-      // Format the date as "YYYY-MM-DD"
       return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     }
   }
@@ -146,7 +147,7 @@ html, body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5; /* Light background color for contrast */
+  background-color: #f5f5f5;
 }
 
 .blog-detail {
@@ -159,31 +160,44 @@ html, body {
 .blog-content {
   max-width: 800px;
   padding: 2rem;
-  background-color: #fff; /* White background */
-  color: #000; /* Black font color */
+  background-color: #fff;
+  color: #000;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for depth */
-  box-sizing: border-box; /* Ensures padding is included in the element's total width and height */
-  position: relative; /* Enable absolute positioning for child elements */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .blog-text {
-  flex: 1; /* Take up available space */
-  word-break: break-word; /* Break words to fit content within the container */
+  flex: 1;
+  word-break: break-word;
 }
 
 h1 {
-  font-size: 3rem; /* Larger font size for title */
-  font-weight: bold; /* Bold font for title */
-  margin-bottom: 0.5rem; /* Add some space below the title */
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.author-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
 }
 
 .author, .date {
-  font-size: 1rem; /* Smaller font size for author and date */
-  margin: 0.25rem 0; /* Add some space above and below */
+  font-size: 1rem;
+  margin: 0.25rem 0;
 }
 
 .buttons-container {
@@ -201,32 +215,32 @@ button {
 }
 
 .back-button {
-  background-color: #007bff; /* Blue color for the back button */
+  background-color: #007bff;
 }
 
 .back-button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
+  background-color: #0056b3;
 }
 
 .edit-button {
-  background-color: #6c757d; /* Gray color for the edit button */
+  background-color: #6c757d;
 }
 
 .edit-button:hover {
-  background-color: #5a6268; /* Darker gray on hover */
+  background-color: #5a6268;
 }
 
 .delete-button {
-  background-color: #dc3545; /* Red color for delete button */
+  background-color: #dc3545;
 }
 
 .delete-button:hover {
-  background-color: #c82333; /* Darker red on hover */
+  background-color: #c82333;
 }
 
 .confirm-delete {
   margin-top: 20px;
-  background-color: #f8d7da; /* Light red background for confirmation area */
+  background-color: #f8d7da;
   padding: 1rem;
   border-radius: 5px;
 }
@@ -241,18 +255,18 @@ button {
 }
 
 .confirm-button {
-  background-color: #dc3545; /* Red color for confirm button */
+  background-color: #dc3545;
 }
 
 .confirm-button:hover {
-  background-color: #c82333; /* Darker red on hover */
+  background-color: #c82333;
 }
 
 .cancel-button {
-  background-color: #6c757d; /* Gray color for cancel button */
+  background-color: #6c757d;
 }
 
 .cancel-button:hover {
-  background-color: #5a6268; /* Darker gray on hover */
+  background-color: #5a6268;
 }
 </style>
