@@ -39,16 +39,29 @@ export const createBlog = (newBlog, result) => {
     });
 };
 
-// Get a blog by ID
+// Get a blog by ID including the author's photo
 export const getBlogById = (blogID, result) => {
-    db.query("SELECT * FROM `posts` WHERE blogID = ?", [blogID], (err, res) => {
+    const query = `
+        SELECT posts.*, users.photo as authorPhoto
+        FROM posts
+        JOIN users ON posts.authorID = users.id
+        WHERE posts.blogID = ? AND posts.isDeleted = 0;
+    `;
+
+    db.query(query, [blogID], (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
             return;
         }
         if (res.length) {
-            result(null, res[0]);
+            const blog = res[0];
+            // Convert the photo to a base64 string
+            if (blog.authorPhoto) {
+                const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
+                blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
+            }
+            result(null, blog);
         } else {
             result({ kind: "not_found" }, null);
         }
@@ -73,7 +86,7 @@ export const updateBlogById = (blogID, blog, result) => {
     params.push(blogID);
 
     db.query(
-        `UPDATE posts SET ${updateFields.join(', ')} WHERE blogID = ?`,
+        `UPDATE posts SET ${updateFields.join(', ')} WHERE blogID = ? AND isDeleted = 0`,
         params,
         (err, res) => {
             if (err) {
@@ -90,6 +103,7 @@ export const updateBlogById = (blogID, blog, result) => {
     );
 };
 
+// Edit blog (assuming session handling and authorization are managed)
 export const editBlog = async (req, res) => {
     const sessionId = req.cookies.sessionId; // Retrieve sessionId from cookies
   
@@ -122,15 +136,14 @@ export const editBlog = async (req, res) => {
       console.error('Error editing blog:', error);
       res.status(500).send({ error: 'Internal server error' });
     }
-  };
-  
+};
+
 // Delete a blog by ID
 export const deleteBlogById = (blogID, callback) => {
     db.query('UPDATE posts SET isDeleted = 1 WHERE blogID = ?', [blogID], (err, results) => {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, results);
+        if (err) {
+            return callback(err);
+        }
+        callback(null, results);
     });
-  };
-  
+};
