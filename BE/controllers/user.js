@@ -19,7 +19,11 @@ const lastLoginAttempt = {};
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
         if (err) {
-            return res.status(500).send(err);
+            if (debug===1){
+                return res.status(500).send(err);
+            } else {
+                return res.status(500).send("An error occured while accessing data");
+            }
         }
         res.json(data);
     });
@@ -32,7 +36,12 @@ export const getUserById = (userId) => {
             [userId],
             (error, results) => {
                 if (error) {
-                    reject(error);
+                    if (debug === 1) {
+                        reject(error);
+                    }
+                    else{
+                        reject("An error occured while accessing data");
+                    }
                 } else {
                     if (results.length > 0) {
                         resolve(results[0]);
@@ -55,14 +64,22 @@ export const fetchImage = (req, res) => {
 
     db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
         if (error) {
-            return res.status(500).send('Server error');
+            if(debug===1){
+                return res.status(500).send(error);
+            } else {
+                return res.status(500).send("An error occured while accessing data");
+            }
         }
         if (results.length > 0) {
             const photo = results[0].photo;
             results.contentType('image/jpg');
             res.send(photo);
         } else {
-            res.status(404).send('Image not found');
+            if(debug===1){
+                res.status(404).send('Image not found');
+            } else {
+                res.status(404).send("An error occured while accessing data");
+            }
         }
     });
 }
@@ -79,10 +96,34 @@ export const saveAccount = async (req, res) => {
     const fileSignature = fileData.toString('hex', 0, 4); // Extracting the first 4 bytes as hexadecimal string
 
     // Validate inputs
-    if (!validateName(name)) { return res.status(400).send({ error: 'Only letters and spaces are allowed in name' }); }
-    if (!validateEmail(email)) { return res.status(400).send({ error: 'Invalid email address' }); }
-    if (!validatePassword(password)) { return res.status(400).send({ error: 'Invalid password' }); }
-    if (!validatePhone(phoneNumber)) { return res.status(400).send({ error: 'Invalid phone number' }); } 
+    if (!validateName(name)) { 
+        if(debug===1){
+            return res.status(400).send(error);
+        } else {
+            return res.status(400).send({ error: 'Only letters and spaces are allowed in name' });
+        }
+    }
+    if (!validateEmail(email)) { 
+        if(debug===1){
+            return res.status(400).send(error); 
+        } else {
+            return res.status(400).send({ error: 'Invalid email address' }); 
+        }
+    }
+    if (!validatePassword(password)) { 
+        if (debug===1) {
+            return res.status(400).send(error); 
+        } else {
+            return res.status(400).send({ error: 'Invalid password' }); 
+        }
+    }
+    if (!validatePhone(phoneNumber)) { 
+        if (debug===1) {
+            return res.status(400).send(error); 
+        } else {
+            return res.status(400).send({ error: 'Invalid phone number' }); 
+        }
+    } 
 
     if (fileSignature.startsWith(fileTypeSignatures.jpeg) || fileSignature.startsWith(fileTypeSignatures.png)) {
         try {
@@ -90,7 +131,11 @@ export const saveAccount = async (req, res) => {
             const [existingUser] = await new Promise((resolve, reject) => {
                 db.query('SELECT * FROM users WHERE email = ?', [email], (error, results) => {
                     if (error) {
-                        reject(error);
+                        if(debug===1){
+                            reject(error);
+                        } else {
+                            reject("An error occured while accessing data")
+                        }
                     } else {
                         resolve(results);
                     }
@@ -110,19 +155,27 @@ export const saveAccount = async (req, res) => {
                 'INSERT INTO `users`(name, email, password, phoneNumber, photo) VALUES (?,?,?,?,?)',
                 [name, email, hashedPassword, phoneNumber, imageBuffer],
                 (error, results) => {
-                    if (error) {
+                    if(debug===1){
                         return res.status(500).send(error);
-                    }
-                    res.status(201).send(results);
+                    } else {
+                        return res.status(500).send("An error occured while accessing the data")
+                    }       
                 }
             );
         } catch (error) {
-            res.status(500).send(error);
+            if(debug===1){
+                res.status(500).send(error);
+            } else {
+                res.status(500).send("An error occured while accessing the data");
+            }
         }
     }
     else {
         // File type is not supported
-        return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
+        if (debug = 1)
+            return res.status(400).send(error);
+        else
+            return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
     }
 };
 
@@ -131,7 +184,11 @@ export const verifyLogin = async (req, res) => {
 
     // Validate inputs
     if (!validateEmail(email)) {
-        return res.status(400).send({ error: 'Invalid email address' });
+        if(debug===1){
+            return res.status(400).send(error); 
+        } else {
+            return res.status(400).send({ error: 'Invalid email address' }); 
+        }
     }
 
     try {

@@ -3,16 +3,27 @@ import db from '../config/database.js';
 // Validation Functions
 const validateTitle = (title) => /^[A-Za-z0-9\s]{1,30}$/.test(title);
 const validateContent = (content) => content.length <= 500;
+const debug = process.env.DEBUG;
 
 // Function to create a blog post
 export const createBlog = async (req, res) => {
   const { blogID, authorID, authorEmail, dateCreated, content, title } = req.body;
 
   if (!validateTitle(title)) {
-    return res.status(400).send({ error: 'Title must be alphanumeric and up to 30 characters long' });
+    const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
+    if (debug === '1') {
+      return res.status(400).send(errorMessage);
+    } else {
+      return res.status(400).send('Validation error');
+    }
   }
   if (!validateContent(content)) {
-    return res.status(400).send({ error: 'Content must be up to 500 characters long' });
+    const errorMessage = { error: 'Content must be up to 500 characters long' };
+    if (debug === '1') {
+      return res.status(400).send(errorMessage);
+    } else {
+      return res.status(400).send('Validation error');
+    }
   }
 
   try {
@@ -21,13 +32,21 @@ export const createBlog = async (req, res) => {
       [blogID, authorID, authorEmail, dateCreated, content, title],
       (error, results) => {
         if (error) {
-          return res.status(500).send(error);
+          if (debug === '1') {
+            return res.status(500).send(error);
+          } else {
+            return res.status(500).send("An error occurred while accessing data");
+          }
         }
         res.status(201).send(results);
       }
     );
   } catch (error) {
-    res.status(500).send(error);
+    if (debug === '1') {
+      res.status(500).send(error);
+    } else {
+      res.status(500).send("An error occurred while accessing data");
+    }
   }
 };
 
@@ -36,10 +55,20 @@ export const editBlog = async (req, res) => {
   const { blogID, title, content } = req.body;
 
   if (!validateTitle(title)) {
-    return res.status(400).send({ error: 'Title must be alphanumeric and up to 30 characters long' });
+    const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
+    if (debug === '1') {
+      return res.status(400).send(errorMessage);
+    } else {
+      return res.status(400).send('Validation error');
+    }
   }
   if (!validateContent(content)) {
-    return res.status(400).send({ error: 'Content must be up to 500 characters long' });
+    const errorMessage = { error: 'Content must be up to 500 characters long' };
+    if (debug === '1') {
+      return res.status(400).send(errorMessage);
+    } else {
+      return res.status(400).send('Validation error');
+    }
   }
 
   try {
@@ -48,33 +77,66 @@ export const editBlog = async (req, res) => {
       [title, content, blogID],
       (error, results) => {
         if (error) {
-          return res.status(500).send(error);
+          if (debug === '1') {
+            return res.status(500).send(error);
+          } else {
+            return res.status(500).send("An error occurred while accessing data");
+          }
         }
         res.status(200).send(results);
       }
     );
   } catch (error) {
-    res.status(500).send(error);
+    if (debug === '1') {
+      res.status(500).send(error);
+    } else {
+      res.status(500).send("An error occurred while accessing data");
+    }
   }
 };
 
 // Function to fetch a blog post by ID
-export const getBlogById = async (blogID) => {
-  return new Promise((resolve, reject) => {
-    db.query(
-      'SELECT * FROM posts WHERE blogID = ?',
-      [blogID],
-      (error, results) => {
-        if (error) {
-          reject(error);
+export const getBlogById = async (req, res) => {
+  const blogID = req.params.id;
+  db.query(
+    'SELECT * FROM posts WHERE blogID = ?',
+    [blogID],
+    (error, results) => {
+      if (error) {
+        if (debug === '1') {
+          return res.status(500).send(error);
         } else {
-          if (results.length > 0) {
-            resolve(results[0]);
-          } else {
-            resolve(null); // Blog post not found
-          }
+          return res.status(500).send("An error occurred while accessing data");
         }
       }
-    );
-  });
+      if (results.length > 0) {
+        res.status(200).send(results[0]);
+      } else {
+        res.status(404).send({ message: 'Blog not found' });
+      }
+    }
+  );
+};
+
+// Function to delete a blog post by ID
+export const deleteBlogById = async (req, res) => {
+  const { blogID } = req.body;
+  db.query(
+    'UPDATE posts SET isDeleted = 1 WHERE blogID = ?',
+    [blogID],
+    (error, results) => {
+      if (error) {
+        if (debug === '1') {
+          return res.status(500).send(error);
+        } else {
+          return res.status(500).send("An error occurred while accessing data");
+        }
+      }
+      if (results.affectedRows === 0) {
+        res.status(404).send({ message: 'Blog not found' });
+      } else {
+        res.status(200).send({ message: 'Blog deleted successfully' });
+      }
+    }
+  );
 };
