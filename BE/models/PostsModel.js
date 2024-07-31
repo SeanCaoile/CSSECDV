@@ -179,10 +179,13 @@ export const editBlog = async (req, res) => {
 
     // Validate sessionId
     if (!isValidSession(sessionId)) {
-        return res.status(401).send({ error: 'Unauthorized' });
+        if (debug === '1') {
+            return res.status(401).send({ error: 'Unauthorized: Invalid session ID' });
+        } else {
+            return res.status(401).send("Unauthorized access");
+        }
     }
 
-    // Assuming you have validated the session, proceed with editing the blog
     const { blogID, updatedContent } = req.body;
 
     try {
@@ -190,12 +193,20 @@ export const editBlog = async (req, res) => {
         const blog = await fetchBlogById(blogID);
 
         if (!blog) {
-            return res.status(404).send({ error: 'Blog not found' });
+            if (debug === '1') {
+                return res.status(404).send({ error: 'Blog not found' });
+            } else {
+                return res.status(404).send("Blog not found");
+            }
         }
 
         // Check if the current user has permission to edit this blog
         if (blog.authorEmail !== req.session.user.email) {
-            return res.status(403).send({ error: 'You are not authorized to edit this blog' });
+            if (debug === '1') {
+                return res.status(403).send({ error: 'You are not authorized to edit this blog' });
+            } else {
+                return res.status(403).send("You are not authorized to edit this blog");
+            }
         }
 
         // Update the blog content in the database
