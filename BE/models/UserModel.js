@@ -1,11 +1,16 @@
 import db from '../config/database.js';
 
+const debug = process.env.DEBUG;
+
 // Get all users
 export const getUsers = (result) => {
     db.query("SELECT * FROM `users`", (err, res) => {
         if (err) {
-            console.log("error: ", err);
-            result(err, null);
+            if (debug === '1') {
+                result(err, null);
+            } else {
+                result("An error occurred while accessing data", null);
+            }
             return;
         }
         result(null, res);
@@ -19,8 +24,11 @@ export const createUser = (newUser, result) => {
     [name, email, password, phoneNumber, photo, isAdmin], 
     (err, res) => {
         if (err) {
-            console.log("error: ", err);
-            result(err, null);
+            if (debug === '1') {
+                result(err, null);
+            } else {
+                result("An error occurred while accessing data", null);
+            }
             return;
         }
         result(null, { id: res.insertId, ...newUser });
@@ -31,8 +39,11 @@ export const createUser = (newUser, result) => {
 export const getUserById = (id, result) => {
     db.query("SELECT * FROM `users` WHERE id = ?", [id], (err, res) => {
         if (err) {
-            console.log("error: ", err);
-            result(err, null);
+            if (debug === '1') {
+                result(err, null);
+            } else {
+                result("An error occurred while accessing data", null);
+            }
             return;
         }
         if (res.length) {
@@ -51,8 +62,11 @@ export const updateUserById = (id, user, result) => {
         [name, email, password, phoneNumber, photo, isAdmin, id],
         (err, res) => {
             if (err) {
-                console.log("error: ", err);
-                result(err, null);
+                if (debug === '1') {
+                    result(err, null);
+                } else {
+                    result("An error occurred while accessing data", null);
+                }
                 return;
             }
             if (res.affectedRows == 0) {
@@ -68,8 +82,11 @@ export const updateUserById = (id, user, result) => {
 export const deleteUserById = (id, result) => {
     db.query("DELETE FROM `users` WHERE id = ?", [id], (err, res) => {
         if (err) {
-            console.log("error: ", err);
-            result(err, null);
+            if (debug === '1') {
+                result(err, null);
+            } else {
+                result("An error occurred while accessing data", null);
+            }
             return;
         }
         if (res.affectedRows == 0) {

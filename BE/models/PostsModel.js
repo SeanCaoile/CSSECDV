@@ -1,25 +1,34 @@
 import db from '../config/database.js';
 
+// Validation Functions
+const validateTitle = (title) => /^[A-Za-z0-9\s]{1,30}$/.test(title);
+const validateContent = (content) => content.length <= 500;
+const debug = process.env.DEBUG;
+
 // Get all blogs
 export const getBlogs = (currentPage, limit, offset, result) => {
     db.query("SELECT * FROM `posts` WHERE isDeleted = 0 LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
         if (err) {
-            console.log("error: ", err);
-            result(err, null);
+            if (debug === '1') {
+                result(err, null);
+            } else {
+                result("An error occurred while accessing data", null);
+            }
             return;
         } else {
             db.query('SELECT COUNT(*) AS count FROM `posts`', (err, countResult) => {
                 if (err) {
-                    console.log("error: ", err);
-                    result(err, null);
+                    if (debug === '1') {
+                        result(err, null);
+                    } else {
+                        result("An error occurred while accessing data", null);
+                    }
                     return;
                 }
-                else {
-                    const totalItems = countResult[0].count;
-                    const totalPages = Math.ceil(totalItems / limit);
-                    result(null, {data: res, currentPage: currentPage, totalPages: totalPages});
-                }
-            })
+                const totalItems = countResult[0].count;
+                const totalPages = Math.ceil(totalItems / limit);
+                result(null, { data: res, currentPage: currentPage, totalPages: totalPages });
+            });
         }
     });
 };
@@ -27,12 +36,35 @@ export const getBlogs = (currentPage, limit, offset, result) => {
 // Create a new blog
 export const createBlog = (newBlog, result) => {
     const { authorID, authorEmail, dateCreated, content, title } = newBlog;
+    
+    if (!validateTitle(title)) {
+        const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
+        if (debug === '1') {
+            result(errorMessage, null);
+        } else {
+            result('Validation error', null);
+        }
+        return;
+    }
+    if (!validateContent(content)) {
+        const errorMessage = { error: 'Content must be up to 500 characters long' };
+        if (debug === '1') {
+            result(errorMessage, null);
+        } else {
+            result('Validation error', null);
+        }
+        return;
+    }
+
     db.query("INSERT INTO `posts` (authorID, authorEmail, dateCreated, content, title) VALUES (?, ?, ?, ?, ?)", 
     [authorID, authorEmail, dateCreated, content, title], 
     (err, res) => {
         if (err) {
-            console.log("error: ", err);
-            result(err, null);
+            if (debug === '1') {
+                result(err, null);
+            } else {
+                result("An error occurred while accessing data", null);
+            }
             return;
         }
         result(null, { blogID: res.insertId, ...newBlog });
@@ -50,13 +82,15 @@ export const getBlogById = (blogID, result) => {
 
     db.query(query, [blogID], (err, res) => {
         if (err) {
-            console.log("error: ", err);
-            result(err, null);
+            if (debug === '1') {
+                result(err, null);
+            } else {
+                result("An error occurred while accessing data", null);
+            }
             return;
         }
         if (res.length) {
             const blog = res[0];
-            // Convert the photo to a base64 string
             if (blog.authorPhoto) {
                 const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
                 blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
@@ -75,10 +109,28 @@ export const updateBlogById = (blogID, blog, result) => {
     const params = [];
 
     if (title) {
+        if (!validateTitle(title)) {
+            const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
+            if (debug === '1') {
+                result(errorMessage, null);
+            } else {
+                result('Validation error', null);
+            }
+            return;
+        }
         updateFields.push('title = ?');
         params.push(title);
     }
     if (content) {
+        if (!validateContent(content)) {
+            const errorMessage = { error: 'Content must be up to 500 characters long' };
+            if (debug === '1') {
+                result(errorMessage, null);
+            } else {
+                result('Validation error', null);
+            }
+            return;
+        }
         updateFields.push('content = ?');
         params.push(content);
     }
@@ -90,8 +142,11 @@ export const updateBlogById = (blogID, blog, result) => {
         params,
         (err, res) => {
             if (err) {
-                console.log("error: ", err);
-                result(err, null);
+                if (debug === '1') {
+                    result(err, null);
+                } else {
+                    result("An error occurred while accessing data", null);
+                }
                 return;
             }
             if (res.affectedRows == 0) {
@@ -103,47 +158,55 @@ export const updateBlogById = (blogID, blog, result) => {
     );
 };
 
-// Edit blog (assuming session handling and authorization are managed)
-export const editBlog = async (req, res) => {
-    const sessionId = req.cookies.sessionId; // Retrieve sessionId from cookies
-  
-    // Validate sessionId
-    if (!isValidSession(sessionId)) {
-      return res.status(401).send({ error: 'Unauthorized' });
-    }
-  
-    // Assuming you have validated the session, proceed with editing the blog
-    const { blogID, updatedContent } = req.body;
-  
-    try {
-      // Fetch the blog post from the database and perform editing
-      const blog = await fetchBlogById(blogID);
-      
-      if (!blog) {
-        return res.status(404).send({ error: 'Blog not found' });
-      }
-  
-      // Check if the current user has permission to edit this blog
-      if (blog.authorEmail !== req.session.user.email) {
-        return res.status(403).send({ error: 'You are not authorized to edit this blog' });
-      }
-  
-      // Update the blog content in the database
-      await updateBlog(blogID, { content: updatedContent });
-  
-      res.status(200).send({ message: 'Blog updated successfully' });
-    } catch (error) {
-      console.error('Error editing blog:', error);
-      res.status(500).send({ error: 'Internal server error' });
-    }
-};
-
 // Delete a blog by ID
 export const deleteBlogById = (blogID, callback) => {
     db.query('UPDATE posts SET isDeleted = 1 WHERE blogID = ?', [blogID], (err, results) => {
         if (err) {
-            return callback(err);
+            if (debug === '1') {
+                callback(err);
+            } else {
+                callback("An error occurred while accessing data");
+            }
+            return;
         }
         callback(null, results);
     });
+};
+
+// Edit blog (assuming session handling and authorization are managed)
+export const editBlog = async (req, res) => {
+    const sessionId = req.cookies.sessionId; // Retrieve sessionId from cookies
+
+    // Validate sessionId
+    if (!isValidSession(sessionId)) {
+        return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    // Assuming you have validated the session, proceed with editing the blog
+    const { blogID, updatedContent } = req.body;
+
+    try {
+        // Fetch the blog post from the database and perform editing
+        const blog = await fetchBlogById(blogID);
+
+        if (!blog) {
+            return res.status(404).send({ error: 'Blog not found' });
+        }
+
+        // Check if the current user has permission to edit this blog
+        if (blog.authorEmail !== req.session.user.email) {
+            return res.status(403).send({ error: 'You are not authorized to edit this blog' });
+        }
+
+        // Update the blog content in the database
+        await updateBlog(blogID, { content: updatedContent });
+
+        res.status(200).send({ message: 'Blog updated successfully' });
+    } catch (error) {
+        if (debug === '1') {
+            res.status(500).send(error);
+        } else {
+            res.status(500).send("An error occurred while accessing data");
+        }
+    }
 };
