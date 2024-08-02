@@ -42,7 +42,7 @@ export default {
     ...mapActions(['authenticate']),
 
     validateAccount(formData) {
-      return fetch('http://localhost:3001/api/users/verifyLogin', {
+      return fetch('https://localhost:3001/api/users/verifyLogin', {
         method: 'POST',
         body: formData,
         credentials: 'include' // Include credentials to allow cookies to be sent and received

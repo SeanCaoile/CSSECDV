@@ -6,6 +6,9 @@
       </div>
       <button class="logout-btn" @click="logout">Logout</button>
     </nav>
+    <div class="announcement-bar" v-if="announcement">
+      <p>Latest Announcement: {{ announcement.content }}</p>
+    </div>
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
       <br />
@@ -13,6 +16,7 @@
         <img v-if="photo" :src="photo" alt="User Photo" class="user-photo"/>
         
       </div>
+      <button class = "create-blog-btn" @click="goCreateBlog">Create Blog</button>
     </div>
   </div>
 </template>
@@ -26,7 +30,8 @@ export default {
     return {
       name: '',
       photo: '',
-      isAdmin: null
+      isAdmin: null,
+      announcement: null
     };
   },
 
@@ -45,6 +50,7 @@ export default {
 
   mounted() {
     this.validateSession();
+    this.fetchLastAnnouncement();
   },
 
   methods: {
@@ -54,8 +60,14 @@ export default {
       this.$router.push('/admin');
     },
 
+    goCreateBlog() {
+      this.$router.push({ 
+        path: '/createBlog',
+      });
+    },
+
     async logout() {
-      const response = await fetch('http://localhost:3001/api/users/removeCookie', {
+      const response = await fetch('https://localhost:3001/api/users/removeCookie', {
         method: 'POST',
         credentials: 'include',
       });
@@ -71,7 +83,7 @@ export default {
     },
 
     validateSession() {
-      fetch('http://localhost:3001/api/users/validate_session', {
+      fetch('https://localhost:3001/api/users/validate_session', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -90,7 +102,7 @@ export default {
           this.isAdmin = data.isAdmin;
           this.photo = data.photo;
         } else {
-          fetch('http://localhost:3001/api/users/removeCookie', {
+          fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',
           });
@@ -100,7 +112,7 @@ export default {
       })
       .catch(error => {
         console.error('Failed to validate session', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });
@@ -108,8 +120,9 @@ export default {
         this.$router.push('/');
       });
     },
+    
     fetchUserData() {
-      fetch('http://localhost:3001/api/get-user-data', {
+      fetch('https://localhost:3001/api/get-user-data', {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -128,12 +141,34 @@ export default {
       })
       .catch(error => {
         console.error('Failed to fetch user data', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });
         this.unauthenticate();
         this.$router.push('/');
+      });
+    },
+
+    fetchLastAnnouncement() {
+      fetch('https://localhost:3001/api/announcements/last', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch the last announcement');
+        }
+        return response.json();
+      })
+      .then(data => {
+        this.announcement = data;
+      })
+      .catch(error => {
+        console.error('Failed to fetch the last announcement', error);
       });
     },
   }
@@ -153,6 +188,17 @@ export default {
   padding: 1rem 2rem;
   background-color: #333;
   color: white;
+}
+
+.announcement-bar {
+  position: fixed;
+  top: 6rem;
+  left: 0;
+  width: 100%;
+  background-color: #ff9800;
+  color: black;
+  text-align: center;
+  padding: 1rem 0;
 }
 
 .left-buttons {

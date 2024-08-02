@@ -24,6 +24,11 @@ const router = createRouter({
       path: '/admin',
       component: () => import('../views/admin.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: "/createBlog",
+      component: () => import("../views/createBlog.vue"),
+      meta: { requiresAuth: true }
     }
   ]
 });
@@ -34,7 +39,7 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // Check if user is authenticated
     if (!store.getters.isAuthenticated) {
-      fetch('http://localhost:3001/api/users/removeCookie', {
+      fetch('https://localhost:3001/api/users/removeCookie', {
         method: 'POST',
         credentials: 'include',
       });

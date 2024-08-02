@@ -33,6 +33,17 @@
         <div v-else>
           <p>No users found.</p>
         </div>
+        <div class="announcement-form">
+          <h2>Create Announcement</h2>
+          <form @submit.prevent="createAnnouncement">
+            <div>
+              <label for="announcementContent">Content:</label>
+              <textarea v-model="announcementContent" id="announcementContent" required></textarea>
+              <p v-if="contentError" class="error">{{ contentError }}</p>
+            </div>
+            <button type="submit">Submit</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -47,6 +58,9 @@ export default {
     return {
       users: [],
       loading: true,
+      authorEmail: '', // This will be set after fetching user data
+      announcementContent: '',
+      contentError: '' // Error message for announcement content
     };
   },
 
@@ -72,7 +86,7 @@ export default {
 
     async validateSession() {
       try {
-        const response = await fetch('http://localhost:3001/api/users/validate_session', {
+        const response = await fetch('https://localhost:3001/api/users/validate_session', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -85,8 +99,9 @@ export default {
         const data = await response.json();
         if (data.authenticated) {
           await this.fetchUsers(); // Wait for fetchUsers to complete
+          this.authorEmail = data.email;
         } else {
-          fetch('http://localhost:3001/api/users/removeCookie', {
+          fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',
           });
@@ -95,7 +110,7 @@ export default {
         }
       } catch (error) {
         console.error('Failed to validate session', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });
@@ -108,7 +123,7 @@ export default {
 
     async fetchUsers() {
       try {
-        const response = await fetch('http://localhost:3001/api/users/showUsers', {
+        const response = await fetch('https://localhost:3001/api/users/showUsers', {
           credentials: 'include'
         });
         if (!response.ok) {
@@ -130,7 +145,7 @@ export default {
     },
 
     async logout() {
-      const response = await fetch('http://localhost:3001/api/users/removeCookie', {
+      const response = await fetch('https://localhost:3001/api/users/removeCookie', {
         method: 'POST',
         credentials: 'include',
       });
@@ -142,7 +157,48 @@ export default {
       }
       this.unauthenticate();
       this.$router.push('/');
-    }
+    },
+
+    async createAnnouncement() {
+      if (!this.validateAnnouncement()) {
+        return;
+      }
+
+      try {
+        const response = await fetch('https://localhost:3001/api/announcements/create', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            content: this.announcementContent,
+            email: this.authorEmail
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create announcement');
+        }
+
+        this.announcementContent = '';
+        this.contentError = '';
+        alert('Announcement created successfully');
+      } catch (error) {
+        console.error('Error creating announcement');
+        alert('Failed to create announcement');
+      }
+    },
+
+    validateAnnouncement() {
+      const contentPattern = /^.{0,500}$/;
+      if (!contentPattern.test(this.announcementContent)) {
+        this.contentError = 'Announcement must be under 500 characters';
+        return false;
+      }
+      this.contentError = '';
+      return true;
+    },
   }
 };
 </script>
@@ -191,6 +247,7 @@ export default {
 
 .centered {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: calc(100vh - 6rem);
@@ -210,6 +267,7 @@ h2 {
 table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 2rem;
 }
 
 th, td {
@@ -225,9 +283,56 @@ th {
   font-weight: bold;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.announcement-form {
+  width: 100%;
+  max-width: 600px;
+  margin: 2rem 0;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #1d1d1d;
+}
+
+.announcement-form h2 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.announcement-form form {
+  display: flex;
+  flex-direction: column;
+}
+
+.announcement-form label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.announcement-form input,
+.announcement-form textarea {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.announcement-form button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  background-color: #007bff;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.announcement-form button:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  font-size: 0.9rem;
 }
 </style>
