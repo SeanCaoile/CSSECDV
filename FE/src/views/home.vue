@@ -14,10 +14,10 @@
       </div>
       <div v-else>
         <div v-for="blog in blogs" :key="blog.blogID" class="blog-item">
-          <h2>{{ blog.title }}</h2>
+          <h2>{{ truncate(blog.title, 20) }}</h2>
           <p class="author">Author: {{ blog.authorEmail }}</p>
           <p class="date">Date Created: {{ formatDate(blog.dateCreated) }}</p>
-          <p>{{ blog.content }}</p>
+          <p>{{ truncate(blog.content, 10 )}}</p>
           <button @click="viewBlogDetail(blog.blogID)">View Details</button>
           <button v-if="isAdmin" class="delete-button" @click="deleteBlog(blog.blogID)">Delete</button>
           <hr>
@@ -186,7 +186,16 @@ export default {
       const month = date.getMonth() + 1;
       const year = date.getFullYear();
       return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-    }
+    },
+
+    truncate(text, length){
+        if(text.length > length){
+          return text.substring(0, length) + '...';
+        }
+        else{
+          return text;
+        }
+      }
   }
 };
 </script>
