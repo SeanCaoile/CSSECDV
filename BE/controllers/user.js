@@ -127,7 +127,7 @@ export const saveAccount = async (req, res) => {
         } else {
             return res.status(400).send({ error: 'Only letters and spaces are allowed in name' });
         }
-    }     
+    }
     if (!validateEmail(email)) { 
         if(debug===1){
             return res.status(400).send(error); 
