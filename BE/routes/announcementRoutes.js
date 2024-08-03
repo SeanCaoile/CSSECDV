@@ -25,7 +25,8 @@ router.get('/last', (req, res) => {
 router.post('/create', (req, res) => {
     const newAnnouncement = {
         content: req.body.content,
-        email: req.body.email
+        email: req.body.email,
+        expirationTime: req.body.expirationTime
     };
     const ip = req.ipv4;
 

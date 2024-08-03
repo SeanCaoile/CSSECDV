@@ -175,27 +175,33 @@ export default {
         
       }); 
     },
+    
     fetchLastAnnouncement() {
       fetch('https://localhost:3001/api/announcements/last', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch the last announcement');
-        }
-        return response.json();
-      })
-      .then(data => {
-        this.announcement = data;
-      })
-      .catch(error => {
-        console.error('Failed to fetch the last announcement', error);
-      });
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch the last announcement');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data && data.isExpired === 0) {
+            this.announcement = data;
+          } else {
+            this.announcement = null; // Hide announcement if it's expired
+          }
+        })
+        .catch(error => {
+          console.error('Failed to fetch the last announcement', error);
+        });
     },
+
     nextPage(){
       this.currentPage += 1;
       this.fetchBlogs();

@@ -7,7 +7,6 @@
     </nav>
     <div class="centered">
       <div v-if="loading">
-        <!-- Loading indicator -->
         <p>Loading...</p>
       </div>
       <div v-else>
@@ -41,6 +40,10 @@
               <textarea v-model="announcementContent" id="announcementContent" required></textarea>
               <p v-if="contentError" class="error">{{ contentError }}</p>
             </div>
+            <div>
+              <label for="announcementExpiration">Expiration Time (minutes):</label>
+              <input v-model.number="expirationTime" id="announcementExpiration" type="number" min="1" required />
+            </div>
             <button type="submit">Submit</button>
           </form>
         </div>
@@ -60,6 +63,7 @@ export default {
       loading: true,
       authorEmail: '', // This will be set after fetching user data
       announcementContent: '',
+      expirationTime: 10, // New input for expiration time in minutes, default to 10 minutes
       contentError: '' // Error message for announcement content
     };
   },
@@ -130,7 +134,6 @@ export default {
           throw new Error('Network response was not ok');
         }
         const allUsers = await response.json();
-        // Filter out users with isAdmin set to 1
         this.users = allUsers.filter(user => user.isAdmin !== 1)
                               .map(({ name, email, phoneNumber }) => ({ name, email, phoneNumber }));
       } catch (error) {
@@ -165,6 +168,8 @@ export default {
       }
 
       try {
+        console.log('Expiration Time:', this.expirationTime);
+
         const response = await fetch('https://localhost:3001/api/announcements/create', {
           method: 'POST',
           credentials: 'include',
@@ -173,6 +178,7 @@ export default {
           },
           body: JSON.stringify({
             content: this.announcementContent,
+            expirationTime: this.expirationTime,
             email: this.authorEmail
           })
         });
@@ -182,6 +188,7 @@ export default {
         }
 
         this.announcementContent = '';
+        this.expirationTime = 10; // Reset expiration time to default
         this.contentError = '';
         alert('Announcement created successfully');
       } catch (error) {
@@ -202,6 +209,8 @@ export default {
   }
 };
 </script>
+
+
 
 <style scoped>
 .navbar {
