@@ -32,7 +32,7 @@ export const createAnnouncement = (newAnnouncement, ip, result) => {
     }
 
     const { content, expirationTime } = newAnnouncement;
-    console.log("Expiration time is " + expirationTime)
+    //console.log("Expiration time is " + expirationTime)
     const expireAt = new Date(Date.now() + expirationTime * 60000); // Calculate expiration time
 
     if (isNaN(expireAt.getTime())) {
