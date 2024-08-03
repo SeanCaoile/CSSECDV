@@ -95,11 +95,15 @@ export const getBlogById = (blogID, result) => {
         }
         if (res.length) {
             const blog = res[0];
-            if (blog.authorPhoto) {
-                const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
-                blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
-            }
-            result(null, blog);
+            try{
+                if (blog.authorPhoto) {
+                    const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
+                    blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
+                }
+                result(null,blog);
+            } catch (conversionError){
+                result("An error orccurred while accessing the data", null);
+            }            
         } else {
             result({ kind: "not_found" }, null);
         }
@@ -118,7 +122,8 @@ export const updateBlogById = (blogID, blog, result) => {
             if (debug === '1') {
                 result(errorMessage, null);
             } else {
-                result('Validation error', null);
+                result(errorMessage, null);
+                // result('Validation error', null);
             }
             return;
         }
@@ -131,7 +136,8 @@ export const updateBlogById = (blogID, blog, result) => {
             if (debug === '1') {
                 result(errorMessage, null);
             } else {
-                result('Validation error', null);
+                result(errorMessage, null);
+                // result('Validation error', null);
             }
             return;
         }
