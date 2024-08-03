@@ -172,10 +172,7 @@ export default {
         })
         .catch(error => {
         console.error('Failed to fetch data', error);
-        fetch('https://localhost:3001/api/users/removeCookie', {
-          method: 'POST',
-          credentials: 'include',
-        });
+        
       }); 
     },
     fetchLastAnnouncement() {
