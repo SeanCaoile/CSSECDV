@@ -22,7 +22,6 @@
           <p class="date">Date Created: {{ formatDate(blog.dateCreated) }}</p>
           <p>{{ truncate(blog.content, 10 )}}</p>
           <button @click="viewBlogDetail(blog.blogID)">View Details</button>
-          <button v-if="isAdmin" class="delete-button" @click="deleteBlog(blog.blogID)">Delete</button>
           <hr>
         </div>
         <div class="pagination-controls">
@@ -88,10 +87,6 @@ export default {
 
     viewBlogDetail(blogId) {
       this.$router.push({ path: `/blogs/${blogId}` });
-    },
-
-    deleteBlog(blogId){
-      this.$router.push({ path:`/blogs/${blogId}/delete`})
     },
 
     async logout() {
@@ -359,19 +354,6 @@ button:hover {
 
 .create-blog-btn:hover {
   background-color: #0056b3;
-}
-
-.delete-button {
-  padding: 0.75rem;
-  background-color: #dc3545; /* Red color for delete button */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.delete-button:hover {
-  background-color: #c82333; /* Darker red on hover */
 }
 
 .pagination-controls {

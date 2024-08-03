@@ -18,7 +18,7 @@ export const getBlogs = (currentPage, limit, offset, result) => {
             }
             return;
         } else {
-            db.query('SELECT COUNT(*) AS count FROM `posts`', (err, countResult) => {
+            db.query('SELECT COUNT(*) AS count FROM `posts` WHERE isDeleted = 0', (err, countResult) => {
                 if (err) {
                     if (debug === '1') {
                         result(err, null);
