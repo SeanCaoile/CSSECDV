@@ -32,26 +32,6 @@ export const showUsers = (req, res) => {
     });
 };
 
-// export const getUserById = (userId) => {
-//     return new Promise((resolve, reject) => {
-//         db.query(
-//             'SELECT * FROM users WHERE id = ?',
-//             [userId],
-//             (error, results) => {
-//                 if (error) {
-//                     reject(error);
-//                 } else {
-//                     if (results.length > 0) {
-//                         resolve(results[0]);
-//                     } else {
-//                         resolve(null); // User not found
-//                     }
-//                 }
-//             }
-//         );
-//     });
-// };
-
 export const getUserById = (userId) => {
     return new Promise((resolve, reject) => {
         db.query(
@@ -369,6 +349,45 @@ export const validate_session = async (req, res) => {
             else if (ip !== userSession.IP) {
                 if(debug===1){
                     res.json({ authenticated: false, error: "IP Address Mismatch" });
+                } else {
+                    res.json({ authenticated: false, error: "Disconnected from the server" });
+                }
+            }
+        }
+    } catch (error) {
+        // Handle errors
+        // console.error("Error validating session:", error);
+        if(debug === 1){
+            res.status(500).json({ authenticated: false, error});
+        } else {
+            res.status(500).json({ authenticated: false, error: "Internal server error" });
+        }
+    }
+}
+
+export const validate_admin = async (req, res) => {
+    const sessionId = req.cookies.sessionId;
+
+    try {
+        // Check if the session ID matches the stored session ID
+        if (sessionId === userSession.session) {
+            const user = await getUserById(userSession.id);
+
+            if (user) {
+                console.log("ADMIN", user.isAdmin);
+                if (user.isAdmin === 1){
+                    res.json({ authenticated: true });
+                } else {
+                    res.json({ authenticated: false });
+                }
+            } else {
+                // User not found
+                res.json({ authenticated: false, error: "User not found" });
+            }
+        } else {
+            if (sessionId !== userSession.session) {
+                if(debug===1){
+                    res.json({ authenticated: false, error: "Invalid Session ID" });
                 } else {
                     res.json({ authenticated: false, error: "Disconnected from the server" });
                 }

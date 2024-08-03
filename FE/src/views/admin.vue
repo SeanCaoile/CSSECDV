@@ -78,11 +78,46 @@ export default {
   },
 
   mounted() {
+    this.adminCheck();
     this.validateSession();
   },
 
   methods: {
     ...mapActions(['unauthenticate']),
+
+    async adminCheck(){
+      try{
+        const response = await fetch('https://localhost:3001/api/users/validate_admin', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to validate user');
+        } 
+        const data = await response.json();
+        if (!(data.authenticated)) {
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
+        }
+      } catch (error) {
+        console.error('Failed to validate session', error);
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      } finally {
+        this.loading = false; // Set loading to false regardless of success or failure
+      }
+    },
 
     async validateSession() {
       try {
