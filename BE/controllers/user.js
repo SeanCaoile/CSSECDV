@@ -25,7 +25,7 @@ export const showUsers = (req, res) => {
             if (debug===1){
                 return res.status(500).send(err);
             } else {
-                return res.status(500).send("An error occured while accessing data");
+                return res.status(500).send("An error occurred while accessing data");
             }
         }
         res.json(data);
@@ -63,7 +63,7 @@ export const getUserById = (userId) => {
                         reject(error);
                     }
                     else{
-                        reject("An error occured while accessing data");
+                        reject("An error occurred while accessing data");
                     }
                 } else {
                     if (results.length > 0) {
@@ -91,7 +91,7 @@ export const fetchImage = (req, res) => {
             if(debug===1){
                 return res.status(500).send(error);
             } else {
-                return res.status(500).send("An error occured while accessing data");
+                return res.status(500).send("An error occurred while accessing data");
             }
             
         }
@@ -103,7 +103,7 @@ export const fetchImage = (req, res) => {
             if(debug===1){
                 res.status(404).send('Image not found');
             } else {
-                res.status(404).send("An error occured while accessing data");
+                res.status(404).send("An error occurred while accessing data");
             }
         }
     });
@@ -159,7 +159,7 @@ export const saveAccount = async (req, res) => {
                         if(debug===1){
                             reject(error);
                         } else {
-                            reject("An error occured while accessing data")
+                            reject("An error occurred while accessing data")
                         }
                     } else {
                         resolve(results);
@@ -187,7 +187,7 @@ export const saveAccount = async (req, res) => {
                         if(debug===1){
                             return res.status(500).send(error);
                         } else {
-                            return res.status(500).send("An error occured while accessing the data")
+                            return res.status(500).send("An error occurred while accessing the data")
                         }       
                     }
                     res.status(201).send(results);
@@ -197,7 +197,7 @@ export const saveAccount = async (req, res) => {
             if(debug===1){
                 res.status(500).send(error);
             } else {
-                res.status(500).send("An error occured while accessing the data");
+                res.status(500).send("An error occurred while accessing the data");
             }
         }
     }
@@ -245,7 +245,7 @@ export const verifyLogin = async (req, res) => {
                 if(debug === 1){
                     return res.status(500).send(error);
                 } else {
-                    return res.status(500).send("An error occured while accessing the data");
+                    return res.status(500).send("An error occurred while accessing the data");
                 }
             } 
             
@@ -324,7 +324,7 @@ export const verifyLogin = async (req, res) => {
         if(debug===1){
             res.status(500).send(error);
         } else {
-            res.status(500).send("An error occured while accessing the data");
+            res.status(500).send("An error occurred while accessing the data");
         }
     }
 };

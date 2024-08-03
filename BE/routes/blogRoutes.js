@@ -22,7 +22,7 @@ router.post('/showBlogs', (req, res) => {
       if (debug === 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occured while accessing data");
+        return res.status(500).send("An error occurred while accessing data");
       }
     }
     res.json(data);
@@ -38,7 +38,7 @@ router.post('/createBlog', (req, res) => {
       if (debug === 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occured while accessing data");
+        return res.status(500).send("An error occurred while accessing data");
       }
     }
     res.status(201).json(data);
@@ -53,7 +53,7 @@ router.get('/blogs/:id', (req, res) => {
       if (debug === 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occured while accessing data");
+        return res.status(500).send("An error occurred while accessing data");
       }
     }
     if (!data) {
@@ -76,7 +76,7 @@ router.put('/blogs/:id', (req, res) => {
       if (debug === 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occured while accessing data");
+        return res.status(500).send("An error occurred while accessing data");
       }
     }
     if (!data) {
@@ -99,7 +99,7 @@ router.post('/blogs/deleteBlog', (req, res) => {
       if (debug === 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occured while accessing data");
+        return res.status(500).send("An error occurred while accessing data");
       }
     }
     if (result.affectedRows === 0) {

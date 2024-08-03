@@ -13,7 +13,7 @@ router.get('/last', (req, res) => {
             if (debug === 1){
                 return res.status(500).send(err);
               } else {
-                return res.status(500).send("An error occured while accessing data");
+                return res.status(500).send("An error occurred while accessing data");
               }
         } else {
             res.send(announcement);
@@ -34,7 +34,7 @@ router.post('/create', (req, res) => {
             if (debug === 1){
                 return res.status(500).send(err);
               } else {
-                return res.status(500).send("An error occured while accessing data");
+                return res.status(500).send("An error occurred while accessing data");
               }
         } else {
             res.send(announcement);

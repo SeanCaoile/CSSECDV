@@ -23,7 +23,7 @@ export const createAnnouncement = (newAnnouncement, ip, result) => {
         if(debug===1){
             return res.status(400).send(error);
         } else {
-            return res.status(400).send({ error: 'An error occured while creating the announcement' });
+            return res.status(400).send({ error: 'An error occurred while creating the announcement' });
         }
     }  
 
