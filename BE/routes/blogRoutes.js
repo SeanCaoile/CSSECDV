@@ -7,7 +7,6 @@ import {
   deleteBlogById
 } from '../models/PostsModel.js'; // Adjust the import path as necessary
 
-const debug = process.env.DEBUG;
 
 const router = express.Router();
 const debug = process.env.DEBUG;
