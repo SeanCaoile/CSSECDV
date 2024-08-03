@@ -149,7 +149,7 @@ export default {
     },
 
     fetchBlogs() {
-      fetch('http://localhost:3001/api/showBlogs', {
+      fetch('https://localhost:3001/api/showBlogs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
