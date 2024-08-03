@@ -66,6 +66,54 @@ export default {
         console.error('Error fetching blog:', error);
       }
     },
+    validateSession() {
+      fetch('https://localhost:3001/api/users/validate_session', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json' 
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(text => {
+            console.error('Failed to validate session:', text);
+
+            fetch('https://localhost:3001/api/users/removeCookie', {
+              method: 'POST',
+              credentials: 'include',
+            });
+            this.unauthenticate();
+            this.$router.push('/');
+
+            throw new Error('Failed to validate session');
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.authenticated) {
+          // this.name = data.name;
+          // this.isAdmin = data.isAdmin;
+        } else {
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
+        }
+      })
+      .catch(error => {
+        console.error('Failed to validate session', error);
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      });
+    },
     async fetchCurrentUser() {
       try {
         const response = await fetch('https://localhost:3001/api/users/validate_session', {
@@ -119,6 +167,7 @@ export default {
         const blogID = this.blog.id;
         const response = await fetch(`https://localhost:3001/api/blogs/${blogID}`, {
           method: 'PUT',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
           },

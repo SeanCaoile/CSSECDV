@@ -3,6 +3,7 @@
     <nav class="navbar">
       <div class="left-buttons">
         <button v-if="isAdmin" class="new-page-btn" @click="adminView">Admin Page</button>
+        <!-- <button class="new-page-btn" @click="adminView">Admin Page</button> -->
       </div>
       <button class="logout-btn" @click="logout">Logout</button>
     </nav>
@@ -77,6 +78,7 @@ export default {
     ...mapActions(['unauthenticate']),
 
     adminView() {
+      this.adminCheck();
       this.$router.push('/admin');
     },
 

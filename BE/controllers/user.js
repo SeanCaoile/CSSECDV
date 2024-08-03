@@ -57,7 +57,7 @@ export const getUserById = (userId) => {
     });
 };
 
-const userSession = {
+export const userSession = {
     session: '',
     id: '',
     IP: ''
@@ -326,7 +326,6 @@ export const validate_session = async (req, res) => {
                     maxAge: 2 * 60, // 2 minutes
                     path: '/'
                 }));
-                console.log("NEW COOKIE TIMER");
                 
                 const photoData = user.photo;
                 const base64Photo = Buffer.from(photoData, 'binary').toString('base64');
@@ -374,11 +373,10 @@ export const validate_admin = async (req, res) => {
             const user = await getUserById(userSession.id);
 
             if (user) {
-                console.log("ADMIN", user.isAdmin);
-                if (user.isAdmin === 1){
+                if (user.isAdmin == 1){
                     res.json({ authenticated: true });
                 } else {
-                    res.json({ authenticated: false });
+                    res.json({ authenticated: false, error: "User Intrusion"});
                 }
             } else {
                 // User not found
@@ -386,7 +384,7 @@ export const validate_admin = async (req, res) => {
             }
         } else {
             if (sessionId !== userSession.session) {
-                if(debug===1){
+                if(debug == 1){
                     res.json({ authenticated: false, error: "Invalid Session ID" });
                 } else {
                     res.json({ authenticated: false, error: "Disconnected from the server" });
@@ -396,8 +394,8 @@ export const validate_admin = async (req, res) => {
     } catch (error) {
         // Handle errors
         // console.error("Error validating session:", error);
-        if(debug === 1){
-            res.status(500).json({ authenticated: false, error});
+        if(debug == 1){
+            res.status(500).json({ authenticated: false, error: error.stack});
         } else {
             res.status(500).json({ authenticated: false, error: "Internal server error" });
         }
