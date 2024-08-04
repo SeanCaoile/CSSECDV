@@ -2,7 +2,12 @@ import db from '../config/database.js';
 import { logOperation } from '../utils/logger.js'; // Import the logging function
 const debug = process.env.DEBUG;
 
-const validate500Char = (announcement) => /^.{0,500}$/.test(announcement);
+//const validate500Char = (announcement) => /^.{0,500}$/.test(announcement);
+
+const validateContent = (content) => /^[\w\s.,!?"'()@#%&*+-/=:;]{1,500}$/.test(content);
+
+// Validate expirationTime to be a positive integer
+const validateExpirationTime = (time) => /^\d+$/.test(time);
 
 // Get the very last announcement
 export const getLastAnnouncement = (result) => {
@@ -23,7 +28,7 @@ export const getLastAnnouncement = (result) => {
 // Note: IP has to be given
 export const createAnnouncement = (newAnnouncement, ip, result) => {
     
-    if (!validate500Char(newAnnouncement.content)) { 
+    if (!validateContent(newAnnouncement.content) || !validateExpirationTime(newAnnouncement.expirationTime)) { 
         if (debug == '1') {
             return res.status(400).send(error);
         } else {
