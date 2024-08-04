@@ -46,8 +46,9 @@ router.post('/createBlog', (req, res) => {
 
 // Get a blog by ID 
 router.post('/blogs/getBlogById', (req, res) => {
+  console.log("TESTT",req.body);
   const { blogID } = req.body;
-  console.log("IN");
+  console.log("IN",blogID);
   getBlogById(blogID, (err, data) => {
     if (err) {
       if (debug == 1) {

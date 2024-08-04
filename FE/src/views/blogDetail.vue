@@ -73,12 +73,13 @@ export default {
 
     async fetchBlog() {
       try {
+        console.log("TEST",this.blogId);
         const response = await fetch('https://localhost:3001/api/blogs/getBlogById', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ blogID: this.blogID })
+          body: JSON.stringify({ blogID: this.blogId })
         });
         if (!response.ok) {
           throw new Error('Failed to fetch blog');
