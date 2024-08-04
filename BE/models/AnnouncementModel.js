@@ -8,7 +8,7 @@ const validate500Char = (announcement) => /^.{0,500}$/.test(announcement);
 export const getLastAnnouncement = (result) => {
     db.query("SELECT * FROM `announcements` ORDER BY id DESC LIMIT 1", (err, res) => {
         if (err) {
-            if (debug === '1') {
+            if (debug == '1') {
                 console.log("error: ", err);
                 result(err, null);
             }
@@ -24,7 +24,7 @@ export const getLastAnnouncement = (result) => {
 export const createAnnouncement = (newAnnouncement, ip, result) => {
     
     if (!validate500Char(newAnnouncement.content)) { 
-        if (debug === '1') {
+        if (debug == '1') {
             return res.status(400).send(error);
         } else {
             return res.status(400).send({ error: 'An error occurred while creating the announcement' });
@@ -48,7 +48,7 @@ export const createAnnouncement = (newAnnouncement, ip, result) => {
     [content, formattedExpireAt], 
     (err, res) => {
         if (err) {
-            if (debug === '1') {
+            if (debug == '1') {
                 console.log("error: ", err);
                 result(err, null);
             }
@@ -65,7 +65,7 @@ const checkForExpiredAnnouncements = () => {
     db.query("UPDATE `announcements` SET isExpired = 1 WHERE expireAt <= NOW() AND isExpired = 0", 
     (err, res) => {
         if (err) {
-            if (debug === '1') {
+            if (debug == '1') {
                 console.error("Failed to update expired announcements:", err);
             } else {
                 console.log("Error occurred");
