@@ -74,33 +74,34 @@ export const createBlog = (newBlog, result) => {
 // Get a blog by ID including the author's photo
 export const getBlogById = (blogID, result) => {
     const query = `
-        SELECT posts.*, users.photo as authorPhoto
-        FROM posts
-        JOIN users ON posts.authorID = users.id
-        WHERE posts.blogID = ? AND posts.isDeleted = 0;
+      SELECT posts.*, users.photo as authorPhoto
+      FROM posts
+      JOIN users ON posts.authorID = users.id
+      WHERE posts.blogID = ? AND posts.isDeleted = 0;
     `;
-
+  
     db.query(query, [blogID], (err, res) => {
-        if (err) {
-            if (debug === '1') {
-                result(err, null);
-            } else {
-                result("An error occurred while accessing data", null);
-            }
-            return;
-        }
-        if (res.length) {
-            const blog = res[0];
-            if (blog.authorPhoto) {
-                const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
-                blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
-            }
-            result(null, blog);
+      if (err) {
+        if (debug === '1') {
+          result(err, null);
         } else {
-            result({ kind: "not_found" }, null);
+          result("An error occurred while accessing data", null);
         }
+        return;
+      }
+      if (res.length) {
+        const blog = res[0];
+        if (blog.authorPhoto) {
+          const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
+          blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
+        }
+        result(null, blog);
+      } else {
+        result({ kind: "not_found" }, null);
+      }
     });
-};
+  };
+  
 
 // Update a blog by ID
 export const updateBlogById = (blogID, blog, result) => {
@@ -220,4 +221,47 @@ export const editBlog = async (req, res) => {
             res.status(500).send("An error occurred while accessing data");
         }
     }
+};
+
+// Check authorization
+export const checkAuthorization = (blogID, userID, callback) => {
+    const queryBlog = 'SELECT authorID FROM posts WHERE blogID = ?';
+    const queryUser = 'SELECT isAdmin FROM users WHERE id = ?';
+
+    db.query(queryBlog, [blogID], (err, blogResult) => {
+        if (err) {
+            if (debug === '1') {
+                callback(err, null);
+            } else {
+                callback("An error occurred while accessing data", null);
+            }
+            return;
+        }
+        if (blogResult.length === 0) {
+            callback(null, { message: 'Blog not found' });
+            return;
+        }
+
+        const authorID = blogResult[0].authorID;
+
+        db.query(queryUser, [userID], (err, userResult) => {
+            if (err) {
+                if (debug === '1') {
+                    callback(err, null);
+                } else {
+                    callback("An error occurred while accessing data", null);
+                }
+                return;
+            }
+            if (userResult.length === 0) {
+                callback(null, { message: 'User not found' });
+                return;
+            }
+
+            const isAdmin = userResult[0].isAdmin;
+            const isAuthor = userID === authorID;
+
+            callback(null, { isAuthor, isAdmin });
+        });
+    });
 };
