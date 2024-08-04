@@ -52,7 +52,7 @@ export default {
     async fetchBlog() {
       try {
         const blogID = this.$route.params.blogID;
-        const response = await fetch(`http://localhost:3001/api/blogs/${blogID}`);
+        const response = await fetch(`https://localhost:3001/api/blogs/${blogID}`);
         if (!response.ok) {
           throw new Error('Failed to fetch blog');
         }
@@ -68,7 +68,7 @@ export default {
     },
     async fetchCurrentUser() {
       try {
-        const response = await fetch('http://localhost:3001/api/users/validate_session', {
+        const response = await fetch('https://localhost:3001/api/users/validate_session', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -117,7 +117,7 @@ export default {
 
       try {
         const blogID = this.blog.id;
-        const response = await fetch(`http://localhost:3001/api/blogs/${blogID}`, {
+        const response = await fetch(`https://localhost:3001/api/blogs/${blogID}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'

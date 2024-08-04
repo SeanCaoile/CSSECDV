@@ -54,7 +54,7 @@ export default {
   methods: {
     async fetchCurrentUser() {
       try {
-        const response = await fetch('http://localhost:3001/api/users/validate_session', {
+        const response = await fetch('https://localhost:3001/api/users/validate_session', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -107,7 +107,7 @@ export default {
       }
 
       try {
-        const response = await fetch('http://localhost:3001/api/createBlog', {
+        const response = await fetch('https://localhost:3001/api/createBlog', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -128,7 +128,7 @@ export default {
       }
     },
     validateSession() {
-      fetch('http://localhost:3001/api/users/validate_session', {
+      fetch('https://localhost:3001/api/users/validate_session', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -140,7 +140,7 @@ export default {
           return response.text().then(text => {
             console.error('Failed to validate session:', text);
 
-            fetch('http://localhost:3001/api/users/removeCookie', {
+            fetch('https://localhost:3001/api/users/removeCookie', {
               method: 'POST',
               credentials: 'include',
             });
@@ -157,7 +157,7 @@ export default {
           this.name = data.name;
           this.isAdmin = data.isAdmin;
         } else {
-          fetch('http://localhost:3001/api/users/removeCookie', {
+          fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',
           });
@@ -167,7 +167,7 @@ export default {
       })
       .catch(error => {
         console.error('Failed to validate session', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });

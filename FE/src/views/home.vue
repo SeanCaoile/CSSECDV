@@ -6,6 +6,9 @@
       </div>
       <button class="logout-btn" @click="logout">Logout</button>
     </nav>
+    <div class="announcement-bar" v-if="announcement">
+      <p>Latest Announcement: {{ announcement.content }}</p>
+    </div>
     <div class="centered">
       <h1>Welcome: {{ name }}</h1>
       <br />
@@ -19,7 +22,6 @@
           <p class="date">Date Created: {{ formatDate(blog.dateCreated) }}</p>
           <p>{{ truncate(blog.content, 10 )}}</p>
           <button @click="viewBlogDetail(blog.blogID)">View Details</button>
-          <button v-if="isAdmin" class="delete-button" @click="deleteBlog(blog.blogID)">Delete</button>
           <hr>
         </div>
         <div class="pagination-controls">
@@ -41,6 +43,8 @@ export default {
   data() {
     return {
       name: '',
+      photo: '',
+      announcement: null,
       isAdmin: null,
       blogs: [],
       currentPage: 1,
@@ -64,6 +68,7 @@ export default {
 
   mounted() {
     this.validateSession();
+    this.fetchLastAnnouncement();
     this.fetchBlogs();
   },
 
@@ -84,12 +89,8 @@ export default {
       this.$router.push({ path: `/blogs/${blogId}` });
     },
 
-    deleteBlog(blogId){
-      this.$router.push({ path:`/blogs/${blogId}/delete`})
-    },
-
     async logout() {
-      const response = await fetch('http://localhost:3001/api/users/removeCookie', {
+      const response = await fetch('https://localhost:3001/api/users/removeCookie', {
         method: 'POST',
         credentials: 'include',
       });
@@ -105,7 +106,7 @@ export default {
     },
 
     validateSession() {
-      fetch('http://localhost:3001/api/users/validate_session', {
+      fetch('https://localhost:3001/api/users/validate_session', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -123,7 +124,7 @@ export default {
           this.name = data.name;
           this.isAdmin = data.isAdmin;
         } else {
-          fetch('http://localhost:3001/api/users/removeCookie', {
+          fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',
           });
@@ -133,7 +134,7 @@ export default {
       })
       .catch(error => {
         console.error('Failed to validate session', error);
-        fetch('http://localhost:3001/api/users/removeCookie', {
+        fetch('https://localhost:3001/api/users/removeCookie', {
           method: 'POST',
           credentials: 'include',
         });
@@ -143,7 +144,7 @@ export default {
     },
 
     fetchBlogs() {
-      fetch('http://localhost:3001/api/showBlogs', {
+      fetch('https://localhost:3001/api/showBlogs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -165,10 +166,31 @@ export default {
           this.totalPages = data.totalPages;
         })
         .catch(error => {
-          console.error('Failed to fetch blogs', error);
-        });
+        console.error('Failed to fetch data', error);
+        
+      }); 
     },
-
+    fetchLastAnnouncement() {
+      fetch('https://localhost:3001/api/announcements/last', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch the last announcement');
+        }
+        return response.json();
+      })
+      .then(data => {
+        this.announcement = data;
+      })
+      .catch(error => {
+        console.error('Failed to fetch the last announcement', error);
+      });
+    },
     nextPage(){
       this.currentPage += 1;
       this.fetchBlogs();
@@ -213,6 +235,17 @@ export default {
   padding: 1rem 2rem;
   background-color: #333;
   color: white;
+}
+
+.announcement-bar {
+  position: fixed;
+  top: 6rem;
+  left: 0;
+  width: 100%;
+  background-color: #ff9800;
+  color: black;
+  text-align: center;
+  padding: 1rem 0;
 }
 
 .left-buttons {
@@ -321,19 +354,6 @@ button:hover {
 
 .create-blog-btn:hover {
   background-color: #0056b3;
-}
-
-.delete-button {
-  padding: 0.75rem;
-  background-color: #dc3545; /* Red color for delete button */
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.delete-button:hover {
-  background-color: #c82333; /* Darker red on hover */
 }
 
 .pagination-controls {
