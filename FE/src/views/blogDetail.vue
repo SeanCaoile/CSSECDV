@@ -16,7 +16,7 @@
       <!-- Buttons container -->
       <div class="buttons-container">
         <button class="back-button" @click="goBack">Back</button>
-        <button v-if="isAuthor" class="editBlog" @click="editBlog">Edit</button>
+        <button v-if="isAuthor" class="edit-button" @click="editBlog">Edit</button>
         <button v-if="isAdmin || isAuthor" class="delete-button" @click="confirmDelete">Delete</button>
       </div>
       
@@ -32,8 +32,13 @@
 
 <script>
 import { setAppStylesForBlogDetail } from '../utils/stylesUtils';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
+  computed: {
+    ...mapGetters(['blogId']),
+  },
+
   props: {
     blogID: {
       type: String,
@@ -50,14 +55,25 @@ export default {
     };
   },
   created() {
-    this.fetchBlog(this.blogID);
+    console.log("BLOGID", this.blogId);
+    if (!this.blogId) {
+      this.$router.push('/');
+    }
+
+    this.fetchBlog();
     this.fetchCurrentUser();
     setAppStylesForBlogDetail();
   },
   methods: {
-    async fetchBlog(blogID) {
+    ...mapActions(['clearBlogId']),
+    beforeRouteLeave(to, from, next) {
+      this.clearBlogId();
+      next();
+    }, 
+
+    async fetchBlog() {
       try {
-        const response = await fetch('http://localhost:3001/api/blogs/getBlogById', {
+        const response = await fetch('https://localhost:3001/api/blogs/getBlogById', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -76,7 +92,7 @@ export default {
     },
     async fetchCurrentUser() {
       try {
-        const response = await fetch('http://localhost:3001/api/users/validate_session', {
+        const response = await fetch('https://localhost:3001/api/users/validate_session', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -96,7 +112,7 @@ export default {
     async checkAuthorization() {
       if (this.currentUser && this.blogID) {
         try {
-          const response = await fetch('http://localhost:3001/api/blogs/checkAuthorization', {
+          const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -124,7 +140,7 @@ export default {
     },
     async deleteBlog() {
       try {
-        const response = await fetch('http://localhost:3001/api/blogs/deleteBlog', {
+        const response = await fetch('https://localhost:3001/api/blogs/deleteBlog', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -158,8 +174,6 @@ export default {
   }
 };
 </script>
-
-
 
 <style scoped>
 html, body {

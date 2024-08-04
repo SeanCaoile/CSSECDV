@@ -82,7 +82,7 @@ export const getBlogById = (blogID, result) => {
   
     db.query(query, [blogID], (err, res) => {
       if (err) {
-        if (debug === '1') {
+        if (debug == '1') {
           result(err, null);
         } else {
           result("An error occurred while accessing data", null);

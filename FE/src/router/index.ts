@@ -31,7 +31,8 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/blogs/:blogID', 
+      // path: '/blogs/:blogID', 
+      path: '/blogs/blogDetail',
       name: 'blogDetail',
       component: () => import('../views/blogDetail.vue'),
       props: true, 

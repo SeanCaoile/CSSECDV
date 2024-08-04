@@ -73,7 +73,12 @@ export default {
   },
 
   methods: {
-    ...mapActions(['unauthenticate']),
+    ...mapActions(['unauthenticate', 'setBlogId']),
+
+    viewBlogDetail(blogId) {
+      this.setBlogId(blogId);
+      this.$router.push('/blogs/blogDetail');
+    },
 
     adminView() {
       this.$router.push('/admin');
@@ -85,10 +90,13 @@ export default {
       });
     },
 
+<<<<<<< Updated upstream
     viewBlogDetail(blogId) {
       this.$router.push({ path: `/blogs/${blogId}` });
     },
 
+=======
+>>>>>>> Stashed changes
     async logout() {
       const response = await fetch('https://localhost:3001/api/users/removeCookie', {
         method: 'POST',

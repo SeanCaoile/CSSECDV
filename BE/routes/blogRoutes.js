@@ -19,7 +19,7 @@ router.post('/showBlogs', (req, res) => {
 
   getBlogs(currentPage, limit, offset, (err, data) => {
     if (err) {
-      if (debug === 1){
+      if (debug == 1){
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occured while accessing data");
@@ -34,7 +34,7 @@ router.post('/createBlog', (req, res) => {
   const newBlog = req.body;
   createBlog(newBlog, (err, data) => {
     if (err) {
-      if (debug === 1){
+      if (debug == 1){
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occured while accessing data");
@@ -47,16 +47,17 @@ router.post('/createBlog', (req, res) => {
 // Get a blog by ID 
 router.post('/blogs/getBlogById', (req, res) => {
   const { blogID } = req.body;
+  console.log("IN");
   getBlogById(blogID, (err, data) => {
     if (err) {
-      if (debug === 1) {
+      if (debug == 1) {
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occurred while accessing data");
       }
     }
     if (!data) {
-      if (debug === '1') {
+      if (debug == '1') {
         return res.status(404).send({ message: 'Blog not found' });
       } else {
         return res.status(404).send("Blog not found");
@@ -72,14 +73,14 @@ router.post('/blogs/updateBlogById', (req, res) => {
   const { blogID, updatedBlog } = req.body;
   updateBlogById(blogID, updatedBlog, (err, data) => {
     if (err) {
-      if (debug === 1) {
+      if (debug == 1) {
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occurred while accessing data");
       }
     }
     if (!data) {
-      if (debug === '1') {
+      if (debug == '1') {
         return res.status(404).send({ message: 'Blog not found' });
       } else {
         return res.status(404).send("Blog not found");
@@ -95,13 +96,13 @@ router.post('/blogs/deleteBlog', (req, res) => {
   console.log('Received delete request with blogID:', blogID);
   deleteBlogById(blogID, (err, result) => {
     if (err) {
-      if (debug === 1){
+      if (debug == 1){
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occured while accessing data");
       }
     }
-    if (result.affectedRows === 0) {
+    if (result.affectedRows == 0) {
       return res.status(404).send({ message: 'Blog not found' });
     }
     res.status(200).send({ message: 'Blog deleted successfully' });
