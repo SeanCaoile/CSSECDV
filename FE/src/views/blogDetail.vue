@@ -57,18 +57,7 @@ export default {
     setAppStylesForBlogDetail();
   },
   methods: {
-    // ...mapActions(['clearBlogId', 'setBlogId']),
     ...mapActions(['unauthenticate', 'setBlogId']),
-    // beforeRouteLeave(to, from, next) {
-    //   this.clearBlogId();
-    //   next();
-    // }, 
-    // setBlogId(blog) {
-    //   // Implement your logic to set the blog ID here
-    //   console.log('Blog ID set:', this.blog);
-    //   // Example logic, adjust as needed
-    //   this.$store.dispatch('setBlogId', blog.blogID);
-    // },
 
     async fetchBlog() {
       try {
@@ -85,7 +74,6 @@ export default {
         }
         const data = await response.json();
         this.blog = data;
-        // this.checkAuthorization();
       } catch (error) {
         console.error('Failed to fetch blog', error);
       }
@@ -158,30 +146,40 @@ export default {
       }
     },
     editBlog() {
-      // this.$router.push({ name: 'editBlog', params: { blogID: this.blogID } });
       if(this.fetchCurrentUser()){
         this.setBlogId(this.blog.blogID);
         this.$router.push('/blogs/editBlog');
       }
     },
     async deleteBlog() {
-      try {
-        const response = await fetch('https://localhost:3001/api/blogs/deleteBlog', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ blogID: this.blogID })
-        });
-        if (response.ok) {
-          console.log('Blog deleted successfully');
-          this.$router.push('/home');
-        } else {
-          const errorText = await response.text();
-          console.error('Failed to delete blog', errorText);
+      if(this.fetchCurrentUser() && (this.isAdmin||this.isAuthor)){
+        try {
+          const response = await fetch('https://localhost:3001/api/blogs/deleteBlog', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ blogID: this.blogId })
+          });
+          if (response.ok) {
+            console.log('Blog deleted successfully');
+            this.$router.push('/home');
+          } else {
+            const errorText = await response.text();
+            console.error('Failed to delete blog', errorText);
+          }
+        } catch (error) {
+          console.error('Error deleting blog', error);
         }
-      } catch (error) {
-        console.error('Error deleting blog', error);
+      }
+      else{
+        console.error("User Intruder ");
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
       }
     },
     confirmDelete() {

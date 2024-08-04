@@ -180,6 +180,7 @@ export default {
 
         const data = await response.json();
         if (data.authenticated) {
+          delete this.blog.authorPhoto;
           const updateResponse = await fetch('https://localhost:3001/api/blogs/updateBlogById', {
             method: 'POST',
             headers: {
@@ -194,7 +195,7 @@ export default {
             throw new Error('Failed to update blog');
           }
 
-          this.$router.push(`/blogs/${this.blogId}`); 
+          this.$router.push(`/blogs/blogDetail`); 
         } else {
           throw new Error('Unauthenticated User');
         }

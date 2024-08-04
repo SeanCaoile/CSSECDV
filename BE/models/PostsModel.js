@@ -104,15 +104,15 @@ export const getBlogById = (blogID, result) => {
   
 
 // Update a blog by ID
-export const updateBlogById = (blogID, blog, result) => {
-    const { title, content } = blog;
+export const updateBlogById = (blog, result) => {
+    // const { title, content } = blog;
     const updateFields = [];
     const params = [];
 
-    if (title) {
-        if (!validateTitle(title)) {
+    if (blog.title) {
+        if (!validateTitle(blog.title)) {
             const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
-            if (debug === '1') {
+            if (debug == 1) {
                 result(errorMessage, null);
             } else {
                 result('Validation error', null);
@@ -120,12 +120,12 @@ export const updateBlogById = (blogID, blog, result) => {
             return;
         }
         updateFields.push('title = ?');
-        params.push(title);
+        params.push(blog.title);
     }
-    if (content) {
-        if (!validateContent(content)) {
+    if (blog.content) {
+        if (!validateContent(blog.content)) {
             const errorMessage = { error: 'Content must be up to 500 characters long' };
-            if (debug === '1') {
+            if (debug == 1) {
                 result(errorMessage, null);
             } else {
                 result('Validation error', null);
@@ -133,9 +133,9 @@ export const updateBlogById = (blogID, blog, result) => {
             return;
         }
         updateFields.push('content = ?');
-        params.push(content);
+        params.push(blog.content);
     }
-
+    const blogID = blog.blogID
     params.push(blogID);
 
     db.query(
@@ -143,7 +143,7 @@ export const updateBlogById = (blogID, blog, result) => {
         params,
         (err, res) => {
             if (err) {
-                if (debug === '1') {
+                if (debug == 1) {
                     result(err, null);
                 } else {
                     result("An error occurred while accessing data", null);
@@ -151,7 +151,7 @@ export const updateBlogById = (blogID, blog, result) => {
                 return;
             }
             if (res.affectedRows == 0) {
-                result({ kind: "not_found" }, null);
+                result({ error: "blog not found" }, null);
                 return;
             }
             result(null, { blogID, ...blog });

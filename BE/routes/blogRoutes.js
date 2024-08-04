@@ -70,8 +70,7 @@ router.post('/blogs/getBlogById', (req, res) => {
 // Update a blog by ID
 router.post('/blogs/updateBlogById', (req, res) => {
   const { updatedBlog } = req.body;
-  console.log("TEST BACLENMD", updateBlog);
-  updateBlogById(updatedBlog.id, updatedBlog, (err, data) => {
+  updateBlogById(updatedBlog, (err, data) => {
     if (err) {
       if (debug == 1) {
         return res.status(500).send(err);
