@@ -95,19 +95,19 @@ export default {
       this.$router.push({ path:`/blogs/${blogId}/delete`})
     },
 
-    adminCheck(){
+    async adminCheck(){
       try{
-        const response = fetch('https://localhost:3001/api/users/validate_admin', {
+        const response = await fetch('https://localhost:3001/api/users/validate_admin', {
           method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
           }
         });
-        if (!response.ok) {
+        if (response.ok == false) {
           throw new Error('Failed to validate user');
         } 
-        const data = response.json();
+        const data = await response.json();
         if (!(data.authenticated)) {
           fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',

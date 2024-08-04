@@ -369,9 +369,8 @@ export const validate_admin = async (req, res) => {
 
     try {
         // Check if the session ID matches the stored session ID
-        if (sessionId === userSession.session) {
+        if (sessionId == userSession.session) {
             const user = await getUserById(userSession.id);
-
             if (user) {
                 if (user.isAdmin == 1){
                     res.json({ authenticated: true });
@@ -383,13 +382,13 @@ export const validate_admin = async (req, res) => {
                 res.json({ authenticated: false, error: "User not found" });
             }
         } else {
-            if (sessionId !== userSession.session) {
-                if(debug == 1){
-                    res.json({ authenticated: false, error: "Invalid Session ID" });
-                } else {
-                    res.json({ authenticated: false, error: "Disconnected from the server" });
-                }
+        
+           if(debug == 1){
+                res.json({ authenticated: false, error: "Invalid Session ID" });
+            } else {
+                res.json({ authenticated: false, error: "Disconnected from the server" });
             }
+            
         }
     } catch (error) {
         // Handle errors
