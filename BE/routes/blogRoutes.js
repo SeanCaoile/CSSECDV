@@ -4,9 +4,9 @@ import {
   createBlog,
   getBlogById,
   updateBlogById,
-  deleteBlogById
+  deleteBlogById,
+  checkAuthorization
 } from '../models/PostsModel.js'; // Adjust the import path as necessary
-
 
 const router = express.Router();
 const debug = process.env.DEBUG;
@@ -22,7 +22,7 @@ router.post('/showBlogs', (req, res) => {
       if (debug === 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occurred while accessing data");
+        return res.status(500).send("An error occured while accessing data");
       }
     }
     res.json(data);
@@ -32,25 +32,24 @@ router.post('/showBlogs', (req, res) => {
 // Create a new blog
 router.post('/createBlog', (req, res) => {
   const newBlog = req.body;
-  const ip = req.ipv4; // Assuming the IP address is passed in the request
-  createBlog(newBlog, ip, (err, data) => {
+  createBlog(newBlog, (err, data) => {
     if (err) {
       if (debug === 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occurred while accessing data");
+        return res.status(500).send("An error occured while accessing data");
       }
     }
     res.status(201).json(data);
   });
 });
 
-// Get a blog by ID including the author's photo
-router.get('/blogs/:id', (req, res) => {
-  const blogID = req.params.id;
+// Get a blog by ID 
+router.post('/blogs/getBlogById', (req, res) => {
+  const { blogID } = req.body;
   getBlogById(blogID, (err, data) => {
     if (err) {
-      if (debug === 1){
+      if (debug === 1) {
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occurred while accessing data");
@@ -67,13 +66,13 @@ router.get('/blogs/:id', (req, res) => {
   });
 });
 
+
 // Update a blog by ID
-router.put('/blogs/:id', (req, res) => {
-  const blogID = req.params.id;
-  const updatedBlog = req.body;
+router.post('/blogs/updateBlogById', (req, res) => {
+  const { blogID, updatedBlog } = req.body;
   updateBlogById(blogID, updatedBlog, (err, data) => {
     if (err) {
-      if (debug === 1){
+      if (debug === 1) {
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occurred while accessing data");
@@ -99,7 +98,7 @@ router.post('/blogs/deleteBlog', (req, res) => {
       if (debug === 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occurred while accessing data");
+        return res.status(500).send("An error occured while accessing data");
       }
     }
     if (result.affectedRows === 0) {
@@ -109,4 +108,23 @@ router.post('/blogs/deleteBlog', (req, res) => {
   });
 });
 
+router.post('/blogs/checkAuthorization', async (req, res) => {
+  const { blogID, userID } = req.body;
+  
+  try {
+    const blog = await getBlogById(blogID);
+    if (!blog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    // Check if user is the author or admin
+    const isAuthor = blog.authorID === userID;
+    const user = await getUserById(userID); 
+
+    res.json({ canEdit: isAuthor});
+  } catch (error) {
+    console.error('Error checking authorization:', error);
+    res.status(500).json({ error: 'Failed to check authorization' });
+  }
+});
 export default router;
