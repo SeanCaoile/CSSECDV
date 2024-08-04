@@ -5,10 +5,20 @@ import { logOperation } from '../utils/logger.js'; // Import the logging functio
 // Validation Functions
 const validateTitle = (title) => /^[A-Za-z0-9\s]{1,30}$/.test(title);
 const validateContent = (content) => content.length <= 500;
+const validatePage = (currentPage) => /^[1-9][0-9]{0,2}$/.test(currentPage);
 const debug = process.env.DEBUG;
 
 // Get all blogs
-export const getBlogs = (currentPage, limit, offset, result) => {
+export const getBlogs = (currentPage, limit, totalPages, offset, result) => {
+    if(!validatePage(currentPage) || currentPage > totalPages){
+        const errorMessage = { error: 'Invalid' };
+        if (debug === '1') {
+            result(errorMessage, null);
+        } else {
+            result('Validation error', null);
+        }
+        return;
+    }
     db.query("SELECT * FROM `posts` WHERE isDeleted = 0 LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
         if (err) {
             if (debug === '1') {
@@ -28,7 +38,7 @@ export const getBlogs = (currentPage, limit, offset, result) => {
                     return;
                 }
                 const totalItems = countResult[0].count;
-                const totalPages = Math.ceil(totalItems / limit);
+                totalPages = Math.ceil(totalItems / limit);
                 result(null, { data: res, currentPage: currentPage, totalPages: totalPages });
             });
         }

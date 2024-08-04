@@ -28,7 +28,12 @@
           <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
           <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+          <label for="page">Page: </label>
+          <input type="number" id="customPage" v-model="customPage" autocomplete="off"/>
+          <button @click="inputPage()">Go to Page</button>
+          
         </div>
+        <span v-if="nameError" class="error-message">{{ nameError }}</span>
       </div>
       <button class="create-blog-btn" @click="goCreateBlog">Create Blog</button>
     </div>
@@ -49,7 +54,9 @@ export default {
       blogs: [],
       currentPage: 1,
       limit: 10,
-      totalPages: 1
+      totalPages: 1,
+      nameError: '',
+      customPage: ''
     };
   },
 
@@ -151,7 +158,8 @@ export default {
         },
         body: JSON.stringify({
           page: this.currentPage,
-          limit: this.limit
+          limit: this.limit,
+          totalPages: this.totalPages
         })
       })
         .then(response => {
@@ -194,12 +202,32 @@ export default {
     nextPage(){
       this.currentPage += 1;
       this.fetchBlogs();
-      console.log("PAGE", this.currentPage);
     },
 
     prevPage(){
       this.currentPage -= 1;
       this.fetchBlogs();
+    },
+
+    inputPage(){
+        const isPageValid = this.validatePage()
+        
+        if(!isPageValid){
+          return;
+        }
+        this.currentPage = this.customPage;
+        this.fetchBlogs();
+        
+    },
+
+    validatePage(){
+        const pagePattern = /^[1-9][0-9]{0,2}$/; // pages 1-999
+        if(!pagePattern.test(this.customPage) || this.customPage > this.totalPages){
+          this.nameError = 'Invalid page number';
+          return false;
+        }
+        this.nameError = '';
+        return true;
     },
 
     formatDate(dateString) {
@@ -365,5 +393,9 @@ button:hover {
 
 .pagination-controls button {
   margin: 0 10px;
+}
+
+input[type="number"] {
+  width: 60px;
 }
 </style>
