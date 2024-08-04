@@ -1,6 +1,6 @@
 import db from '../config/database.js';
 import { logOperation } from '../utils/logger.js'; // Import the logging function
-
+import { userSession, getUserById } from '../controllers/user.js';
 
 // Validation Functions
 const validateTitle = (title) => /^[A-Za-z0-9\s]{1,30}$/.test(title);
@@ -36,9 +36,11 @@ export const getBlogs = (currentPage, limit, offset, result) => {
 };
 
 // Create a new blog
-export const createBlog = (newBlog, ip, result) => {
-    const { authorID, authorEmail, dateCreated, content, title } = newBlog;
-    
+export const createBlog = async (newBlog, ip, sessionID, result) => {
+    // const { authorID, authorEmail, dateCreated, content, title } = newBlog;
+    const { content, title } = newBlog;
+    const sessionId = sessionID;
+
     if (!validateTitle(title)) {
         const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
         if (debug == '1') {
@@ -58,21 +60,31 @@ export const createBlog = (newBlog, ip, result) => {
         return;
     }
 
-    db.query("INSERT INTO `posts` (authorID, authorEmail, dateCreated, content, title) VALUES (?, ?, ?, ?, ?)", 
-    [authorID, authorEmail, dateCreated, content, title], 
-    (err, res) => {
-        if (err) {
-            if (debug == '1') {
-                result(err, null);
-            } else {
-                result("An error occurred while accessing data", null);
+    if(userSession.session === sessionId){
+        const user = await getUserById(userSession.id);
+        const authorID = user.id;
+        const authorEmail = user.email;
+        const dateCreated = new Date().toISOString().slice(0, 19).replace('T', ' ')
+
+        db.query("INSERT INTO `posts` (authorID, authorEmail, dateCreated, content, title) VALUES (?, ?, ?, ?, ?)", 
+        [authorID, authorEmail, dateCreated, content, title], 
+        (err, res) => {
+            if (err) {
+                if (debug == 1) {
+                    result(err.stack, null);
+                } else {
+                    result("An error occurred while accessing data", null);
+                }
+                return;
             }
-            return;
-        }
-        const createdBlog = { blogID: res.insertId, ...newBlog };
-        logOperation('createBlog', ip, createdBlog);
-        result(null, createdBlog);
-    });
+            const createdBlog = { blogID: res.insertId, ...newBlog };
+            logOperation('createBlog', ip, createdBlog);
+            result(null, createdBlog);
+        });
+    } else {
+        const errorMessage = { error: 'Invalid Session ID' };
+        result(errorMessage, null);
+    }
 };
 
 // Get a blog by ID including the author's photo

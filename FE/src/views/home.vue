@@ -3,6 +3,7 @@
     <nav class="navbar">
       <div class="left-buttons">
         <button v-if="isAdmin" class="new-page-btn" @click="adminView">Admin Page</button>
+        <!-- <button class="new-page-btn" @click="adminView">Admin Page</button> -->
       </div>
       <button class="logout-btn" @click="logout">Logout</button>
     </nav>
@@ -76,6 +77,7 @@ export default {
     ...mapActions(['unauthenticate']),
 
     adminView() {
+      this.adminCheck();
       this.$router.push('/admin');
     },
 
@@ -87,6 +89,44 @@ export default {
 
     viewBlogDetail(blogId) {
       this.$router.push({ path: `/blogs/${blogId}` });
+    },
+
+    deleteBlog(blogId){
+      this.$router.push({ path:`/blogs/${blogId}/delete`})
+    },
+
+    adminCheck(){
+      try{
+        const response = fetch('https://localhost:3001/api/users/validate_admin', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to validate user');
+        } 
+        const data = response.json();
+        if (!(data.authenticated)) {
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
+        }
+      } catch (error) {
+        console.error('Failed to validate session', error);
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      } finally {
+        this.loading = false; // Set loading to false regardless of success or failure
+      }
     },
 
     async logout() {

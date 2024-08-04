@@ -26,12 +26,12 @@ export default {
   data() {
     return {
       blog: {
-        blogID: Date.now(),
+        // blogID: Date.now(),
         title: '',
         content: '',
-        authorID: '',
-        authorEmail: '',
-        dateCreated: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        // authorID: '',
+        // authorEmail: '',
+        // dateCreated: new Date().toISOString().slice(0, 19).replace('T', ' ')
       },
       titleError: '',
       contentError: ''
@@ -49,36 +49,49 @@ export default {
     next();
   },
   created() {
-    this.fetchCurrentUser();
+    // this.fetchCurrentUser();
+    this.validateSession();
   },
   methods: {
-    async fetchCurrentUser() {
-      try {
-        const response = await fetch('https://localhost:3001/api/users/validate_session', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+    // async fetchCurrentUser() {
+    //   try {
+    //     const response = await fetch('https://localhost:3001/api/users/validate_session', {
+    //       method: 'POST',
+    //       credentials: 'include',
+    //       headers: {
+    //         'Content-Type': 'application/json'
+    //       }
+    //     });
 
-        if (!response.ok) {
-          const text = await response.text();
-          console.error('Error fetching current user:', text);
-          throw new Error('Network response was not ok');
-        }
+    //     if (!response.ok) {
+    //       // const text = await response.text();
+    //       // console.error('Error fetching current user:', text);
+    //       throw new Error('Failed to validate session');
+    //     }
 
-        const data = await response.json();
-        if (data.authenticated) {
-          this.blog.authorID = data.id;
-          this.blog.authorEmail = data.email;
-        } else {
-          console.error('User is not authenticated');
-        }
-      } catch (error) {
-        console.error('Error fetching current user:', error);
-      }
-    },
+    //     const data = await response.json();
+    //     if (data.authenticated) {
+    //       // this.blog.authorID = data.id;
+    //       // this.blog.authorEmail = data.email;
+    //     } else {
+    //       // console.error('User is not authenticated');
+    //       fetch('https://localhost:3001/api/users/removeCookie', {
+    //         method: 'POST',
+    //         credentials: 'include',
+    //       });
+    //       this.unauthenticate();
+    //       this.$router.push('/');
+    //     }
+    //   } catch (error) {
+    //     console.error('Error fetching current user:', error);
+    //     fetch('https://localhost:3001/api/users/removeCookie', {
+    //         method: 'POST',
+    //         credentials: 'include',
+    //       });
+    //       this.unauthenticate();
+    //       this.$router.push('/');
+    //   }
+    // },
     validateTitle() {
       const titlePattern = /^[A-Za-z0-9\s]{1,30}$/;
       if (!titlePattern.test(this.blog.title)) {
@@ -107,8 +120,10 @@ export default {
       }
 
       try {
+        this.validateSession();
         const response = await fetch('https://localhost:3001/api/createBlog', {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
           },
@@ -123,6 +138,7 @@ export default {
         const data = await response.json();
         console.log('Blog created successfully:', data);
         this.$router.push('/home');
+
       } catch (error) {
         console.error('There was an error creating the blog:', error);
       }
@@ -154,8 +170,8 @@ export default {
       })
       .then(data => {
         if (data.authenticated) {
-          this.name = data.name;
-          this.isAdmin = data.isAdmin;
+          // this.name = data.name;
+          // this.isAdmin = data.isAdmin;
         } else {
           fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',

@@ -9,7 +9,7 @@ import {
 
 
 const router = express.Router();
-const debug = process.env.DEBUG;
+const debug = process.env.debug;
 
 // Get all blogs
 router.post('/showBlogs', (req, res) => {
@@ -19,7 +19,7 @@ router.post('/showBlogs', (req, res) => {
 
   getBlogs(currentPage, limit, offset, (err, data) => {
     if (err) {
-      if (debug === 1){
+      if (debug == 1){
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occurred while accessing data");
@@ -32,10 +32,11 @@ router.post('/showBlogs', (req, res) => {
 // Create a new blog
 router.post('/createBlog', (req, res) => {
   const newBlog = req.body;
+  const sessionId = req.cookies.sessionId;
   const ip = req.ipv4; // Assuming the IP address is passed in the request
-  createBlog(newBlog, ip, (err, data) => {
+  createBlog(newBlog, ip, sessionId, (err, data) => {
     if (err) {
-      if (debug === 1){
+      if (debug == 1){
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occurred while accessing data");
@@ -50,7 +51,7 @@ router.get('/blogs/:id', (req, res) => {
   const blogID = req.params.id;
   getBlogById(blogID, (err, data) => {
     if (err) {
-      if (debug === 1){
+      if (debug == 1){
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occurred while accessing data");
