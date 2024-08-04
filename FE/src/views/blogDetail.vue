@@ -16,8 +16,7 @@
       <!-- Buttons container -->
       <div class="buttons-container">
         <button class="back-button" @click="goBack">Back</button>
-        <button v-if="isAuthor" class="edit-button" @click="editBlog">Edit</button>
-        <!-- Delete Button for Admins -->
+        <button v-if="isAuthor" class="editBlog" @click="editBlog">Edit</button>
         <button v-if="isAdmin || isAuthor" class="delete-button" @click="confirmDelete">Delete</button>
       </div>
       
@@ -58,7 +57,13 @@ export default {
   methods: {
     async fetchBlog(blogID) {
       try {
-        const response = await fetch(`http://localhost:3001/api/blogs/${blogID}`);
+        const response = await fetch('http://localhost:3001/api/blogs/getBlogById', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ blogID: this.blogID })
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch blog');
         }
@@ -83,15 +88,35 @@ export default {
         }
         const data = await response.json();
         this.currentUser = data;
-        this.isAdmin = data.isAdmin;
         this.checkAuthorization();
       } catch (error) {
         console.error('Failed to fetch current user', error);
       }
     },
-    checkAuthorization() {
-      if (this.currentUser && this.blog.authorID) {
-        this.isAuthor = this.currentUser.id === this.blog.authorID;
+    async checkAuthorization() {
+      if (this.currentUser && this.blogID) {
+        try {
+          const response = await fetch('http://localhost:3001/api/blogs/checkAuthorization', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              blogID: this.blogID,
+              userID: this.currentUser.id
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          const { canEdit, canDelete } = await response.json();
+          this.isAuthor = canEdit;
+          this.isAdmin = canDelete;
+        } catch (error) {
+          console.error('Failed to check authorization:', error);
+        }
       }
     },
     editBlog() {
@@ -133,6 +158,8 @@ export default {
   }
 };
 </script>
+
+
 
 <style scoped>
 html, body {
