@@ -163,13 +163,12 @@ export default {
     },
 
     async createAnnouncement() {
-      if (!this.validateAnnouncement()) {
+      if (!this.validateAnnouncement() || !this.validateExpiry()) {
         return;
       }
 
       try {
-        console.log('Expiration Time:', this.expirationTime);
-
+        
         const response = await fetch('https://localhost:3001/api/announcements/create', {
           method: 'POST',
           credentials: 'include',
@@ -198,9 +197,18 @@ export default {
     },
 
     validateAnnouncement() {
-      const contentPattern = /^.{0,500}$/;
+      const contentPattern = /^[\w\s.,!?"'()@#%&*+-/=:;]{1,500}$/;
       if (!contentPattern.test(this.announcementContent)) {
-        this.contentError = 'Announcement must be under 500 characters';
+        this.contentError = 'Invalid content';
+        return false;
+      }
+      this.contentError = '';
+      return true;
+    },
+    validateExpiry() {
+      const expPattern = /^\d+$/;
+      if (!expPattern.test(this.expirationTime)) {
+        this.contentError = 'Invalid Expiry';
         return false;
       }
       this.contentError = '';
