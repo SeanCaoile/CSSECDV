@@ -53,7 +53,7 @@ export default {
     if (this.blogId) {
       this.fetchBlog();
       this.fetchCurrentUser();
-      await timeout(5000);
+      
       console.log("AUTHORCHECK",this.isAuthor);
       if(!this.isAuthor){
         console.error('Invalid User Access');
@@ -77,10 +77,6 @@ export default {
   },
   methods: {
     ...mapActions(['unauthenticate']),
-
-    timeout(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    },
 
     async fetchBlog() {
       try {

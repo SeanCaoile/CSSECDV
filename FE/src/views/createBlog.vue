@@ -138,9 +138,35 @@ export default {
       }
       const data = await response.json();
       if(data.authenticated){
-        
+        try {
+          const response = await fetch('https://localhost:3001/api/createBlog', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(this.blog)
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText);
+          }
+
+          const data = await response.json();
+          console.log('Blog created successfully:', data);
+          this.$router.push('/home');
+        } catch (error) {
+          console.error('There was an error creating the blog:', error);
+        }
+      } else {
+        console.error("Unauthenticated User");
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
       }
-      
     },
     validateSession() {
       fetch('https://localhost:3001/api/users/validate_session', {
