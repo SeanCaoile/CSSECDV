@@ -32,8 +32,11 @@ import { mapActions, mapGetters } from 'vuex';
 export default {
   data() {
     return {
-      blog: {},
-      currentUser: null,
+      blog: {
+        id: null,
+        title: '',
+        content: ''
+      },
       isAuthor: false,
       titleError: '',
       contentError: ''
@@ -53,25 +56,9 @@ export default {
     if (this.blogId) {
       this.fetchBlog();
       this.fetchCurrentUser();
-      
-      console.log("AUTHORCHECK",this.isAuthor);
-      if(!this.isAuthor){
-        console.error('Invalid User Access');
-        fetch('https://localhost:3001/api/users/removeCookie', {
-          method: 'POST',
-          credentials: 'include',
-        });
-        this.unauthenticate();
-        this.$router.push('/');
-      }
     } else {
       console.error('Error in Retrieving Data');
-      fetch('https://localhost:3001/api/users/removeCookie', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      this.unauthenticate();
-      this.$router.push('/');
+      this.handleUnauthenticatedUser();
     }
     setAppStylesForEditBlog();
   },
@@ -87,14 +74,16 @@ export default {
           },
           body: JSON.stringify({ blogID: this.blogId })
         });
+
         if (!response.ok) {
-          this.$router.push('/');
           throw new Error('Failed to fetch blog');
         }
+
         const data = await response.json();
         this.blog = data;
       } catch (error) {
         console.error('Failed to fetch blog', error);
+        this.handleUnauthenticatedUser();
       }
     },
     async fetchCurrentUser() {
@@ -106,63 +95,46 @@ export default {
             'Content-Type': 'application/json'
           }
         });
+
         if (!response.ok) {
-          console.error('Failed to validate session');
-          fetch('https://localhost:3001/api/users/removeCookie', {
-            method: 'POST',
-            credentials: 'include',
-          });
-          this.unauthenticate();
-          this.$router.push('/');
+          throw new Error('Failed to validate session');
         }
-        const data = response.json();
-        if(data.authenticated){
+
+        const data = await response.json();
+        if (data.authenticated) {
           await this.checkAuthorization(data.id);
-          console.log("test3",this.isAuthor);
-        }
-        else{
-          console.error("Unauthenticated User");
-          fetch('https://localhost:3001/api/users/removeCookie', {
-            method: 'POST',
-            credentials: 'include',
-          });
-          this.unauthenticate();
-          this.$router.push('/');
+        } else {
+          this.handleUnauthenticatedUser();
         }
       } catch (error) {
         console.error('Error fetching current user:', error);
-        fetch('https://localhost:3001/api/users/removeCookie', {
-            method: 'POST',
-            credentials: 'include',
-          });
-          this.unauthenticate();
-          this.$router.push('/');
+        this.handleUnauthenticatedUser();
       }
     },
-    async checkAuthorization(id) {
+    async checkAuthorization(userId) {
       try {
         const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            blogID: this.blog.blogID,
-            userID: id
-          })
+          body: JSON.stringify({ blogID: this.blogId, userID: userId })
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to perform server function`);
+          throw new Error('Failed to check authorization');
         }
 
         const { canEdit } = await response.json();
-        console.log("TET1",canEdit);
         this.isAuthor = canEdit;
-        console.log("TET2",this.isAuthor);
-        return isAuthor;
+
+        if (!this.isAuthor) {
+          console.error('Invalid User Access');
+          this.handleUnauthenticatedUser();
+        }
       } catch (error) {
         console.error('Failed to check authorization:', error);
+        this.handleUnauthenticatedUser();
       }
     },
     validateTitle() {
@@ -192,51 +164,56 @@ export default {
         return;
       }
 
-      const response = await fetch('https://localhost:3001/api/users/validate_session', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) {
-        console.error('Failed to validate session');
-        fetch('https://localhost:3001/api/users/removeCookie', {
+      try {
+        // Validate session again before submission
+        const response = await fetch('https://localhost:3001/api/users/validate_session', {
           method: 'POST',
           credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
-        this.unauthenticate();
-        this.$router.push('/');
-      }
-      const data = await response.json();
-      if(data.authenticated){
-        try {
-          const updateResponse = await fetch(`https://localhost:3001/api/blogs/updateBlogById`, {
+
+        if (!response.ok) {
+          throw new Error('Failed to validate session');
+        }
+
+        const data = await response.json();
+        if (data.authenticated) {
+          const updateResponse = await fetch('https://localhost:3001/api/blogs/updateBlogById', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(this.blog)
+            body: JSON.stringify({ updatedBlog: this.blog }) 
           });
+
           if (!updateResponse.ok) {
+            const errorText = await updateResponse.text(); 
+            console.error('Update failed with response:', errorText);
             throw new Error('Failed to update blog');
           }
-          this.$router.push(`/blogs/blogDetail`);
-        } catch (error) {
-          console.error('Error updating blog:', error);
+
+          this.$router.push(`/blogs/${this.blogId}`); 
+        } else {
+          throw new Error('Unauthenticated User');
         }
-      } else {
-        console.error("Unauthenticated User");
-        fetch('https://localhost:3001/api/users/removeCookie', {
-          method: 'POST',
-          credentials: 'include',
-        });
-        this.unauthenticate();
-        this.$router.push('/');
+      } catch (error) {
+        console.error('Error updating blog:', error);
+        this.handleUnauthenticatedUser();
       }
     },
+
     cancelEdit() {
-      this.$router.push(`/blogs/blogDetail`);
+      this.$router.push(`/blogs/${this.blogId}`); 
+    },
+    handleUnauthenticatedUser() {
+      fetch('https://localhost:3001/api/users/removeCookie', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      this.unauthenticate();
+      this.$router.push('/');
     }
   }
 };
