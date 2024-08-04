@@ -45,7 +45,7 @@
     methods: {
       async fetchBlog() {
         try {
-          const response = await fetch(`https://localhost:3001/api/blogs/${this.blogID}`);
+          const response = await fetch(`http://localhost:3001/api/blogs/${this.blogID}`);
           if (response.ok) {
             this.blog = await response.json();
           } else {
@@ -58,7 +58,7 @@
       async deleteBlog() {
         try {
           console.log('Sending delete request for blogID:', this.blogID);
-          const response = await fetch('https://localhost:3001/api/blogs/deleteBlog', {
+          const response = await fetch('http://localhost:3001/api/blogs/deleteBlog', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
