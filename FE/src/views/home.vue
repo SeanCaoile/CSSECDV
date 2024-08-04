@@ -116,7 +116,13 @@ export default {
       })
       .then(response => {
         if (!response.ok) {
-          throw new Error('Failed to validate session');
+          console.error('Failed to validate session');
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
         }
         return response.json();
       })

@@ -38,13 +38,6 @@ export default {
   computed: {
     ...mapGetters(['blogId']),
   },
-
-  props: {
-    blogID: {
-      type: String,
-      required: true
-    }
-  },
   data() {
     return {
       blog: {},
@@ -55,7 +48,6 @@ export default {
     };
   },
   created() {
-    console.log("BLOGID", this.blogId);
     if (!this.blogId) {
       this.$router.push('/');
     }
@@ -65,15 +57,21 @@ export default {
     setAppStylesForBlogDetail();
   },
   methods: {
-    ...mapActions(['clearBlogId']),
-    beforeRouteLeave(to, from, next) {
-      this.clearBlogId();
-      next();
-    }, 
+    // ...mapActions(['clearBlogId', 'setBlogId']),
+    ...mapActions(['unauthenticate', 'setBlogId']),
+    // beforeRouteLeave(to, from, next) {
+    //   this.clearBlogId();
+    //   next();
+    // }, 
+    // setBlogId(blog) {
+    //   // Implement your logic to set the blog ID here
+    //   console.log('Blog ID set:', this.blog);
+    //   // Example logic, adjust as needed
+    //   this.$store.dispatch('setBlogId', blog.blogID);
+    // },
 
     async fetchBlog() {
       try {
-        console.log("TEST",this.blogId);
         const response = await fetch('https://localhost:3001/api/blogs/getBlogById', {
           method: 'POST',
           headers: {
@@ -82,11 +80,12 @@ export default {
           body: JSON.stringify({ blogID: this.blogId })
         });
         if (!response.ok) {
+          this.$router.push('/');
           throw new Error('Failed to fetch blog');
         }
         const data = await response.json();
         this.blog = data;
-        this.checkAuthorization();
+        // this.checkAuthorization();
       } catch (error) {
         console.error('Failed to fetch blog', error);
       }
@@ -101,43 +100,69 @@ export default {
           }
         });
         if (!response.ok) {
-          throw new Error('Failed to validate session');
+          console.error('Failed to validate session');
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
         }
         const data = await response.json();
-        this.currentUser = data;
-        this.checkAuthorization();
+        if(data.authenticated){
+          this.checkAuthorization(data.id);
+          this.isAdmin = data.isAdmin;
+          return true;
+        }
+        else{
+          console.error("Unauthenticated User");
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
+        }
+        return false;
       } catch (error) {
         console.error('Failed to fetch current user', error);
+        fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
       }
     },
-    async checkAuthorization() {
-      if (this.currentUser && this.blogID) {
-        try {
-          const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              blogID: this.blogID,
-              userID: this.currentUser.id
-            })
-          });
+    async checkAuthorization(id) {
+      try {
+        const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            blogID: this.blog.blogID,
+            userID: id
+          })
+        });
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-
-          const { canEdit, canDelete } = await response.json();
-          this.isAuthor = canEdit;
-          this.isAdmin = canDelete;
-        } catch (error) {
-          console.error('Failed to check authorization:', error);
+        if (!response.ok) {
+          throw new Error(`Failed to perform server function`);
         }
+
+        const { canEdit } = await response.json();
+        this.isAuthor = canEdit;
+      } catch (error) {
+        console.error('Failed to check authorization:', error);
       }
     },
     editBlog() {
-      this.$router.push({ name: 'editBlog', params: { blogID: this.blogID } });
+      // this.$router.push({ name: 'editBlog', params: { blogID: this.blogID } });
+      if(this.fetchCurrentUser()){
+        this.setBlogId(this.blog.blogID);
+        this.$router.push('/blogs/editBlog');
+      }
     },
     async deleteBlog() {
       try {

@@ -27,43 +27,78 @@
 
 <script>
 import { setAppStylesForEditBlog } from '../utils/stylesUtils';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
   data() {
     return {
-      blog: {
-        id: '',
-        title: '',
-        content: '',
-        authorID: '',
-      },
+      blog: {},
       currentUser: null,
       isAuthor: false,
       titleError: '',
       contentError: ''
     };
   },
+  computed: {
+    ...mapGetters(['blogId']),
+
+    titleRemainingChars() {
+      return 30 - this.blog.title.length;
+    },
+    contentRemainingChars() {
+      return 500 - this.blog.content.length;
+    }
+  },
   created() {
-    this.fetchBlog();
-    this.fetchCurrentUser();
+    if (this.blogId) {
+      this.fetchBlog();
+      this.fetchCurrentUser();
+      await timeout(5000);
+      console.log("AUTHORCHECK",this.isAuthor);
+      if(!this.isAuthor){
+        console.error('Invalid User Access');
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      }
+    } else {
+      console.error('Error in Retrieving Data');
+      fetch('https://localhost:3001/api/users/removeCookie', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      this.unauthenticate();
+      this.$router.push('/');
+    }
     setAppStylesForEditBlog();
   },
   methods: {
+    ...mapActions(['unauthenticate']),
+
+    timeout(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    },
+
     async fetchBlog() {
       try {
-        const blogID = this.$route.params.blogID;
-        const response = await fetch(`https://localhost:3001/api/blogs/${blogID}`);
+        const response = await fetch('https://localhost:3001/api/blogs/getBlogById', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ blogID: this.blogId })
+        });
         if (!response.ok) {
+          this.$router.push('/');
           throw new Error('Failed to fetch blog');
         }
         const data = await response.json();
-        this.blog.id = data.blogID;
-        this.blog.title = data.title;
-        this.blog.content = data.content;
-        this.blog.authorID = data.authorID;
-        this.checkAuthorization();
+        this.blog = data;
       } catch (error) {
-        console.error('Error fetching blog:', error);
+        console.error('Failed to fetch blog', error);
       }
     },
     async fetchCurrentUser() {
@@ -76,17 +111,63 @@ export default {
           }
         });
         if (!response.ok) {
-          throw new Error('Failed to validate session');
+          console.error('Failed to validate session');
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
         }
-        const data = await response.json();
-        this.currentUser = data;
-        this.checkAuthorization();
+        const data = response.json();
+        if(data.authenticated){
+          await this.checkAuthorization(data.id);
+          console.log("test3",this.isAuthor);
+        }
+        else{
+          console.error("Unauthenticated User");
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
+        }
       } catch (error) {
         console.error('Error fetching current user:', error);
+        fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
       }
     },
-    checkAuthorization() {
-      this.isAuthor = this.currentUser && this.blog.authorID === this.currentUser.id;
+    async checkAuthorization(id) {
+      try {
+        const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            blogID: this.blog.blogID,
+            userID: id
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to perform server function`);
+        }
+
+        const { canEdit } = await response.json();
+        console.log("TET1",canEdit);
+        this.isAuthor = canEdit;
+        console.log("TET2",this.isAuthor);
+        return isAuthor;
+      } catch (error) {
+        console.error('Failed to check authorization:', error);
+      }
     },
     validateTitle() {
       const titlePattern = /^[A-Za-z0-9\s]{1,30}$/;
@@ -115,34 +196,51 @@ export default {
         return;
       }
 
-      try {
-        const blogID = this.blog.id;
-        const response = await fetch(`https://localhost:3001/api/blogs/${blogID}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(this.blog)
-        });
-        if (!response.ok) {
-          throw new Error('Failed to update blog');
+      const response = await fetch('https://localhost:3001/api/users/validate_session', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
         }
-        this.$router.push(`/blogs/${blogID}`);
-      } catch (error) {
-        console.error('Error updating blog:', error);
+      });
+      if (!response.ok) {
+        console.error('Failed to validate session');
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      }
+      const data = await response.json();
+      if(data.authenticated){
+        try {
+          const updateResponse = await fetch(`https://localhost:3001/api/blogs/updateBlogById`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(this.blog)
+          });
+          if (!updateResponse.ok) {
+            throw new Error('Failed to update blog');
+          }
+          this.$router.push(`/blogs/blogDetail`);
+        } catch (error) {
+          console.error('Error updating blog:', error);
+        }
+      } else {
+        console.error("Unauthenticated User");
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
       }
     },
     cancelEdit() {
-      const blogID = this.blog.id;
-      this.$router.push(`/blogs/${blogID}`);
-    }
-  },
-  computed: {
-    titleRemainingChars() {
-      return 30 - this.blog.title.length;
-    },
-    contentRemainingChars() {
-      return 500 - this.blog.content.length;
+      this.$router.push(`/blogs/blogDetail`);
     }
   }
 };

@@ -61,22 +61,36 @@ export default {
             'Content-Type': 'application/json'
           }
         });
-
         if (!response.ok) {
-          const text = await response.text();
-          console.error('Error fetching current user:', text);
-          throw new Error('Network response was not ok');
+          console.error('Failed to validate session');
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
         }
-
         const data = await response.json();
         if (data.authenticated) {
           this.blog.authorID = data.id;
           this.blog.authorEmail = data.email;
         } else {
-          console.error('User is not authenticated');
+          console.error("Unauthenticated User");
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
         }
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        console.error('Failed to fetch current user', error);
+        fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
       }
     },
     validateTitle() {
@@ -106,26 +120,27 @@ export default {
         return;
       }
 
-      try {
-        const response = await fetch('https://localhost:3001/api/createBlog', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(this.blog)
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText);
+      const response = await fetch('https://localhost:3001/api/users/validate_session', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
         }
-
-        const data = await response.json();
-        console.log('Blog created successfully:', data);
-        this.$router.push('/home');
-      } catch (error) {
-        console.error('There was an error creating the blog:', error);
+      });
+      if (!response.ok) {
+        console.error('Failed to validate session');
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
       }
+      const data = await response.json();
+      if(data.authenticated){
+        
+      }
+      
     },
     validateSession() {
       fetch('https://localhost:3001/api/users/validate_session', {

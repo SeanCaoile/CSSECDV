@@ -46,9 +46,7 @@ router.post('/createBlog', (req, res) => {
 
 // Get a blog by ID 
 router.post('/blogs/getBlogById', (req, res) => {
-  console.log("TESTT",req.body);
   const { blogID } = req.body;
-  console.log("IN",blogID);
   getBlogById(blogID, (err, data) => {
     if (err) {
       if (debug == 1) {
@@ -71,8 +69,9 @@ router.post('/blogs/getBlogById', (req, res) => {
 
 // Update a blog by ID
 router.post('/blogs/updateBlogById', (req, res) => {
-  const { blogID, updatedBlog } = req.body;
-  updateBlogById(blogID, updatedBlog, (err, data) => {
+  const { updatedBlog } = req.body;
+  console.log("TEST BACLENMD", updateBlog);
+  updateBlogById(updatedBlog.id, updatedBlog, (err, data) => {
     if (err) {
       if (debug == 1) {
         return res.status(500).send(err);
@@ -110,23 +109,31 @@ router.post('/blogs/deleteBlog', (req, res) => {
   });
 });
 
-router.post('/blogs/checkAuthorization', async (req, res) => {
+router.post('/blogs/checkAuthorization', (req, res) => {
   const { blogID, userID } = req.body;
-  
-  try {
-    const blog = await getBlogById(blogID);
-    if (!blog) {
-      return res.status(404).json({ error: 'Blog not found' });
+
+  getBlogById(blogID, (err, data) => {
+    if (err) {
+      if (debug == 1) {
+        return res.status(500).send(err);
+      } else {
+        return res.status(500).send("An error occurred while accessing data");
+      }
     }
-
-    // Check if user is the author or admin
-    const isAuthor = blog.authorID === userID;
-    const user = await getUserById(userID); 
-
-    res.json({ canEdit: isAuthor});
-  } catch (error) {
-    console.error('Error checking authorization:', error);
-    res.status(500).json({ error: 'Failed to check authorization' });
-  }
+    if (!data) {
+      if (debug == 1) {
+        return res.status(404).send({ message: 'Blog not found' });
+      } else {
+        return res.status(404).send("Blog not found");
+      }
+    }
+    if (userID == data.authorID){
+      res.json({ canEdit: 1 });
+    }
+    else{
+      res.json({ canEdit: 0 })
+    }
+    // res.json(data);
+  });
 });
 export default router;

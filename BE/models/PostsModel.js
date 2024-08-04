@@ -73,7 +73,6 @@ export const createBlog = (newBlog, result) => {
 
 // Get a blog by ID including the author's photo
 export const getBlogById = (blogID, result) => {
-    console.log("ANOTHERIN",blogID);
     const query = `
       SELECT posts.*, users.photo as authorPhoto
       FROM posts
@@ -83,7 +82,6 @@ export const getBlogById = (blogID, result) => {
   
     db.query(query, [blogID], (err, res) => {
       if (err) {
-        console.log("PROBLEM");
         if (debug == '1') {
           result(err, null);
         } else {
@@ -93,14 +91,12 @@ export const getBlogById = (blogID, result) => {
       }
       if (res.length) {
         const blog = res[0];
-        console.log("BLOG",blog);
         if (blog.authorPhoto) {
           const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
           blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
         }
         result(null, blog);
       } else {
-        console.log("NOTHING");
         result({ kind: "not_found" }, null);
       }
     });
