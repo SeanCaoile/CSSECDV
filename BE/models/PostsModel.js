@@ -38,7 +38,7 @@ export const getBlogs = (currentPage, limit, totalPages, offset, result) => {
                     return;
                 }
                 const totalItems = countResult[0].count;
-                totalPages = Math.ceil(totalItems / limit);
+                const totalPages = Math.ceil(totalItems / limit);
                 result(null, { data: res, currentPage: currentPage, totalPages: totalPages });
             });
         }
