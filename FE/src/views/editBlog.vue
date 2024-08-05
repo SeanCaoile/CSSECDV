@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { setAppStylesForEditBlog } from '../utils/stylesUtils';
+import { resetAppStyles, setAppStylesForEditBlog } from '../utils/stylesUtils';
 import { mapActions, mapGetters } from 'vuex';
 
 export default {
@@ -41,6 +41,17 @@ export default {
       titleError: '',
       contentError: ''
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      if (window.innerWidth > 1024) {
+        setAppStylesForEditBlog();
+      }
+    });
+  },
+  beforeRouteLeave(to, from, next) {
+    resetAppStyles();
+    next();
   },
   computed: {
     ...mapGetters(['blogId']),
@@ -60,8 +71,8 @@ export default {
       console.error('Error in Retrieving Data');
       this.handleUnauthenticatedUser();
     }
-    setAppStylesForEditBlog();
   },
+
   methods: {
     ...mapActions(['unauthenticate']),
 
@@ -140,7 +151,7 @@ export default {
     validateTitle() {
       const titlePattern = /^[A-Za-z0-9\s]{1,30}$/;
       if (!titlePattern.test(this.blog.title)) {
-        this.titleError = 'Title must be alphanumeric and up to 30 characters long';
+        this.titleError = 'Title must be alphanumeric between 1 to 30 characters long';
         return false;
       } else {
         this.titleError = '';
@@ -148,6 +159,10 @@ export default {
       }
     },
     validateContent() {
+      if (this.blog.content.length == 0) {
+        this.contentError = 'Content cannot be empty';
+        return false;
+      }
       if (this.blog.content.length > 500) {
         this.contentError = 'Content must be up to 500 characters long';
         return false;
@@ -156,7 +171,7 @@ export default {
         return true;
       }
     },
-    async submitForm() {
+      async submitForm() {
       const isTitleValid = this.validateTitle();
       const isContentValid = this.validateContent();
 
@@ -206,7 +221,7 @@ export default {
     },
 
     cancelEdit() {
-      this.$router.push(`/blogs/${this.blogId}`); 
+      this.$router.push(`/blogs/blogDetail`); 
     },
     handleUnauthenticatedUser() {
       fetch('https://localhost:3001/api/users/removeCookie', {
@@ -218,6 +233,7 @@ export default {
     }
   }
 };
+
 </script>
 
 <style scoped>
