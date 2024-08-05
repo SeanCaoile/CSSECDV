@@ -5,14 +5,24 @@ import { userSession, getUserById } from '../controllers/user.js';
 // Validation Functions
 const validateTitle = (title) => /^[A-Za-z0-9\s]{1,30}$/.test(title);
 const validateContent = (content) => content.length <= 500;
+const validatePage = (currentPage) => /^[1-9][0-9]{0,2}$/.test(currentPage);
 const debug = process.env.DEBUG;
 
 // Get all blogs
-export const getBlogs = (currentPage, limit, offset, result) => {
+export const getBlogs = (currentPage, limit, totalPages, offset, result) => {
+    if(!validatePage(currentPage) || currentPage > totalPages){
+        const errorMessage = { error: 'Invalid Page Number Inputted' };
+        if (debug == 1) {
+            result(errorMessage, null);
+        } else {
+            result('An error occurred while processing', null);
+        }
+        return;
+    }
     db.query("SELECT * FROM `posts` WHERE isDeleted = 0 LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
         if (err) {
-            if (debug == '1') {
-                result(err, null);
+            if (debug == 1) {
+                result(err.stack, null);
             } else {
                 result("An error occurred while accessing data", null);
             }
@@ -20,8 +30,8 @@ export const getBlogs = (currentPage, limit, offset, result) => {
         } else {
             db.query('SELECT COUNT(*) AS count FROM `posts` WHERE isDeleted = 0', (err, countResult) => {
                 if (err) {
-                    if (debug == '1') {
-                        result(err, null);
+                    if (debug == 1) {
+                        result(err.stack, null);
                     } else {
                         result("An error occurred while accessing data", null);
                     }

@@ -15,15 +15,12 @@ const debug = process.env.debug;
 router.post('/showBlogs', (req, res) => {
   const currentPage = parseInt(req.body.page) || 1;
   const limit = parseInt(req.body.limit) || 10;
+  const totalPages = parseInt(req.body.totalPages) || 1;
   const offset = (currentPage - 1) * limit;
 
-  getBlogs(currentPage, limit, offset, (err, data) => {
+  getBlogs(currentPage, limit, totalPages, offset, (err, data) => {
     if (err) {
-      if (debug == 1){
         return res.status(500).send(err);
-      } else {
-        return res.status(500).send("An error occurred while accessing data");
-      }
     }
     res.json(data);
   });
