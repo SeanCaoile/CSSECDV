@@ -21,7 +21,7 @@ export const getBlogs = (currentPage, limit, totalPages, offset, result) => {
     }
     db.query("SELECT * FROM `posts` WHERE isDeleted = 0 LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
         if (err) {
-            if (debug == 1) {
+            if (debug == 1) { //correct way to check for debug mode
                 result(err.stack, null);
             } else {
                 result("An error occurred while accessing data", null);
