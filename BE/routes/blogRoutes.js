@@ -4,9 +4,9 @@ import {
   createBlog,
   getBlogById,
   updateBlogById,
-  deleteBlogById
+  deleteBlogById,
+  checkAuthorization
 } from '../models/PostsModel.js'; // Adjust the import path as necessary
-
 
 const router = express.Router();
 const debug = process.env.debug;
@@ -36,16 +36,16 @@ router.post('/createBlog', (req, res) => {
       if (debug == 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occurred while accessing data");
+        return res.status(500).send("An error occured while accessing data");
       }
     }
     res.status(201).json(data);
   });
 });
 
-// Get a blog by ID including the author's photo
-router.get('/blogs/:id', (req, res) => {
-  const blogID = req.params.id;
+// Get a blog by ID 
+router.post('/blogs/getBlogById', (req, res) => {
+  const { blogID } = req.body;
   getBlogById(blogID, (err, data) => {
     if (err) {
       if (debug == 1){
@@ -55,7 +55,7 @@ router.get('/blogs/:id', (req, res) => {
       }
     }
     if (!data) {
-      if (debug === '1') {
+      if (debug == '1') {
         return res.status(404).send({ message: 'Blog not found' });
       } else {
         return res.status(404).send("Blog not found");
@@ -65,20 +65,20 @@ router.get('/blogs/:id', (req, res) => {
   });
 });
 
+
 // Update a blog by ID
-router.put('/blogs/:id', (req, res) => {
-  const blogID = req.params.id;
-  const updatedBlog = req.body;
-  updateBlogById(blogID, updatedBlog, (err, data) => {
+router.post('/blogs/updateBlogById', (req, res) => {
+  const { updatedBlog } = req.body;
+  updateBlogById(updatedBlog, (err, data) => {
     if (err) {
-      if (debug === 1){
+      if (debug == 1) {
         return res.status(500).send(err);
       } else {
         return res.status(500).send("An error occurred while accessing data");
       }
     }
     if (!data) {
-      if (debug === '1') {
+      if (debug == '1') {
         return res.status(404).send({ message: 'Blog not found' });
       } else {
         return res.status(404).send("Blog not found");
@@ -94,17 +94,44 @@ router.post('/blogs/deleteBlog', (req, res) => {
   console.log('Received delete request with blogID:', blogID);
   deleteBlogById(blogID, (err, result) => {
     if (err) {
-      if (debug === 1){
+      if (debug == 1){
         return res.status(500).send(err);
       } else {
-        return res.status(500).send("An error occurred while accessing data");
+        return res.status(500).send("An error occured while accessing data");
       }
     }
-    if (result.affectedRows === 0) {
+    if (result.affectedRows == 0) {
       return res.status(404).send({ message: 'Blog not found' });
     }
     res.status(200).send({ message: 'Blog deleted successfully' });
   });
 });
 
+router.post('/blogs/checkAuthorization', (req, res) => {
+  const { blogID, userID } = req.body;
+
+  getBlogById(blogID, (err, data) => {
+    if (err) {
+      if (debug == 1) {
+        return res.status(500).send(err);
+      } else {
+        return res.status(500).send("An error occurred while accessing data");
+      }
+    }
+    if (!data) {
+      if (debug == 1) {
+        return res.status(404).send({ message: 'Blog not found' });
+      } else {
+        return res.status(404).send("Blog not found");
+      }
+    }
+    if (userID == data.authorID){
+      res.json({ canEdit: 1 });
+    }
+    else{
+      res.json({ canEdit: 0 })
+    }
+    // res.json(data);
+  });
+});
 export default router;

@@ -17,7 +17,6 @@
       <div class="buttons-container">
         <button class="back-button" @click="goBack">Back</button>
         <button v-if="isAuthor" class="edit-button" @click="editBlog">Edit</button>
-        <!-- Delete Button for Admins -->
         <button v-if="isAdmin || isAuthor" class="delete-button" @click="confirmDelete">Delete</button>
       </div>
       
@@ -33,13 +32,11 @@
 
 <script>
 import { setAppStylesForBlogDetail } from '../utils/stylesUtils';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
-  props: {
-    blogID: {
-      type: String,
-      required: true
-    }
+  computed: {
+    ...mapGetters(['blogId']),
   },
   data() {
     return {
@@ -51,20 +48,32 @@ export default {
     };
   },
   created() {
-    this.fetchBlog(this.blogID);
+    if (!this.blogId) {
+      this.$router.push('/');
+    }
+
+    this.fetchBlog();
     this.fetchCurrentUser();
     setAppStylesForBlogDetail();
   },
   methods: {
-    async fetchBlog(blogID) {
+    ...mapActions(['unauthenticate', 'setBlogId']),
+
+    async fetchBlog() {
       try {
-        const response = await fetch(`https://localhost:3001/api/blogs/${blogID}`);
+        const response = await fetch('https://localhost:3001/api/blogs/getBlogById', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ blogID: this.blogId })
+        });
         if (!response.ok) {
+          this.$router.push('/');
           throw new Error('Failed to fetch blog');
         }
         const data = await response.json();
         this.blog = data;
-        this.checkAuthorization();
       } catch (error) {
         console.error('Failed to fetch blog', error);
       }
@@ -79,43 +88,137 @@ export default {
           }
         });
         if (!response.ok) {
-          throw new Error('Failed to validate session');
+          console.error('Failed to validate session');
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
         }
         const data = await response.json();
-        this.currentUser = data;
-        this.isAdmin = data.isAdmin;
-        this.checkAuthorization();
+        if(data.authenticated){
+          this.checkAuthorization(data.id);
+          this.isAdmin = data.isAdmin;
+          return true;
+        }
+        else{
+          console.error("Unauthenticated User");
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
+        }
+        return false;
       } catch (error) {
         console.error('Failed to fetch current user', error);
+        fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
       }
     },
-    checkAuthorization() {
-      if (this.currentUser && this.blog.authorID) {
-        this.isAuthor = this.currentUser.id === this.blog.authorID;
-      }
-    },
-    editBlog() {
-      this.$router.push({ name: 'editBlog', params: { blogID: this.blogID } });
-    },
-    async deleteBlog() {
+    async checkAuthorization(id) {
       try {
-        const response = await fetch('https://localhost:3001/api/blogs/deleteBlog', {
+        const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ blogID: this.blogID })
+          body: JSON.stringify({
+            blogID: this.blog.blogID,
+            userID: id
+          })
         });
-        if (response.ok) {
-          console.log('Blog deleted successfully');
-          this.$router.push('/home');
-        } else {
-          const errorText = await response.text();
-          console.error('Failed to delete blog', errorText);
+
+        if (!response.ok) {
+          throw new Error(`Failed to perform server function`);
         }
+
+        const { canEdit } = await response.json();
+        this.isAuthor = canEdit;
       } catch (error) {
-        console.error('Error deleting blog', error);
+        console.error('Failed to check authorization:', error);
       }
+    },
+    editBlog() {
+      if(this.fetchCurrentUser()){
+        this.setBlogId(this.blog.blogID);
+        this.$router.push('/blogs/editBlog');
+      }
+    },
+    async deleteBlog() {
+      try {
+        const response = await fetch('https://localhost:3001/api/users/validate_session', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          if (!response.ok) {
+            console.error('Failed to validate session');
+            fetch('https://localhost:3001/api/users/removeCookie', {
+              method: 'POST',
+              credentials: 'include',
+            });
+            this.unauthenticate();
+            this.$router.push('/');
+          }
+          const data = await response.json();
+          if(data.authenticated){
+            if(this.fetchCurrentUser() && (this.isAdmin||this.isAuthor)){
+              try {
+                const response = await fetch('https://localhost:3001/api/blogs/deleteBlog', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ blogID: this.blogId })
+                });
+                if (response.ok) {
+                  console.log('Blog deleted successfully');
+                  this.$router.push('/home');
+                } else {
+                  const errorText = await response.text();
+                  console.error('Failed to delete blog', errorText);
+                }
+              } catch (error) {
+                console.error('Error deleting blog', error);
+              }
+            }
+            else{
+              console.error("User Intruder ");
+                fetch('https://localhost:3001/api/users/removeCookie', {
+                  method: 'POST',
+                  credentials: 'include',
+                });
+                this.unauthenticate();
+                this.$router.push('/');
+            }
+          } else {
+              console.error("Unauthenticated User");
+              fetch('https://localhost:3001/api/users/removeCookie', {
+                method: 'POST',
+                credentials: 'include',
+              });
+              this.unauthenticate();
+              this.$router.push('/');
+            }
+            return false;
+        } catch (error) {
+          console.error('Failed to fetch current user', error);
+          fetch('https://localhost:3001/api/users/removeCookie', {
+              method: 'POST',
+              credentials: 'include',
+            });
+            this.unauthenticate();
+            this.$router.push('/');
+        }
     },
     confirmDelete() {
       this.confirmDeleteDialog = true;

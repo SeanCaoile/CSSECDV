@@ -31,19 +31,20 @@ export function setAppStylesForEditBlog() {
 export function setAppStylesForBlogDetail() {
   const appElement = document.getElementById('app');
   if (appElement) {
-    appElement.style.display = 'flex';
-    appElement.style.justifyContent = 'center';
-    appElement.style.alignItems = 'flex-start'; // Align items to the start of the container
-    appElement.style.padding = '2rem'; // Adjust padding if needed
+    //appElement.style.display = 'flex';
+    // appElement.style.justifyContent = 'center';
+    // appElement.style.alignItems = 'flex-start'; // Align items to the start of the container
+    // appElement.style.padding = '2rem'; // Adjust padding if needed
+    appElement.style.display = 'block';
+    appElement.style.gridTemplateColumns = '';
+    appElement.style.padding = '';
   }
 }
 export function setAppStylesForDeleteBlog() {
   const appElement = document.getElementById('app');
   if (appElement) {
-    appElement.style.display = 'flex';
-    appElement.style.justifyContent = 'center';
-    appElement.style.alignItems = 'center';
-    appElement.style.height = '100vh'; // Ensure full viewport height
-    appElement.style.padding = '0';
+    appElement.style.display = 'block';
+    appElement.style.gridTemplateColumns = '';
+    appElement.style.padding = '';
   }
 }

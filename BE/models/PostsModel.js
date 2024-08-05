@@ -28,7 +28,7 @@ export const getBlogs = (currentPage, limit, totalPages, offset, result) => {
             }
             return;
         } else {
-            db.query('SELECT COUNT(*) AS count FROM `posts` WHERE isDeleted = 0', (err, countResult) => {
+            db.query('SELECT COUNT(*) AS count FROM `posts`', (err, countResult) => {
                 if (err) {
                     if (debug == 1) {
                         result(err.stack, null);
@@ -100,73 +100,68 @@ export const createBlog = async (newBlog, ip, sessionID, result) => {
 // Get a blog by ID including the author's photo
 export const getBlogById = (blogID, result) => {
     const query = `
-        SELECT posts.*, users.photo as authorPhoto
-        FROM posts
-        JOIN users ON posts.authorID = users.id
-        WHERE posts.blogID = ? AND posts.isDeleted = 0;
+      SELECT posts.*, users.photo as authorPhoto
+      FROM posts
+      JOIN users ON posts.authorID = users.id
+      WHERE posts.blogID = ? AND posts.isDeleted = 0;
     `;
-
+  
     db.query(query, [blogID], (err, res) => {
-        if (err) {
-            if (debug == '1') {
-                result(err, null);
-            } else {
-                result("An error occurred while accessing data", null);
-            }
-            return;
-        }
-        if (res.length) {
-            const blog = res[0];
-            try{
-                if (blog.authorPhoto) {
-                    const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
-                    blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
-                }
-                result(null,blog);
-            } catch (conversionError){
-                result("An error orccurred while accessing the data", null);
-            }            
+      if (err) {
+        if (debug == '1') {
+          result(err, null);
         } else {
-            result({ kind: "not_found" }, null);
+          result("An error occurred while accessing data", null);
         }
+        return;
+      }
+      if (res.length) {
+        const blog = res[0];
+        if (blog.authorPhoto) {
+          const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
+          blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
+        }
+        result(null, blog);
+      } else {
+        result({ kind: "not_found" }, null);
+      }
     });
-};
+  };
+  
 
 // Update a blog by ID
-export const updateBlogById = (blogID, blog, result) => {
-    const { title, content } = blog;
+export const updateBlogById = (blog, result) => {
+    // const { title, content } = blog;
     const updateFields = [];
     const params = [];
 
-    if (title) {
-        if (!validateTitle(title)) {
+    if (blog.title) {
+        if (!validateTitle(blog.title)) {
             const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
-            if (debug == '1') {
+            if (debug == 1) {
                 result(errorMessage, null);
             } else {
-                result(errorMessage, null);
-                // result('Validation error', null);
+                result('Validation error', null);
             }
             return;
         }
         updateFields.push('title = ?');
-        params.push(title);
+        params.push(blog.title);
     }
-    if (content) {
-        if (!validateContent(content)) {
+    if (blog.content) {
+        if (!validateContent(blog.content)) {
             const errorMessage = { error: 'Content must be up to 500 characters long' };
-            if (debug == '1') {
+            if (debug == 1) {
                 result(errorMessage, null);
             } else {
-                result(errorMessage, null);
-                // result('Validation error', null);
+                result('Validation error', null);
             }
             return;
         }
         updateFields.push('content = ?');
-        params.push(content);
+        params.push(blog.content);
     }
-
+    const blogID = blog.blogID
     params.push(blogID);
 
     db.query(
@@ -174,7 +169,7 @@ export const updateBlogById = (blogID, blog, result) => {
         params,
         (err, res) => {
             if (err) {
-                if (debug == '1') {
+                if (debug == 1) {
                     result(err, null);
                 } else {
                     result("An error occurred while accessing data", null);
@@ -182,12 +177,10 @@ export const updateBlogById = (blogID, blog, result) => {
                 return;
             }
             if (res.affectedRows == 0) {
-                result({ kind: "not_found" }, null);
+                result({ error: "blog not found" }, null);
                 return;
             }
-            const updatedBlog = { blogID, ...blog };
-            logOperation('updateBlogById', updatedBlog);
-            result(null, updatedBlog);
+            result(null, { blogID, ...blog });
         }
     );
 };
@@ -203,7 +196,6 @@ export const deleteBlogById = (blogID, callback) => {
             }
             return;
         }
-        logOperation('deleteBlogById', { blogID });
         callback(null, results);
     });
 };
@@ -255,4 +247,47 @@ export const editBlog = async (req, res) => {
             res.status(500).send("An error occurred while accessing data");
         }
     }
+};
+
+// Check authorization
+export const checkAuthorization = (blogID, userID, callback) => {
+    const queryBlog = 'SELECT authorID FROM posts WHERE blogID = ?';
+    const queryUser = 'SELECT isAdmin FROM users WHERE id = ?';
+
+    db.query(queryBlog, [blogID], (err, blogResult) => {
+        if (err) {
+            if (debug === '1') {
+                callback(err, null);
+            } else {
+                callback("An error occurred while accessing data", null);
+            }
+            return;
+        }
+        if (blogResult.length === 0) {
+            callback(null, { message: 'Blog not found' });
+            return;
+        }
+
+        const authorID = blogResult[0].authorID;
+
+        db.query(queryUser, [userID], (err, userResult) => {
+            if (err) {
+                if (debug === '1') {
+                    callback(err, null);
+                } else {
+                    callback("An error occurred while accessing data", null);
+                }
+                return;
+            }
+            if (userResult.length === 0) {
+                callback(null, { message: 'User not found' });
+                return;
+            }
+
+            const isAdmin = userResult[0].isAdmin;
+            const isAuthor = userID === authorID;
+
+            callback(null, { isAuthor, isAdmin });
+        });
+    });
 };

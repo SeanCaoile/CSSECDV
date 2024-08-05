@@ -81,7 +81,12 @@ export default {
   },
 
   methods: {
-    ...mapActions(['unauthenticate']),
+    ...mapActions(['unauthenticate', 'setBlogId']),
+
+    viewBlogDetail(blogId) {
+      this.setBlogId(blogId);
+      this.$router.push('/blogs/blogDetail');
+    },
 
     adminView() {
       this.validateSession();
@@ -95,13 +100,7 @@ export default {
       });
     },
 
-    viewBlogDetail(blogId) {
-      this.$router.push({ path: `/blogs/${blogId}` });
-    },
-
-    deleteBlog(blogId){
-      this.$router.push({ path:`/blogs/${blogId}/delete`})
-    },
+  
 
     async adminCheck(){
       try{
@@ -163,7 +162,13 @@ export default {
       })
       .then(response => {
         if (!response.ok) {
-          throw new Error('Failed to validate session');
+          console.error('Failed to validate session');
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
         }
         return response.json();
       })

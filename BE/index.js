@@ -10,8 +10,7 @@ import cookieParser from 'cookie-parser';
 
 import path from 'path';
 import fs from 'fs';
-import https from 'https'
-
+import https from 'https';
 
 dotenv.config();
 
@@ -20,9 +19,10 @@ console.log('host is index in ' + process.env.DB_HOST);
 const port = process.env.PORT;
 const app = express();
 
-
-// app.use(express.urlencoded({ extended: true }));
+// Increase the limit for JSON payloads
 app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+
 app.use(cookieParser());
 app.use(cors({
   origin: 'https://localhost:5173', // Allow only this origin (for FE)
@@ -73,7 +73,6 @@ app.use(helmet({
 app.use('/api', userRoutes);
 app.use('/api', blogRoutes);
 app.use('/api/announcements', announcementRoutes);
-
 
 // Resolve directory path using import.meta.url
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
