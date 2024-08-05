@@ -2,7 +2,7 @@ import db from '../config/database.js';
 
 // Validation Functions
 const validateTitle = (title) => /^[A-Za-z0-9\s]{1,30}$/.test(title);
-const validateContent = (content) => content.length <= 500;
+const validateContent = (content) => 0 < content.length <= 500;
 const debug = process.env.DEBUG;
 
 // Get all blogs
@@ -38,7 +38,7 @@ export const createBlog = (newBlog, result) => {
     const { authorID, authorEmail, dateCreated, content, title } = newBlog;
     
     if (!validateTitle(title)) {
-        const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
+        const errorMessage = { error: 'Title must be alphanumeric between 1 to 30 characters long' };
         if (debug === '1') {
             result(errorMessage, null);
         } else {
