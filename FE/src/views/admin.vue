@@ -198,6 +198,8 @@ export default {
     },
 
     async createAnnouncement() {
+      this.validateSession();
+      this.adminCheck();
       if (!this.validateAnnouncement() || !this.validateExpiry()) {
         return;
       }

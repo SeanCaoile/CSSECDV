@@ -84,6 +84,7 @@ export default {
     ...mapActions(['unauthenticate']),
 
     adminView() {
+      this.validateSession();
       this.adminCheck();
       this.$router.push('/admin');
     },
