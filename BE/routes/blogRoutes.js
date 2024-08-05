@@ -20,11 +20,7 @@ router.post('/showBlogs', (req, res) => {
 
   getBlogs(currentPage, limit, totalPages, offset, (err, data) => {
     if (err) {
-      if (debug === 1){
         return res.status(500).send(err);
-      } else {
-        return res.status(500).send("An error occured while accessing data");
-      }
     }
     res.json(data);
   });

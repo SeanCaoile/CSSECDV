@@ -150,14 +150,16 @@ export default {
       });
     },
 
-    fetchBlogs() {
+    fetchBlogs(newPage) {
+      this.validateSession();
+
       fetch('https://localhost:3001/api/showBlogs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          page: this.currentPage,
+          page: newPage,
           limit: this.limit,
           totalPages: this.totalPages
         })
@@ -165,6 +167,7 @@ export default {
         .then(response => {
           if (!response.ok) {
             throw new Error('Failed to fetch blogs');
+
           }
           return response.json();
         })
@@ -200,13 +203,11 @@ export default {
       });
     },
     nextPage(){
-      this.currentPage += 1;
-      this.fetchBlogs();
+      this.fetchBlogs(this.currentPage+1);
     },
 
     prevPage(){
-      this.currentPage -= 1;
-      this.fetchBlogs();
+      this.fetchBlogs(this.currentPage-1);
     },
 
     inputPage(){
@@ -215,9 +216,7 @@ export default {
         if(!isPageValid){
           return;
         }
-        this.currentPage = this.customPage;
-        this.fetchBlogs();
-        
+        this.fetchBlogs(this.customPage);
     },
 
     validatePage(){
@@ -397,5 +396,9 @@ button:hover {
 
 input[type="number"] {
   width: 60px;
+}
+
+.error-message {
+  color: red;
 }
 </style>
