@@ -84,6 +84,7 @@ export default {
     ...mapActions(['unauthenticate', 'setBlogId']),
 
     viewBlogDetail(blogId) {
+      this.validateSession();
       this.setBlogId(blogId);
       this.$router.push('/blogs/blogDetail');
     },
@@ -95,12 +96,11 @@ export default {
     },
 
     goCreateBlog() {
+      this.validateSession();
       this.$router.push({ 
         path: '/createBlog',
       });
     },
-
-  
 
     async adminCheck(){
       try{

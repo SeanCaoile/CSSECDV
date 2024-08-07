@@ -21,6 +21,7 @@
 
 <script>
 import { resetAppStyles, setAppStylesForHome } from '../utils/stylesUtils';
+import { mapActions } from 'vuex';
 
 export default {
   data() {
@@ -53,6 +54,7 @@ export default {
     this.validateSession();
   },
   methods: {
+    ...mapActions(['unauthenticate']),
     // async fetchCurrentUser() {
     //   try {
     //     const response = await fetch('https://localhost:3001/api/users/validate_session', {
@@ -169,14 +171,12 @@ export default {
         return response.json();
       })
       .then(data => {
-        if (data.authenticated) {
-          // this.name = data.name;
-          // this.isAdmin = data.isAdmin;
-        } else {
+        if (!data.authenticated) {
           fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',
           });
+          console.error('Invalid user session');
           this.unauthenticate();
           this.$router.push('/');
         }
