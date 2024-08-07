@@ -176,7 +176,7 @@ export default {
             method: 'POST',
             credentials: 'include',
           });
-          console.error('Invalid user session');
+          console.error('Unauthenticated User');
           this.unauthenticate();
           this.$router.push('/');
         }

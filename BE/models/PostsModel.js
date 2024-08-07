@@ -116,8 +116,8 @@ export const getBlogById = (blogID, result) => {
   
     db.query(query, [blogID], (err, res) => {
       if (err) {
-        if (debug == '1') {
-          result(err, null);
+        if (debug == 1) {
+          result(err.stack, null);
         } else {
           result("An error occurred while accessing data", null);
         }
@@ -130,6 +130,36 @@ export const getBlogById = (blogID, result) => {
           blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
         }
         result(null, blog);
+      } else {
+        console.log("nothing");
+        result({ kind: "not_found" }, null);
+      }
+    });
+  };
+
+export const checkBlogDeleted = (blogID, result) => {
+    const query = `
+      SELECT posts.*, users.photo as authorPhoto
+      FROM posts
+      JOIN users ON posts.authorID = users.id
+      WHERE posts.blogID = ?;
+    `;
+
+    db.query(query, [blogID], (err, res) => {
+      if (err) {
+        if (debug == 1) {
+          result(err.stack, null);
+        } else {
+          result("An error occurred while accessing data", null);
+        }
+        return;
+      }
+      if (res.length) {
+        const blog = res[0];
+        if (blog.isDeleted == 1) {
+          result(null, true);
+        }
+        result(null, false);
       } else {
         result({ kind: "not_found" }, null);
       }
@@ -197,7 +227,7 @@ export const updateBlogById = (blog, result) => {
 export const deleteBlogById = (blogID, callback) => {
     db.query('UPDATE posts SET isDeleted = 1 WHERE blogID = ?', [blogID], (err, results) => {
         if (err) {
-            if (debug == '1') {
+            if (debug == 1) {
                 callback(err);
             } else {
                 callback("An error occurred while accessing data");
@@ -264,14 +294,14 @@ export const checkAuthorization = (blogID, userID, callback) => {
 
     db.query(queryBlog, [blogID], (err, blogResult) => {
         if (err) {
-            if (debug === '1') {
+            if (debug == 1) {
                 callback(err, null);
             } else {
                 callback("An error occurred while accessing data", null);
             }
             return;
         }
-        if (blogResult.length === 0) {
+        if (blogResult.length == 0) {
             callback(null, { message: 'Blog not found' });
             return;
         }
@@ -280,14 +310,14 @@ export const checkAuthorization = (blogID, userID, callback) => {
 
         db.query(queryUser, [userID], (err, userResult) => {
             if (err) {
-                if (debug === '1') {
+                if (debug == 1) {
                     callback(err, null);
                 } else {
                     callback("An error occurred while accessing data", null);
                 }
                 return;
             }
-            if (userResult.length === 0) {
+            if (userResult.length == 0) {
                 callback(null, { message: 'User not found' });
                 return;
             }

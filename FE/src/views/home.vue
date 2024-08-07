@@ -177,6 +177,7 @@ export default {
           this.name = data.name;
           this.isAdmin = data.isAdmin;
         } else {
+          console.error("Invalid user session");
           fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',

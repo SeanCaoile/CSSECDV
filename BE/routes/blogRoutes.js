@@ -5,7 +5,8 @@ import {
   getBlogById,
   updateBlogById,
   deleteBlogById,
-  checkAuthorization
+  checkAuthorization,
+  checkBlogDeleted
 } from '../models/PostsModel.js'; // Adjust the import path as necessary
 
 const router = express.Router();
@@ -109,8 +110,7 @@ router.post('/blogs/deleteBlog', (req, res) => {
 
 router.post('/blogs/checkAuthorization', (req, res) => {
   const { blogID, userID } = req.body;
-
-  getBlogById(blogID, (err, data) => {
+  checkBlogDeleted(blogID, (err, data) => {
     if (err) {
       if (debug == 1) {
         return res.status(500).send(err);
@@ -125,13 +125,38 @@ router.post('/blogs/checkAuthorization', (req, res) => {
         return res.status(404).send("Blog not found");
       }
     }
-    if (userID == data.authorID){
-      res.json({ canEdit: 1 });
+    if (data == true ){
+      const blogDeleted = true;
     }
     else{
-      res.json({ canEdit: 0 })
+      const blogDeleted = false;
     }
-    // res.json(data);
-  });
+  })
+
+  if(blogDeleted == true){
+    getBlogById(blogID, (err, data) => {
+      if (err) {
+        if (debug == 1) {
+          return res.status(500).send(err);
+        } else {
+          return res.status(500).send("An error occurred while accessing data");
+        }
+      }
+      if (!data) {
+        if (debug == 1) {
+          return res.status(404).send("Blog not found");
+        }
+      }
+      if (userID == data.authorID){
+        res.json({ canEdit: 1 });
+      }
+      else{
+        res.json({ canEdit: 0 })
+      }
+    });
+  } else {
+    return res.status(404).send("Blog not found");
+  }
+  
 });
 export default router;

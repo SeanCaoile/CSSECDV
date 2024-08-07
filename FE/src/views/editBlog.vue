@@ -127,6 +127,7 @@ export default {
           // this.name = data.name;
           // this.isAdmin = data.isAdmin;
         } else {
+          console.error("Unauthenticated User");
           fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
             credentials: 'include',

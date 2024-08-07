@@ -123,26 +123,34 @@ export default {
       }
     },
     async checkAuthorization(id) {
-      try {
-        const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            blogID: this.blog.blogID,
-            userID: id
-          })
-        });
+      if (this.blog.isDeleted==1){
+        try {
+          const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              blogID: this.blog.blogID,
+              userID: id
+            })
+          });
 
-        if (!response.ok) {
-          throw new Error(`Failed to perform server function`);
+          if (!response.ok) {
+            console.error(`Failed to perform server function`);
+            fetch('https://localhost:3001/api/users/removeCookie', {
+              method: 'POST',
+              credentials: 'include',
+            });
+            this.unauthenticate();
+            this.$router.push('/');
+          }
+
+          const { canEdit } = await response.json();
+          this.isAuthor = canEdit;
+        } catch (error) {
+          console.error('Failed to check authorization:', error);
         }
-
-        const { canEdit } = await response.json();
-        this.isAuthor = canEdit;
-      } catch (error) {
-        console.error('Failed to check authorization:', error);
       }
     },
     editBlog() {
@@ -192,7 +200,7 @@ export default {
               }
             }
             else{
-              console.error("User Intruder ");
+              console.error("Unauthorized User");
                 fetch('https://localhost:3001/api/users/removeCookie', {
                   method: 'POST',
                   credentials: 'include',
@@ -211,7 +219,7 @@ export default {
             }
             return false;
         } catch (error) {
-          console.error('Failed to fetch current user', error);
+          console.error('Failed to validate session', error);
           fetch('https://localhost:3001/api/users/removeCookie', {
               method: 'POST',
               credentials: 'include',
