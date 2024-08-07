@@ -122,6 +122,7 @@ export const createBlog = async (newBlog, ip, sessionID, result) => {
         } else {
             console.log("Session error");
             result('Session error', null);
+        }
     }
 };
 
