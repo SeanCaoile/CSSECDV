@@ -29,7 +29,7 @@
           <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
           <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
-          <label for="page">Page: </label>
+          <label for="page" style="margin-right: 1mm;">Page: </label>
           <input type="number" id="customPage" v-model="customPage" autocomplete="off"/>
           <button @click="inputPage()">Go to Page</button>
           

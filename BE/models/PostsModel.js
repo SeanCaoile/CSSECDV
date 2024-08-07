@@ -19,29 +19,37 @@ export const getBlogs = (currentPage, limit, totalPages, offset, result) => {
         }
         return;
     }
-    db.query("SELECT * FROM `posts` WHERE isDeleted = 0 LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
+    db.query("SELECT COUNT(*) as count FROM `posts` WHERE isDeleted = 0", (err, countRes) => {
         if (err) {
-            if (debug == 1) { //correct way to check for debug mode
+            if (debug == 1) {
                 result(err.stack, null);
             } else {
                 result("An error occurred while accessing data", null);
             }
             return;
-        } else {
-            db.query('SELECT COUNT(*) AS count FROM `posts`', (err, countResult) => {
-                if (err) {
-                    if (debug == 1) {
-                        result(err.stack, null);
-                    } else {
-                        result("An error occurred while accessing data", null);
-                    }
-                    return;
-                }
-                const totalItems = countResult[0].count;
-                const totalPages = Math.ceil(totalItems / limit);
-                result(null, { data: res, currentPage: currentPage, totalPages: totalPages });
-            });
         }
+    
+        const totalItems = countRes[0].count;
+        const totalPages = Math.ceil(totalItems / limit);
+    
+        // Perform the SELECT query for the current page
+        db.query("SELECT * FROM `posts` WHERE isDeleted = 0 LIMIT ? OFFSET ?", [limit, offset], (err, res) => {
+            if (err) {
+                if (debug == 1) {
+                    result(err.stack, null);
+                } else {
+                    result("An error occurred while accessing data", null);
+                }
+                return;
+            } else {
+                result(null, {
+                    data: res,
+                    currentPage: currentPage,
+                    totalPages: totalPages,
+                    totalItems: totalItems // Optional: include total items in response
+                });
+            }
+        });
     });
 };
 
