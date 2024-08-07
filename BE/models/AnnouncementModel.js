@@ -14,8 +14,11 @@ export const getLastAnnouncement = (result) => {
     db.query("SELECT * FROM `announcements` ORDER BY id DESC LIMIT 1", (err, res) => {
         if (err) {
             if (debug == 1) {
-                //console.log("error: ", err);
+                console.error("Failed to get last announcement: ", err.stack);
                 result(err.stack, null);
+            }
+            else{
+                console.log("Error occurred");
             }
             result("Error occurred", null);
             return;
@@ -27,12 +30,16 @@ export const getLastAnnouncement = (result) => {
 // Create a new announcement
 // Note: IP has to be given
 export const createAnnouncement = (newAnnouncement, ip, result) => {
-    
-    if (!validateContent(newAnnouncement.content) || !validateExpirationTime(newAnnouncement.expirationTime)) { 
+
+    if (!validateContent(newAnnouncement.content) || !validateExpirationTime(newAnnouncement.expirationTime)) {
+        const errorMessage = 'Invalid content or expiration time';
         if (debug == 1) {
-            return res.status(400).send(error);
+            const err = new Error(errorMessage);
+            console.error("Failed to create announcement:", err.stack);
+            return result(err.stack, null);
         } else {
-            return res.status(400).send({ error: 'An error occurred while creating the announcement' });
+            console.log("Error occurred");
+            return result(errorMessage, null);
         }
     }
 
@@ -41,7 +48,15 @@ export const createAnnouncement = (newAnnouncement, ip, result) => {
     const expireAt = new Date(Date.now() + expirationTime * 60000); // Calculate expiration time
 
     if (isNaN(expireAt.getTime())) {
-        console.log("Invalid expiration date");
+        if (debug == 1) {
+            const errorMessage = 'Invalid expiration date';
+            const err = new Error(errorMessage);
+            console.error("Error occurred when creating announcement: ", err.stack);
+            result("Invalid expiration date", null);
+        } else {
+            console.log("Invalid expiration date");
+        }
+        
         result("Invalid expiration date", null);
         return;
     }
@@ -54,8 +69,11 @@ export const createAnnouncement = (newAnnouncement, ip, result) => {
     (err, res) => {
         if (err) {
             if (debug == 1) {
-                //console.log("error: ", err);
+                console.error("error: ", err.stack);
                 result(err.stack, null);
+            }
+            else{
+                console.log("Error occurred");
             }
             result("Error occurred", null);
             return;
@@ -75,9 +93,7 @@ const checkForExpiredAnnouncements = () => {
             } else {
                 console.log("Error occurred");
             }
-        } else {
-            console.log("Expired announcements updated successfully");
-        }
+        } 
     });
 };
 
