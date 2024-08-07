@@ -14,8 +14,8 @@ export const getLastAnnouncement = (result) => {
     db.query("SELECT * FROM `announcements` ORDER BY id DESC LIMIT 1", (err, res) => {
         if (err) {
             if (debug == 1) {
-                console.log("error: ", err);
-                result(err, null);
+                //console.log("error: ", err);
+                result(err.stack, null);
             }
             result("Error occurred", null);
             return;
@@ -54,8 +54,8 @@ export const createAnnouncement = (newAnnouncement, ip, result) => {
     (err, res) => {
         if (err) {
             if (debug == 1) {
-                console.log("error: ", err);
-                result(err, null);
+                //console.log("error: ", err);
+                result(err.stack, null);
             }
             result("Error occurred", null);
             return;
@@ -71,7 +71,7 @@ const checkForExpiredAnnouncements = () => {
     (err, res) => {
         if (err) {
             if (debug == 1) {
-                console.error("Failed to update expired announcements:", err);
+                console.error("Failed to update expired announcements:", err.stack);
             } else {
                 console.log("Error occurred");
             }
