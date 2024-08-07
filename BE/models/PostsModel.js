@@ -138,59 +138,69 @@ export const getBlogById = (blogID, result) => {
   
 
 // Update a blog by ID
-export const updateBlogById = (blog, result) => {
+export const updateBlogById = (blog, ip, sessionId, result) => {
     // const { title, content } = blog;
-    const updateFields = [];
-    const params = [];
+    if(userSession.session == sessionId){
+        const updateFields = [];
+        const params = [];
 
-    if (blog.title) {
-        if (!validateTitle(blog.title)) {
-            const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
-            if (debug == 1) {
-                result(errorMessage, null);
-            } else {
-                result('Validation error', null);
-            }
-            return;
-        }
-        updateFields.push('title = ?');
-        params.push(blog.title);
-    }
-    if (blog.content) {
-        if (!validateContent(blog.content)) {
-            const errorMessage = { error: 'Content must be up to 500 characters long' };
-            if (debug == 1) {
-                result(errorMessage, null);
-            } else {
-                result('Validation error', null);
-            }
-            return;
-        }
-        updateFields.push('content = ?');
-        params.push(blog.content);
-    }
-    const blogID = blog.blogID
-    params.push(blogID);
-
-    db.query(
-        `UPDATE posts SET ${updateFields.join(', ')} WHERE blogID = ? AND isDeleted = 0`,
-        params,
-        (err, res) => {
-            if (err) {
+        if (blog.title) {
+            if (!validateTitle(blog.title)) {
+                const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
                 if (debug == 1) {
-                    result(err, null);
+                    result(errorMessage, null);
                 } else {
-                    result("An error occurred while accessing data", null);
+                    result('Validation error', null);
                 }
                 return;
             }
-            if (res.affectedRows == 0) {
-                result({ error: "blog not found" }, null);
+            updateFields.push('title = ?');
+            params.push(blog.title);
+        }
+        if (blog.content) {
+            if (!validateContent(blog.content)) {
+                const errorMessage = { error: 'Content must be up to 500 characters long' };
+                if (debug == 1) {
+                    result(errorMessage, null);
+                } else {
+                    result('Validation error', null);
+                }
                 return;
             }
-            result(null, { blogID, ...blog });
+            updateFields.push('content = ?');
+            params.push(blog.content);
         }
-    );
+        const blogID = blog.blogID
+        params.push(blogID);
+
+        db.query(
+            `UPDATE posts SET ${updateFields.join(', ')} WHERE blogID = ? AND isDeleted = 0`,
+            params,
+            (err, res) => {
+                if (err) {
+                    if (debug == 1) {
+                        result(err, null);
+                    } else {
+                        result("An error occurred while accessing data", null);
+                    }
+                    return;
+                }
+                if (res.affectedRows == 0) {
+                    result({ error: "blog not found" }, null);
+                    return;
+                }
+                const { title, content } = blog;
+                const updatedBlog = { blogID, title, content };
+                logOperation('updateBlog', ip, updatedBlog);
+                result(null, { blogID, ...blog });
+            }
+        );
+    }
+    else{
+        const errorMessage = { error: 'Invalid Session ID' };
+        result(errorMessage, null);
+    }
+    
 };
 
 // Delete a blog by ID

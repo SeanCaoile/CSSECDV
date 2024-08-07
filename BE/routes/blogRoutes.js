@@ -69,7 +69,10 @@ router.post('/blogs/getBlogById', (req, res) => {
 // Update a blog by ID
 router.post('/blogs/updateBlogById', (req, res) => {
   const { updatedBlog } = req.body;
-  updateBlogById(updatedBlog, (err, data) => {
+  const sessionId = req.cookies.sessionId;
+  const ip = req.ipv4;
+  console.log("ip is ", ip + " session id is ", sessionId);
+  updateBlogById(updatedBlog, ip, sessionId, (err, data) => {
     if (err) {
       if (debug == 1) {
         return res.status(500).send(err);

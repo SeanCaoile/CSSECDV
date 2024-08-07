@@ -10,28 +10,7 @@
         <p>Loading...</p>
       </div>
       <div v-else>
-        <div v-if="users.length > 0">
-          <h2 class="users-header">Users:</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone Numbers</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in users" :key="user.id">
-                <td>{{ user.name }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phoneNumber }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else>
-          <p>No users found.</p>
-        </div>
+        
         <div class="announcement-form">
           <h2>Create Announcement</h2>
           <form @submit.prevent="createAnnouncement">
