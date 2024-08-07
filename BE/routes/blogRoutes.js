@@ -55,7 +55,7 @@ router.post('/blogs/getBlogById', (req, res) => {
       }
     }
     if (!data) {
-      if (debug == '1') {
+      if (debug == 1) {
         return res.status(404).send({ message: 'Blog not found' });
       } else {
         return res.status(404).send("Blog not found");
@@ -81,7 +81,7 @@ router.post('/blogs/updateBlogById', (req, res) => {
       }
     }
     if (!data) {
-      if (debug == '1') {
+      if (debug == 1) {
         return res.status(404).send({ message: 'Blog not found' });
       } else {
         return res.status(404).send("Blog not found");

@@ -61,7 +61,7 @@ export const createBlog = async (newBlog, ip, sessionID, result) => {
 
     if (!validateTitle(title)) {
         const errorMessage = { error: 'Title must be alphanumeric and up to 30 characters long' };
-        if (debug == '1') {
+        if (debug == 1) {
             result(errorMessage, null);
         } else {
             result('Validation error', null);
@@ -70,7 +70,7 @@ export const createBlog = async (newBlog, ip, sessionID, result) => {
     }
     if (!validateContent(content)) {
         const errorMessage = { error: 'Content must be up to 500 characters long' };
-        if (debug == '1') {
+        if (debug == 1) {
             result(errorMessage, null);
         } else {
             result('Validation error', null);
@@ -116,7 +116,7 @@ export const getBlogById = (blogID, result) => {
   
     db.query(query, [blogID], (err, res) => {
       if (err) {
-        if (debug == '1') {
+        if (debug == 1) {
           result(err, null);
         } else {
           result("An error occurred while accessing data", null);
@@ -207,7 +207,7 @@ export const updateBlogById = (blog, ip, sessionId, result) => {
 export const deleteBlogById = (blogID, callback) => {
     db.query('UPDATE posts SET isDeleted = 1 WHERE blogID = ?', [blogID], (err, results) => {
         if (err) {
-            if (debug == '1') {
+            if (debug == 1) {
                 callback(err);
             } else {
                 callback("An error occurred while accessing data");
@@ -224,7 +224,7 @@ export const editBlog = async (req, res) => {
 
     // Validate sessionId
     if (!isValidSession(sessionId)) {
-        if (debug == '1') {
+        if (debug == 1) {
             return res.status(401).send({ error: 'Unauthorized: Invalid session ID' });
         } else {
             return res.status(401).send("Unauthorized access");
@@ -238,7 +238,7 @@ export const editBlog = async (req, res) => {
         const blog = await fetchBlogById(blogID);
 
         if (!blog) {
-            if (debug == '1') {
+            if (debug == 1) {
                 return res.status(404).send({ error: 'Blog not found' });
             } else {
                 return res.status(404).send("Blog not found");
@@ -247,7 +247,7 @@ export const editBlog = async (req, res) => {
 
         // Check if the current user has permission to edit this blog
         if (blog.authorEmail !== req.session.user.email) {
-            if (debug == '1') {
+            if (debug == 1) {
                 return res.status(403).send({ error: 'You are not authorized to edit this blog' });
             } else {
                 return res.status(403).send("You are not authorized to edit this blog");
@@ -259,7 +259,7 @@ export const editBlog = async (req, res) => {
 
         res.status(200).send({ message: 'Blog updated successfully' });
     } catch (error) {
-        if (debug == '1') {
+        if (debug == 1) {
             res.status(500).send(error);
         } else {
             res.status(500).send("An error occurred while accessing data");
@@ -274,7 +274,7 @@ export const checkAuthorization = (blogID, userID, callback) => {
 
     db.query(queryBlog, [blogID], (err, blogResult) => {
         if (err) {
-            if (debug === '1') {
+            if (debug == 1) {
                 callback(err, null);
             } else {
                 callback("An error occurred while accessing data", null);
@@ -290,7 +290,7 @@ export const checkAuthorization = (blogID, userID, callback) => {
 
         db.query(queryUser, [userID], (err, userResult) => {
             if (err) {
-                if (debug === '1') {
+                if (debug == 1) {
                     callback(err, null);
                 } else {
                     callback("An error occurred while accessing data", null);
