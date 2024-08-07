@@ -20,10 +20,9 @@ export function setAppStylesForHome() {
 export function setAppStylesForEditBlog() {
   const appElement = document.getElementById('app');
   if (appElement) {
-    appElement.style.display = 'flex';
+    appElement.style.display = 'block';
     appElement.style.justifyContent = 'center';
     appElement.style.alignItems = 'center';
-    appElement.style.height = '100vh'; // Ensure full viewport height
     appElement.style.padding = '0';
   }
 }
