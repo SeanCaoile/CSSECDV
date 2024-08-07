@@ -7,8 +7,10 @@ export const getUsers = (result) => {
     db.query("SELECT * FROM `users`", (err, res) => {
         if (err) {
             if (debug == 1) {
+                console.error("Failed to get users: ", err.stack);
                 result(err, null);
             } else {
+                console.log("An error occurred while accessing data");
                 result("An error occurred while accessing data", null);
             }
             return;
@@ -25,8 +27,10 @@ export const createUser = (newUser, result) => {
     (err, res) => {
         if (err) {
             if (debug == 1) {
+                console.error("Failed to create user: ", err.stack);
                 result(err, null);
             } else {
+                console.log("An error occurred while accessing data");
                 result("An error occurred while accessing data", null);
             }
             return;
@@ -40,8 +44,10 @@ export const getUserById = (id, result) => {
     db.query("SELECT * FROM `users` WHERE id = ?", [id], (err, res) => {
         if (err) {
             if (debug == 1) {
+                console.error("Failed to get user: ", err.stack);
                 result(err, null);
             } else {
+                console.log("An error occurred while accessing data");
                 result("An error occurred while accessing data", null);
             }
             return;
@@ -63,8 +69,10 @@ export const updateUserById = (id, user, result) => {
         (err, res) => {
             if (err) {
                 if (debug == 1) {
+                    console.error("Failed to update user: ", err.stack);
                     result(err, null);
                 } else {
+                    console.log("An error occurred while accessing data");
                     result("An error occurred while accessing data", null);
                 }
                 return;
@@ -83,8 +91,10 @@ export const deleteUserById = (id, result) => {
     db.query("DELETE FROM `users` WHERE id = ?", [id], (err, res) => {
         if (err) {
             if (debug == 1) {
+                console.error("Failed to delete user: ", err.stack);
                 result(err, null);
             } else {
+                console.log("An error occurred while accessing data");
                 result("An error occurred while accessing data", null);
             }
             return;
