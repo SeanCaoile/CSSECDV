@@ -25,11 +25,11 @@ export const showUsers = (req, res) => {
             if (debug == 1) {
                 console.error("error:", err.stack);
                 result(err.stack, null);
+                return res.status(500).send(err);
             } else {
                 console.log("Error occurred");
+                return res.status(500).send("An error occurred while accessing data");
             }
-            result("Error occurred", null);
-            return;
         }
         res.json(data);
     });
@@ -45,11 +45,11 @@ export const getUserById = (userId) => {
                     if (debug == 1) {
                         console.error("error:", err.stack);
                         result(err.stack, null);
+                        reject(error);
                     } else {
                         console.log("Error occurred");
+                        reject("An error occurred while accessing data");
                     }
-                    result("Error occurred", null);
-                    return;
                 } else {
                     if (results.length > 0) {
                         resolve(results[0]);
@@ -75,11 +75,11 @@ export const fetchImage = (req, res) => {
             if (debug == 1) {
                 console.error("error:", err.stack);
                 result(err.stack, null);
+                return res.status(500).send(error);
             } else {
                 console.log("Error occurred");
+                return res.status(500).send("An error occurred while accessing data");
             }
-            result("Error occurred", null);
-            return;
         }
         if (results.length > 0) {
             const photo = results[0].photo;
@@ -89,8 +89,10 @@ export const fetchImage = (req, res) => {
             if (debug == 1) {
                 console.error("error:", err.stack);
                 result(err.stack, null);
+                res.status(404).send('Image not found');
             } else {
                 console.log("Error occurred");
+                res.status(404).send("An error occurred while accessing data");
             }
             result("Error occurred", null);
             return;
@@ -116,9 +118,10 @@ export const saveAccount = async (req, res) => {
             const err = new Error(errorMessage);
             console.error("Invalid name:", err.stack);
             result(err.stack, null);
+            return res.status(400).send(error);
         } else {
             console.log("Error occurred");
-            return result(errorMessage, null);
+            return res.status(400).send({ error: 'Only letters and spaces are allowed in name' });
         }
     }
     if (!validateEmail(email)) { 
@@ -127,9 +130,10 @@ export const saveAccount = async (req, res) => {
             const err = new Error(errorMessage);
             console.error("Invalid email address:", err.stack);
             result(err.stack, null);
+            return res.status(400).send(error); 
         } else {
             console.log("Error occurred");
-            return result(errorMessage, null);
+            return res.status(400).send({ error: 'Invalid email address' }); 
         }
     }
     if (!validatePassword(password)) { 
@@ -138,9 +142,10 @@ export const saveAccount = async (req, res) => {
             const err = new Error(errorMessage);
             console.error("Invalid password:", err.stack);
             result(err.stack, null);
+            return res.status(400).send(error); 
         } else {
             console.log("Error occurred");
-            return result(errorMessage, null);
+            return res.status(400).send({ error: 'Invalid password' }); 
         }
     }
     if (!validatePhone(phoneNumber)) { 
@@ -149,9 +154,10 @@ export const saveAccount = async (req, res) => {
             const err = new Error(errorMessage);
             console.error("Invalid phone number:", err.stack);
             result(err.stack, null);
+            return res.status(400).send(error); 
         } else {
             console.log("Error occurred");
-            return result(errorMessage, null);
+            return res.status(400).send({ error: 'Invalid phone number' }); 
         }
     } 
 
@@ -164,11 +170,11 @@ export const saveAccount = async (req, res) => {
                         if(debug == 1){
                             console.error("error:", error.stack);
                             result(err.stack, null);
+                            reject(err);
                         } else {
                             console.log("An error occurred while accessing data");
+                            reject("An error occurred while accessing data");
                         }
-                        result("Error occurred", null);
-                        return;
                     } else {
                         resolve(results);
                     }
@@ -176,15 +182,7 @@ export const saveAccount = async (req, res) => {
             });
     
             if (existingUser) {
-                const errorMessage = 'Email already exists';
-                if (debug == 1) {
-                    const err = new Error(errorMessage);
-                    console.error("Email already exists", err.stack);
-                    result(err.stack, null);
-                } else {
-                    console.log("Error occurred");
-                    return result(errorMessage, null);
-                }
+                return res.status(400).send({ error: 'Email already exists' });
             }
     
             const imageBuffer = Buffer.from(fileData);
@@ -203,11 +201,11 @@ export const saveAccount = async (req, res) => {
                         if(debug == 1){
                             console.error("error:", error.stack);
                             result(err.stack, null);
+                            return res.status(500).send(error);
                         } else {
                             console.log("An error occurred while accessing data");
+                            return res.status(500).send("An error occurred while accessing the data");
                         }
-                        result("Error occurred", null);
-                        return;     
                     }
                     res.status(201).send(results);
                 }
@@ -218,9 +216,10 @@ export const saveAccount = async (req, res) => {
                 const err = new Error(errorMessage);
                 console.error("An error occured while accessing the data", err.stack);
                 result(err.stack, null);
+                res.status(500).send(error);
             } else {
                 console.log("Error occurred");
-                return result(errorMessage, null);
+                res.status(500).send("An error occurred while accessing the data");
             }
         }
     }
@@ -231,9 +230,10 @@ export const saveAccount = async (req, res) => {
             const err = new Error(errorMessage);
             console.error("Invalid file type. Only JPEG, PNG, and JPG files are allowed", err.stack);
             result(err.stack, null);
+            return res.status(400).send(error);
         } else {
             console.log("Error occurred");
-            return result(errorMessage, null);
+            return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
         }
     }
 };
@@ -248,9 +248,10 @@ export const verifyLogin = async (req, res) => {
             const err = new Error(errorMessage);
             console.error("Invalid email address:", err.stack);
             result(err.stack, null);
+            return res.status(400).send(error); 
         } else {
             console.log("Error occurred");
-            return result(errorMessage, null);
+            return res.status(400).send({ error: 'Invalid email address' }); 
         }
     }
 
@@ -281,13 +282,13 @@ export const verifyLogin = async (req, res) => {
         db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
             if (err) {
                 if(debug == 1){
-                    console.error("error:", error.stack);
+                    console.error("error:", err.stack);
                     result(err.stack, null);
+                    return res.status(500).send(err);
                 } else {
                     console.log("An error occurred while accessing data");
+                    return res.status(500).send("An error occurred while accessing the data");
                 }
-                result("Error occurred", null);
-                return;  
             } 
             
             if (results.length == 0) {
@@ -382,10 +383,10 @@ export const verifyLogin = async (req, res) => {
         if(debug == 1){
             const err = new Error(errorMessage);
             console.error("An error occurred wile accessing the data", err.stack);
-            return result(err.stack, null);
+            res.status(500).send(error);
         } else {
             console.log("Error occurred");
-            return result(errorMessage, null);
+            res.status(500).send("An error occurred while accessing the data");
         }
     }
 };
@@ -453,10 +454,10 @@ export const validate_session = async (req, res) => {
         if(debug == 1){
             const err = new Error(errorMessage);
             console.error("Internal server error", err.stack);
-            return result(err.stack, null);
+            res.status(500).json({ authenticated: false, error});
         } else {
             console.log("Error occurred");
-            return result(errorMessage, null);
+            res.status(500).json({ authenticated: false, error: "Internal server error" });
         }
     }
 }
