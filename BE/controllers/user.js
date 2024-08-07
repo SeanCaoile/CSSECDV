@@ -22,7 +22,7 @@ const debug = process.env.DEBUG;
 export const showUsers = (req, res) => {
     getUsers((err, data) => {
         if (err) {
-            if (debug===1){
+            if (debug==1){
                 return res.status(500).send(err);
             } else {
                 return res.status(500).send("An error occurred while accessing data");
@@ -39,7 +39,7 @@ export const getUserById = (userId) => {
             [userId],
             (error, results) => {
                 if (error) {
-                    if (debug === 1) {
+                    if (debug == 1) {
                         reject(error);
                     }
                     else{
@@ -68,7 +68,7 @@ export const fetchImage = (req, res) => {
 
     db.query('SELECT photo FROM users WHERE id = ?', [userId], (error, results) => {
         if (error) {
-            if(debug===1){
+            if(debug==1){
                 return res.status(500).send(error);
             } else {
                 return res.status(500).send("An error occurred while accessing data");
@@ -102,28 +102,28 @@ export const saveAccount = async (req, res) => {
 
     // Validate inputs
     if (!validateName(name)) { 
-        if(debug===1){
+        if(debug==1){
             return res.status(400).send(error);
         } else {
             return res.status(400).send({ error: 'Only letters and spaces are allowed in name' });
         }
     }
     if (!validateEmail(email)) { 
-        if(debug===1){
+        if(debug==1){
             return res.status(400).send(error); 
         } else {
             return res.status(400).send({ error: 'Invalid email address' }); 
         }
     }
     if (!validatePassword(password)) { 
-        if (debug===1) {
+        if (debug==1) {
             return res.status(400).send(error); 
         } else {
             return res.status(400).send({ error: 'Invalid password' }); 
         }
     }
     if (!validatePhone(phoneNumber)) { 
-        if (debug===1) {
+        if (debug==1) {
             return res.status(400).send(error); 
         } else {
             return res.status(400).send({ error: 'Invalid phone number' }); 
@@ -164,7 +164,7 @@ export const saveAccount = async (req, res) => {
                 [name, email, hashedPassword, phoneNumber, imageBuffer],
                 (error, results) => {
                     if (error) {
-                        if(debug===1){
+                        if(debug==1){
                             return res.status(500).send(error);
                         } else {
                             return res.status(500).send("An error occurred while accessing the data")
@@ -174,7 +174,7 @@ export const saveAccount = async (req, res) => {
                 }
             );
         } catch (error) {
-            if(debug===1){
+            if(debug==1){
                 res.status(500).send(error);
             } else {
                 res.status(500).send("An error occurred while accessing the data");
@@ -183,7 +183,7 @@ export const saveAccount = async (req, res) => {
     }
     else {
         // File type is not supported
-        if (debug = 1)
+        if (debug == 1)
             return res.status(400).send(error);
         else
             return res.status(400).send({ error: 'Invalid file type. Only JPEG, PNG, and JPG files are allowed.' });
@@ -195,7 +195,7 @@ export const verifyLogin = async (req, res) => {
 
     // Validate inputs
     if (!validateEmail(email)) { 
-        if(debug===1){
+        if(debug==1){
             return res.status(400).send(error); 
         } else {
             return res.status(400).send({ error: 'Invalid email address' }); 
@@ -205,7 +205,7 @@ export const verifyLogin = async (req, res) => {
     try {
         if (isLocked[email] && Date.now() - lastLoginAttempt[email] < 60000) {
             const lockoutTime = Math.ceil((60000 - (Date.now() - lastLoginAttempt[email])) / 1000);
-            if(debug===1){
+            if(debug==1){
                 return res.status(401).send({
                     message: `Account is locked. Please try again after ${lockoutTime} seconds.`,
                     failedAttempts: failedAttempts[email],
@@ -222,7 +222,7 @@ export const verifyLogin = async (req, res) => {
 
         db.query('SELECT * FROM users WHERE email = ?', [email], async (error, results) => {
             if (error) {
-                if(debug === 1){
+                if(debug == 1){
                     return res.status(500).send(error);
                 } else {
                     return res.status(500).send("An error occurred while accessing the data");
@@ -230,7 +230,7 @@ export const verifyLogin = async (req, res) => {
             } 
             
             if (results.length === 0) {
-                if(debug===1){
+                if(debug==1){
                     return res.status(404).send('User does not exist');
                 } else {
                     return res.status(404).send("Invalid Email Provided");
@@ -269,7 +269,7 @@ export const verifyLogin = async (req, res) => {
                 logOperation('Login', ip, {result: "failed", email: email} );
                 
                 if (isLocked[email]) {
-                    if(debug === 1){
+                    if(debug == 1){
                         return res.status(401).send({
                             message: `Account is locked. Please try again after ${lockoutTime} seconds.`,
                             failedAttempts: failedAttempts[email],
@@ -284,7 +284,7 @@ export const verifyLogin = async (req, res) => {
                     }
                     
                 } else {
-                    if (debug === 1) {
+                    if (debug == 1) {
                         return res.status(401).send({
                             message: 'Incorrect Password for Inputted Email',
                             failedAttempts: failedAttempts[email],
@@ -301,7 +301,7 @@ export const verifyLogin = async (req, res) => {
             }
         });
     } catch (error) {
-        if(debug===1){
+        if(debug==1){
             res.status(500).send(error);
         } else {
             res.status(500).send("An error occurred while accessing the data");
@@ -339,14 +339,14 @@ export const validate_session = async (req, res) => {
             }
         } else {
             if (sessionId !== userSession.session) {
-                if(debug===1){
+                if(debug==1){
                     res.json({ authenticated: false, error: "Invalid Session ID" });
                 } else {
                     res.json({ authenticated: false, error: "Disconnected from the server" });
                 }
             }
             else if (ip !== userSession.IP) {
-                if(debug===1){
+                if(debug==1){
                     res.json({ authenticated: false, error: "IP Address Mismatch" });
                 } else {
                     res.json({ authenticated: false, error: "Disconnected from the server" });
@@ -356,7 +356,7 @@ export const validate_session = async (req, res) => {
     } catch (error) {
         // Handle errors
         // console.error("Error validating session:", error);
-        if(debug === 1){
+        if(debug == 1){
             res.status(500).json({ authenticated: false, error});
         } else {
             res.status(500).json({ authenticated: false, error: "Internal server error" });

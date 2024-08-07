@@ -10,8 +10,8 @@ const debug = process.env.DEBUG;
 router.get('/last', (req, res) => {
     getLastAnnouncement((err, announcement) => {
         if (err) {
-            if (debug === 1){
-                return res.status(500).send(err);
+            if (debug == 1){
+                return res.status(500).send(err.stack);
               } else {
                 return res.status(500).send("An error occurred while accessing data");
               }
@@ -32,9 +32,11 @@ router.post('/create', (req, res) => {
 
     createAnnouncement(newAnnouncement, ip, (err, announcement) => {
         if (err) {
-            if (debug === 1){
-                return res.status(500).send(err);
+            if (debug == 1){
+                
+                return res.status(500).send(err.stack);
               } else {
+                
                 return res.status(500).send("An error occurred while accessing data");
               }
         } else {

@@ -250,7 +250,8 @@ export default {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ updatedBlog: this.blog }) 
+            body: JSON.stringify({ updatedBlog: this.blog }),
+            credentials: 'include' 
           });
 
           if (!updateResponse.ok) {

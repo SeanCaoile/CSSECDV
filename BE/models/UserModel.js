@@ -6,7 +6,7 @@ const debug = process.env.DEBUG;
 export const getUsers = (result) => {
     db.query("SELECT * FROM `users`", (err, res) => {
         if (err) {
-            if (debug == '1') {
+            if (debug == 1) {
                 result(err, null);
             } else {
                 result("An error occurred while accessing data", null);
@@ -24,7 +24,7 @@ export const createUser = (newUser, result) => {
     [name, email, password, phoneNumber, photo, isAdmin], 
     (err, res) => {
         if (err) {
-            if (debug == '1') {
+            if (debug == 1) {
                 result(err, null);
             } else {
                 result("An error occurred while accessing data", null);
@@ -39,7 +39,7 @@ export const createUser = (newUser, result) => {
 export const getUserById = (id, result) => {
     db.query("SELECT * FROM `users` WHERE id = ?", [id], (err, res) => {
         if (err) {
-            if (debug == '1') {
+            if (debug == 1) {
                 result(err, null);
             } else {
                 result("An error occurred while accessing data", null);
@@ -62,7 +62,7 @@ export const updateUserById = (id, user, result) => {
         [name, email, password, phoneNumber, photo, isAdmin, id],
         (err, res) => {
             if (err) {
-                if (debug == '1') {
+                if (debug == 1) {
                     result(err, null);
                 } else {
                     result("An error occurred while accessing data", null);
@@ -82,7 +82,7 @@ export const updateUserById = (id, user, result) => {
 export const deleteUserById = (id, result) => {
     db.query("DELETE FROM `users` WHERE id = ?", [id], (err, res) => {
         if (err) {
-            if (debug == '1') {
+            if (debug == 1) {
                 result(err, null);
             } else {
                 result("An error occurred while accessing data", null);
