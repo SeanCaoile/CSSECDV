@@ -134,7 +134,10 @@ export const getBlogById = (blogID, result) => {
       JOIN users ON posts.authorID = users.id
       WHERE posts.blogID = ? AND posts.isDeleted = 0;
     `;
-  
+    
+    console.log("inside getBlogById");
+    console.log("blogID is ", blogID);
+    
     db.query(query, [blogID], (err, res) => {
       if (err) {
         if (debug == 1) {
@@ -146,12 +149,15 @@ export const getBlogById = (blogID, result) => {
         }
         return;
       }
+      console.log("after error check");
       if (res.length) {
         const blog = res[0];
         if (blog.authorPhoto) {
+            console.log("images found");
           const base64Photo = Buffer.from(blog.authorPhoto, 'binary').toString('base64');
           blog.authorPhoto = `data:image/jpeg;base64,${base64Photo}`;
         }
+        console.log("Blog found");
         result(null, blog);
       } else {
         console.log("Blog not found");

@@ -47,13 +47,13 @@ export default {
       confirmDeleteDialog: false
     };
   },
-  created() {
+  async mounted() {
     if (!this.blogId) {
       this.$router.push('/');
     }
 
-    this.fetchBlog();
-    this.fetchCurrentUser();
+    await this.fetchBlog();
+    await this.fetchCurrentUser();
     setAppStylesForBlogDetail();
   },
   methods: {
@@ -74,6 +74,7 @@ export default {
         }
         const data = await response.json();
         this.blog = data;
+        console.log('Blog:', this.blog);
       } catch (error) {
         console.error('Failed to fetch blog', error);
       }
@@ -98,6 +99,7 @@ export default {
         }
         const data = await response.json();
         if(data.authenticated){
+          console.log('Current User:', data);
           this.checkAuthorization(data.id);
           this.isAdmin = data.isAdmin;
           return true;
