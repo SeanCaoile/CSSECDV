@@ -177,13 +177,30 @@ export default {
     },
 
     async createAnnouncement() {
-      this.validateSession();
-      this.adminCheck();
       if (!this.validateAnnouncement() || !this.validateExpiry()) {
         return;
       }
 
-      try {
+      const response = await fetch('https://localhost:3001/api/users/validate_session', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        console.error('Failed to validate session');
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      }
+      const data = await response.json();
+
+      if (data.authenticated) {
+        try {
         
         const response = await fetch('https://localhost:3001/api/announcements/create', {
           method: 'POST',
@@ -206,10 +223,21 @@ export default {
         this.expirationTime = 10; // Reset expiration time to default
         this.contentError = '';
         alert('Announcement created successfully');
-      } catch (error) {
-        console.error('Error creating announcement');
-        alert('Failed to create announcement');
+        } catch (error) {
+          console.error('Error creating announcement');
+          alert('Failed to create announcement');
+        }
+      } else {
+        console.error('Unauthenticated User');
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
       }
+
+      
     },
 
     validateAnnouncement() {
