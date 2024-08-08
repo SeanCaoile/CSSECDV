@@ -6,7 +6,7 @@ import {
   updateBlogById,
   deleteBlogById,
   checkAuthorization,
-  checkBlogDeleted
+  // checkBlogDeleted
 } from '../models/PostsModel.js'; // Adjust the import path as necessary
 
 const router = express.Router();
@@ -98,11 +98,7 @@ router.post('/blogs/deleteBlog', (req, res) => {
   console.log('Received delete request with blogID:', blogID);
   deleteBlogById(blogID, (err, result) => {
     if (err) {
-      if (debug == 1){
-        return res.status(500).send(err);
-      } else {
-        return res.status(500).send("An error occured while accessing data");
-      }
+      return res.status(500).send(err);
     }
     if (result.affectedRows == 0) {
       return res.status(404).send({ message: 'Blog not found' });
@@ -113,42 +109,12 @@ router.post('/blogs/deleteBlog', (req, res) => {
 
 router.post('/blogs/checkAuthorization', (req, res) => {
   const { blogID, userID } = req.body;
-  checkBlogDeleted(blogID, (err, data) => {
-    if (err) {
-      if (debug == 1) {
-        return res.status(500).send(err);
-      } else {
-        return res.status(500).send("An error occurred while accessing data");
-      }
-    }
-    if (!data) {
-      if (debug == 1) {
-        return res.status(404).send({ message: 'Blog not found' });
-      } else {
-        return res.status(404).send("Blog not found");
-      }
-    }
-    if (data == true ){
-      const blogDeleted = true;
-    }
-    else{
-      const blogDeleted = false;
-    }
-  })
-
-  if(blogDeleted == true){
     getBlogById(blogID, (err, data) => {
       if (err) {
-        if (debug == 1) {
-          return res.status(500).send(err);
-        } else {
-          return res.status(500).send("An error occurred while accessing data");
-        }
+        return res.status(500).send(err);
       }
       if (!data) {
-        if (debug == 1) {
-          return res.status(404).send("Blog not found");
-        }
+        return res.status(404).send("Blog not found");
       }
       if (userID == data.authorID){
         res.json({ canEdit: 1 });
@@ -157,9 +123,5 @@ router.post('/blogs/checkAuthorization', (req, res) => {
         res.json({ canEdit: 0 })
       }
     });
-  } else {
-    return res.status(404).send("Blog not found");
-  }
-  
 });
 export default router;

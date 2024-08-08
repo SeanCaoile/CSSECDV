@@ -123,34 +123,32 @@ export default {
       }
     },
     async checkAuthorization(id) {
-      if (this.blog.isDeleted==1){
-        try {
-          const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
+      try {
+        const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            blogID: this.blog.blogID,
+            userID: id
+          })
+        });
+
+        if (!response.ok) {
+          console.error(`Failed to perform server function`);
+          fetch('https://localhost:3001/api/users/removeCookie', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              blogID: this.blog.blogID,
-              userID: id
-            })
+            credentials: 'include',
           });
-
-          if (!response.ok) {
-            console.error(`Failed to perform server function`);
-            fetch('https://localhost:3001/api/users/removeCookie', {
-              method: 'POST',
-              credentials: 'include',
-            });
-            this.unauthenticate();
-            this.$router.push('/');
-          }
-
-          const { canEdit } = await response.json();
-          this.isAuthor = canEdit;
-        } catch (error) {
-          console.error('Failed to check authorization:', error);
+          this.unauthenticate();
+          this.$router.push('/');
         }
+
+        const { canEdit } = await response.json();
+        this.isAuthor = canEdit;
+      } catch (error) {
+        console.error('Failed to check authorization:', error);
       }
     },
     editBlog() {
@@ -179,7 +177,7 @@ export default {
           }
           const data = await response.json();
           if(data.authenticated){
-            if(this.fetchCurrentUser() && (this.isAdmin||this.isAuthor)){
+            if(await this.fetchCurrentUser() && (this.isAdmin||this.isAuthor)){
               try {
                 const response = await fetch('https://localhost:3001/api/blogs/deleteBlog', {
                   method: 'POST',

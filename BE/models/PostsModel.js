@@ -160,39 +160,6 @@ export const getBlogById = (blogID, result) => {
     });
   };
 
-export const checkBlogDeleted = (blogID, result) => {
-    const query = `
-      SELECT posts.*, users.photo as authorPhoto
-      FROM posts
-      JOIN users ON posts.authorID = users.id
-      WHERE posts.blogID = ?;
-    `;
-
-    db.query(query, [blogID], (err, res) => {
-      if (err) {
-        if (debug == 1) {
-          console.error("Database error: ", err.stack);
-          result(err.stack, null);
-        } else {
-          console.log("An error occurred while accessing data");
-          result("An error occurred while accessing data", null);
-        }
-        return;
-      }
-      if (res.length) {
-        const blog = res[0];
-        if (blog.isDeleted == 1) {
-          result(null, true);
-        }
-        result(null, false);
-      } else {
-        console.log("Blog not found");
-        result({ kind: "not_found" }, null);
-      }
-    });
-  };
-  
-// Update a blog by ID
 export const updateBlogById = (blog, ip, sessionId, result) => {
     if(userSession.session == sessionId){
         const updateFields = [];
