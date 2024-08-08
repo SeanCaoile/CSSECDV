@@ -7,32 +7,10 @@
     </nav>
     <div class="centered">
       <div v-if="loading">
-        <!-- Loading indicator -->
         <p>Loading...</p>
       </div>
       <div v-else>
-        <div v-if="users.length > 0">
-          <h2 class="users-header">Users:</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone Numbers</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in users" :key="user.id">
-                <td>{{ user.name }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phoneNumber }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else>
-          <p>No users found.</p>
-        </div>
+        
         <div class="announcement-form">
           <h2>Create Announcement</h2>
           <form @submit.prevent="createAnnouncement">
@@ -40,6 +18,10 @@
               <label for="announcementContent">Content:</label>
               <textarea v-model="announcementContent" id="announcementContent" required></textarea>
               <p v-if="contentError" class="error">{{ contentError }}</p>
+            </div>
+            <div>
+              <label for="announcementExpiration">Expiration Time (minutes):</label>
+              <input v-model.number="expirationTime" id="announcementExpiration" type="number" min="1" required />
             </div>
             <button type="submit">Submit</button>
           </form>
@@ -60,6 +42,7 @@ export default {
       loading: true,
       authorEmail: '', // This will be set after fetching user data
       announcementContent: '',
+      expirationTime: 10, // New input for expiration time in minutes, default to 10 minutes
       contentError: '' // Error message for announcement content
     };
   },
@@ -78,11 +61,46 @@ export default {
   },
 
   mounted() {
+    this.adminCheck();
     this.validateSession();
   },
 
   methods: {
     ...mapActions(['unauthenticate']),
+
+    async adminCheck(){
+      try{
+        const response = await fetch('https://localhost:3001/api/users/validate_admin', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to validate user');
+        } 
+        const data = await response.json();
+        if (!(data.authenticated)) {
+          fetch('https://localhost:3001/api/users/removeCookie', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          this.unauthenticate();
+          this.$router.push('/');
+        }
+      } catch (error) {
+        console.error('Failed to validate session', error);
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      } finally {
+        this.loading = false; // Set loading to false regardless of success or failure
+      }
+    },
 
     async validateSession() {
       try {
@@ -130,7 +148,6 @@ export default {
           throw new Error('Network response was not ok');
         }
         const allUsers = await response.json();
-        // Filter out users with isAdmin set to 1
         this.users = allUsers.filter(user => user.isAdmin !== 1)
                               .map(({ name, email, phoneNumber }) => ({ name, email, phoneNumber }));
       } catch (error) {
@@ -160,11 +177,31 @@ export default {
     },
 
     async createAnnouncement() {
-      if (!this.validateAnnouncement()) {
+      if (!this.validateAnnouncement() || !this.validateExpiry()) {
         return;
       }
 
-      try {
+      const response = await fetch('https://localhost:3001/api/users/validate_session', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        console.error('Failed to validate session');
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
+      }
+      const data = await response.json();
+
+      if (data.authenticated) {
+        try {
+        
         const response = await fetch('https://localhost:3001/api/announcements/create', {
           method: 'POST',
           credentials: 'include',
@@ -173,6 +210,7 @@ export default {
           },
           body: JSON.stringify({
             content: this.announcementContent,
+            expirationTime: this.expirationTime,
             email: this.authorEmail
           })
         });
@@ -182,18 +220,39 @@ export default {
         }
 
         this.announcementContent = '';
+        this.expirationTime = 10; // Reset expiration time to default
         this.contentError = '';
         alert('Announcement created successfully');
-      } catch (error) {
-        console.error('Error creating announcement');
-        alert('Failed to create announcement');
+        } catch (error) {
+          console.error('Error creating announcement');
+          alert('Failed to create announcement');
+        }
+      } else {
+        console.error('Unauthenticated User');
+        fetch('https://localhost:3001/api/users/removeCookie', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.unauthenticate();
+        this.$router.push('/');
       }
+
+      
     },
 
     validateAnnouncement() {
-      const contentPattern = /^.{0,500}$/;
+      const contentPattern = /^[\w\s.,!?\"'()@#%&*+-/=:]{1,500}$/;
       if (!contentPattern.test(this.announcementContent)) {
-        this.contentError = 'Announcement must be under 500 characters';
+        this.contentError = 'Invalid content';
+        return false;
+      }
+      this.contentError = '';
+      return true;
+    },
+    validateExpiry() {
+      const expPattern = /^[1-9][0-9]*$/;
+      if (!expPattern.test(this.expirationTime)) {
+        this.contentError = 'Invalid Expiry';
         return false;
       }
       this.contentError = '';
@@ -202,6 +261,8 @@ export default {
   }
 };
 </script>
+
+
 
 <style scoped>
 .navbar {

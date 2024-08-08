@@ -22,7 +22,7 @@ export const logOperation = (operation, ip, data) => {
 
     fs.appendFile(logFilePath, logEntry, (err) => {
         if (err) {
-            console.error('Failed to write log entry:', err);
+            console.error('Failed to write log entry');
         }
     });
 };

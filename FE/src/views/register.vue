@@ -276,7 +276,7 @@ export default {
     },
 
     validateEmail() {
-      const emailPattern = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,320})+$/;
+      const emailPattern = /^(?=.{1,64}@)(?=.{1,254}$)[a-z0-9!#$%&'+/=?^_`{|}~-]+(?:.[a-z0-9!#$%&'+/=?^_`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?.){1,128}[a-z]{2,63}$/;
       if (!emailPattern.test(this.email)) {
         this.emailError = 'Invalid email address';
         return false;

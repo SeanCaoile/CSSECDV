@@ -29,7 +29,22 @@ const router = createRouter({
       path: "/createBlog",
       component: () => import("../views/createBlog.vue"),
       meta: { requiresAuth: true }
-    }
+    },
+    {
+      // path: '/blogs/:blogID', 
+      path: '/blogs/blogDetail',
+      name: 'blogDetail',
+      component: () => import('../views/blogDetail.vue'),
+      props: true, 
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/blogs/editBlog', // Example for dynamic blogId parameter
+      name: 'editBlog',
+      component: () => import('../views/editBlog.vue'),
+      props: true, 
+      meta: { requiresAuth: true }
+    },
   ]
 });
 

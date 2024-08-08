@@ -10,10 +10,10 @@ const debug = process.env.DEBUG;
 router.get('/last', (req, res) => {
     getLastAnnouncement((err, announcement) => {
         if (err) {
-            if (debug === 1){
-                return res.status(500).send(err);
+            if (debug == 1){
+                return res.status(500).send(err.stack);
               } else {
-                return res.status(500).send("An error occured while accessing data");
+                return res.status(500).send("An error occurred while accessing data");
               }
         } else {
             res.send(announcement);
@@ -25,16 +25,19 @@ router.get('/last', (req, res) => {
 router.post('/create', (req, res) => {
     const newAnnouncement = {
         content: req.body.content,
-        email: req.body.email
+        email: req.body.email,
+        expirationTime: req.body.expirationTime
     };
     const ip = req.ipv4;
 
     createAnnouncement(newAnnouncement, ip, (err, announcement) => {
         if (err) {
-            if (debug === 1){
-                return res.status(500).send(err);
+            if (debug == 1){
+                
+                return res.status(500).send(err.stack);
               } else {
-                return res.status(500).send("An error occured while accessing data");
+                
+                return res.status(500).send("An error occurred while accessing data");
               }
         } else {
             res.send(announcement);
