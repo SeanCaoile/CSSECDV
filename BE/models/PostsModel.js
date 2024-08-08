@@ -137,7 +137,7 @@ export const getBlogById = (blogID, result) => {
     
     console.log("inside getBlogById");
     console.log("blogID is ", blogID);
-    
+
     db.query(query, [blogID], (err, res) => {
       if (err) {
         if (debug == 1) {
@@ -264,6 +264,38 @@ export const deleteBlogById = (blogID, callback) => {
     });
 };
 
+export const checkDeleted = (blogID, result) => {
+    const query = `
+      SELECT posts.*, users.photo as authorPhoto
+      FROM posts
+      JOIN users ON posts.authorID = users.id
+      WHERE posts.blogID = ?;
+    `;
+  
+    db.query(query, [blogID], (err, res) => {
+      if (err) {
+        if (debug == 1) {
+          console.error("Database error: ", err.stack);
+          result(err.stack, null);
+        } else {
+          console.log("An error occurred while accessing data");
+          result("An error occurred while accessing data", null);
+        }
+        return;
+      }
+      if (res.length) {
+        console.log("test2",res[0].isDeleted);
+        if(res[0].isDeleted){
+            return true;
+        } else {
+            return false;
+        }
+      } else {
+        console.log("Blog not found");
+        result({ kind: "not_found" }, null);
+      }
+    });
+  };
 
 // Check authorization
 export const checkAuthorization = (blogID, userID, callback) => {

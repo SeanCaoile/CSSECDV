@@ -100,7 +100,7 @@ export default {
         const data = await response.json();
         if(data.authenticated){
           console.log('Current User:', data);
-          this.checkAuthorization(data.id);
+          await this.checkAuthorization(data.id);
           this.isAdmin = data.isAdmin;
           return true;
         }
