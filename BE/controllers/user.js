@@ -513,6 +513,8 @@ export const removeSessionCookie = async(req, res) => {
         maxAge: 0, // Expire the cookie immediately
         path: '/'
     }));
+    const ip = req.ipv4;
+    logOperation('Invalid Session', ip, {result: "Removed Cookie"} );
     res.status(200).send({ message: 'Logged out successfully' });
 }
 
