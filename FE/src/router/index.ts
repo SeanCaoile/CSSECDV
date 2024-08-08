@@ -45,13 +45,6 @@ const router = createRouter({
       props: true, 
       meta: { requiresAuth: true }
     },
-    {
-      path: '/blogs/:blogID/delete',
-      name: 'deleteBlog',
-      component: () => import('../views/deleteBlog.vue'),
-      props: true,
-      meta: { requiresAuth: true }
-    },
   ]
 });
 
