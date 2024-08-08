@@ -31,7 +31,7 @@ router.post('/showBlogs', (req, res) => {
 // Create a new blog
 router.post('/createBlog', (req, res) => {
   const newBlog = req.body;
-  const sessionId = req.cookies.sessionId;
+  const sessionId = req.cookies.id;
   const ip = req.ipv4; // Assuming the IP address is passed in the request
   createBlog(newBlog, ip, sessionId, (err, data) => {
     if (err) {
@@ -71,7 +71,7 @@ router.post('/blogs/getBlogById', (req, res) => {
 // Update a blog by ID
 router.post('/blogs/updateBlogById', (req, res) => {
   const { updatedBlog, id, email } = req.body;
-  const sessionId = req.cookies.sessionId;
+  const sessionId = req.cookies.id;
   const ip = req.ipv4;
   //console.log("ip is ", ip + " session id is ", sessionId);
   updateBlogById(updatedBlog, sessionId, (err, data) => {

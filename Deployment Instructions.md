@@ -39,3 +39,6 @@ Clicking home will bring the user back the home page. The user may also logout a
 
 # Creating a New Admin Account
 If you wish to create your own admin account, after registering an account in the database, edit the account's "isAdmin" value from 0 to 1. Alternately, changing the value from 1 to 0 removes the account's admin privileges.
+
+# Other Information
+Logs can be found in the "logs" folder under "BE" where the file is called "operations.log"

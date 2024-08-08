@@ -9,7 +9,7 @@ import { error } from "console";
 
 // Validation Functions
 const validateName = (name) => /^[A-Za-z\s]{1,32}$/.test(name);
-const validateEmail = (email) => /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,320})+$/.test(email);
+const validateEmail = (email) => /^(?=.{1,64}@)(?=.{1,254}$)[a-z0-9!#$%&'+/=?^_`{|}~-]+(?:.[a-z0-9!#$%&'+/=?^_`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?.){1,128}[a-z]{2,63}$/.test(email);
 const validatePassword = (password) => /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[~!#$^\-\_\=\+]).{12,55}$/.test(password);
 const validatePhone = (phoneNumber) => /^09\d{9}$/.test(phoneNumber) || /^\+639\d{9}$/.test(phoneNumber);
 
@@ -318,7 +318,7 @@ export const verifyLogin = async (req, res) => {
                 logOperation('Login', ip, {result: "success", email: email, id: userSession.id} );
                 //console.log(`saved attempt from IP: ${userSession.IP}`)
 
-                res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
+                res.setHeader('Set-Cookie', cookie.serialize('id', sessionId, {
                     httpOnly: true,
                     secure: true,
                     sameSite: 'strict',
@@ -392,7 +392,7 @@ export const verifyLogin = async (req, res) => {
 };
 
 export const validate_session = async (req, res) => {
-    const sessionId = req.cookies.sessionId;
+    const sessionId = req.cookies.id;
     const ip = req.ipv4;
 
     try {
@@ -401,7 +401,7 @@ export const validate_session = async (req, res) => {
             const user = await getUserById(userSession.id);
 
             if (user) {
-                res.setHeader('Set-Cookie', cookie.serialize('sessionId', sessionId, {
+                res.setHeader('Set-Cookie', cookie.serialize('id', sessionId, {
                     httpOnly: true,
                     secure: true,
                     sameSite: 'strict',
@@ -463,7 +463,7 @@ export const validate_session = async (req, res) => {
 }
 
 export const validate_admin = async (req, res) => {
-    const sessionId = req.cookies.sessionId;
+    const sessionId = req.cookies.id;
 
     try {
         // Check if the session ID matches the stored session ID
@@ -506,7 +506,7 @@ export const validate_admin = async (req, res) => {
 }
 
 export const removeSessionCookie = async(req, res) => {
-    res.setHeader('Set-Cookie', cookie.serialize('sessionId', '', {
+    res.setHeader('Set-Cookie', cookie.serialize('id', '', {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
