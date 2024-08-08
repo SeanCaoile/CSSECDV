@@ -74,7 +74,6 @@ export default {
         }
         const data = await response.json();
         this.blog = data;
-        console.log('Blog:', this.blog);
       } catch (error) {
         console.error('Failed to fetch blog', error);
       }
@@ -99,7 +98,6 @@ export default {
         }
         const data = await response.json();
         if(data.authenticated){
-          console.log('Current User:', data);
           await this.checkAuthorization(data.id);
           this.isAdmin = data.isAdmin;
           return true;

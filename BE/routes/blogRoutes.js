@@ -113,15 +113,11 @@ router.post('/blogs/deleteBlog', (req, res) => {
 
 router.post('/blogs/checkAuthorization', (req, res) => {
   const { blogID, userID } = req.body;
-  console.log('Received check authorization request with blogID:' + blogID + ' and userID:' + userID);
     getBlogById(blogID, (err, data) => {
       if (err) {
-        console.log('Error occurred');  
         return res.status(500).send(err);
       }
-      console.log('Data:');
       if (!data) {
-        console.log('Blog not found okay');
         return res.status(404).send("Blog not found");
       }
       if (userID == data.authorID){

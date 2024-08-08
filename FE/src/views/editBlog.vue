@@ -173,7 +173,6 @@ export default {
     },
     async checkAuthorization(userId) {
       try {
-        console.log("Checking authorization for user");
         const response = await fetch('https://localhost:3001/api/blogs/checkAuthorization', {
           method: 'POST',
           headers: {
@@ -181,14 +180,12 @@ export default {
           },
           body: JSON.stringify({ blogID: this.blogId, userID: userId })
         });
-        console.log("Response from checkAuthorization");
         if (!response.ok) {
           throw new Error('Failed to check authorization');
         }
 
         const { canEdit } = await response.json();
         this.isAuthor = canEdit;
-        console.log("isAuthor: ");
         if (!this.isAuthor) {
           console.error('Invalid User Access');
           this.handleUnauthenticatedUser();
