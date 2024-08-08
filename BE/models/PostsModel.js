@@ -258,64 +258,6 @@ export const deleteBlogById = (blogID, callback) => {
     });
 };
 
-// Edit blog (assuming session handling and authorization are managed)
-export const editBlog = async (req, res) => {
-    const sessionId = req.cookies.sessionId; // Retrieve sessionId from cookies
-
-    // Validate sessionId
-    if (!isValidSession(sessionId)) {
-        const errorMessage = { error: 'Unauthorized: Invalid session ID' };
-        if (debug == 1) {
-            const err = new Error(errorMessage);
-            console.error("Session error: ", err.stack);
-            return res.status(401).send(errorMessage);
-        } else {
-            console.log("Unauthorized access");
-            return res.status(401).send("Unauthorized access");
-        }
-    }
-
-    const { blogID, updatedContent } = req.body;
-
-    try {
-        // Fetch the blog post from the database and perform editing
-        const blog = await fetchBlogById(blogID);
-
-        if (!blog) {
-            if (debug == 1) {
-                console.error("Blog not found: ", { blogID });
-                return res.status(404).send({ error: 'Blog not found' });
-            } else {
-                console.log("Blog not found");
-                return res.status(404).send("Blog not found");
-            }
-        }
-
-        // Check if the current user has permission to edit this blog
-        if (blog.authorEmail !== req.session.user.email) {
-            if (debug == 1) {
-                console.error("Authorization error: User is not authorized to edit this blog");
-                return res.status(403).send({ error: 'You are not authorized to edit this blog' });
-            } else {
-                console.log("You are not authorized to edit this blog");
-                return res.status(403).send("You are not authorized to edit this blog");
-            }
-        }
-
-        // Update the blog content in the database
-        await updateBlog(blogID, { content: updatedContent });
-
-        res.status(200).send({ message: 'Blog updated successfully' });
-    } catch (error) {
-        if (debug == 1) {
-            console.error("An error occurred: ", error.stack);
-            res.status(500).send(error);
-        } else {
-            console.log("An error occurred while accessing data");
-            res.status(500).send("An error occurred while accessing data");
-        }
-    }
-};
 
 // Check authorization
 export const checkAuthorization = (blogID, userID, callback) => {
