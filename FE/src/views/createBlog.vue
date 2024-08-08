@@ -138,7 +138,7 @@ export default {
         }
 
         const data = await response.json();
-        console.log('Blog created successfully:', data);
+        console.log('Blog created successfully');
         this.$router.push('/home');
 
       } catch (error) {
