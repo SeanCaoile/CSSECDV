@@ -109,7 +109,7 @@ export const createBlog = async (newBlog, ip, sessionID, result) => {
                 }
                 return;
             }
-            const createdBlog = { blogID: res.insertId, ...newBlog };
+            const createdBlog = { blogID: res.insertId, authorID, authorEmail, content, title, dateCreated };
             logOperation('createBlog', ip, createdBlog);
             result(null, createdBlog);
         });
@@ -160,7 +160,7 @@ export const getBlogById = (blogID, result) => {
     });
   };
 
-export const updateBlogById = (blog, ip, sessionId, result) => {
+export const updateBlogById = (blog, sessionId, result) => {
     if(userSession.session == sessionId){
         const updateFields = [];
         const params = [];
@@ -221,7 +221,7 @@ export const updateBlogById = (blog, ip, sessionId, result) => {
                 }
                 const { title, content } = blog;
                 const updatedBlog = { blogID, title, content };
-                logOperation('updateBlog', ip, updatedBlog);
+                //logOperation('updateBlog', ip, updatedBlog);
                 result(null, { blogID, ...blog });
             }
         );

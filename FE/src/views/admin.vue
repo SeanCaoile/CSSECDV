@@ -241,7 +241,7 @@ export default {
     },
 
     validateAnnouncement() {
-      const contentPattern = /^[\w\s.,!?"'()@#%&*+-/=:;]{1,500}$/;
+      const contentPattern = /^[\w\s.,!?\"'()@#%&*+-/=:]{1,500}$/;
       if (!contentPattern.test(this.announcementContent)) {
         this.contentError = 'Invalid content';
         return false;
@@ -250,7 +250,7 @@ export default {
       return true;
     },
     validateExpiry() {
-      const expPattern = /^\d+$/;
+      const expPattern = /^[1-9][0-9]*$/;
       if (!expPattern.test(this.expirationTime)) {
         this.contentError = 'Invalid Expiry';
         return false;

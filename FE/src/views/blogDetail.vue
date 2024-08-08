@@ -176,6 +176,7 @@ export default {
             this.$router.push('/');
           }
           const data = await response.json();
+          
           if(data.authenticated){
             if(await this.fetchCurrentUser() && (this.isAdmin||this.isAuthor)){
               try {
@@ -184,7 +185,7 @@ export default {
                   headers: {
                     'Content-Type': 'application/json'
                   },
-                  body: JSON.stringify({ blogID: this.blogId })
+                  body: JSON.stringify({ blogID: this.blogId, id: data.id, email: data.email })
                 });
                 if (response.ok) {
                   console.log('Blog deleted successfully');

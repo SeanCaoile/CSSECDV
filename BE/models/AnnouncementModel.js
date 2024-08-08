@@ -4,10 +4,10 @@ const debug = process.env.DEBUG;
 
 //const validate500Char = (announcement) => /^.{0,500}$/.test(announcement);
 
-const validateContent = (content) => /^[\w\s.,!?"'()@#%&*+-/=:;]{1,500}$/.test(content);
+const validateContent = (content) => /^[\w\s.,!?\"'()@#%&*+-/=:]{1,500}$/.test(content);
 
 // Validate expirationTime to be a positive integer
-const validateExpirationTime = (time) => /^\d+$/.test(time);
+const validateExpirationTime = (time) => /^[1-9][0-9]*$/.test(time);
 
 // Get the very last announcement
 export const getLastAnnouncement = (result) => {

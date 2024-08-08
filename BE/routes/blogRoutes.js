@@ -1,4 +1,5 @@
 import express from 'express';
+import { logOperation } from '../utils/logger.js'; // Import the logging function
 import {
   getBlogs,
   createBlog,
@@ -69,11 +70,11 @@ router.post('/blogs/getBlogById', (req, res) => {
 
 // Update a blog by ID
 router.post('/blogs/updateBlogById', (req, res) => {
-  const { updatedBlog } = req.body;
+  const { updatedBlog, id, email } = req.body;
   const sessionId = req.cookies.sessionId;
   const ip = req.ipv4;
-  console.log("ip is ", ip + " session id is ", sessionId);
-  updateBlogById(updatedBlog, ip, sessionId, (err, data) => {
+  //console.log("ip is ", ip + " session id is ", sessionId);
+  updateBlogById(updatedBlog, sessionId, (err, data) => {
     if (err) {
       if (debug == 1) {
         return res.status(500).send(err);
@@ -88,13 +89,15 @@ router.post('/blogs/updateBlogById', (req, res) => {
         return res.status(404).send("Blog not found");
       }
     }
+    logOperation('updateBlog', ip, {  blogID: updatedBlog.blogID,title: updatedBlog.title, content: updatedBlog.content, id: id, email: email });
     res.json(data);
   });
 });
 
 // Delete a blog by ID (update isDeleted column to 1)
 router.post('/blogs/deleteBlog', (req, res) => {
-  const { blogID } = req.body;
+  const { blogID, id, email } = req.body;
+  const ip = req.ipv4;
   console.log('Received delete request with blogID:', blogID);
   deleteBlogById(blogID, (err, result) => {
     if (err) {
@@ -103,6 +106,7 @@ router.post('/blogs/deleteBlog', (req, res) => {
     if (result.affectedRows == 0) {
       return res.status(404).send({ message: 'Blog not found' });
     }
+    logOperation('delete', ip, { blogID, id, email });
     res.status(200).send({ message: 'Blog deleted successfully' });
   });
 });
